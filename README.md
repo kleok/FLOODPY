@@ -17,7 +17,7 @@ FLOMPY is written in Python3 and relies on several Python modules, check the req
 ### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/)
 
 ### 1.3 Account setup for Sentinel-1 acquisitions
-Sentinel-1 data donwload functionality require user credentials. More information [here](https://scihub.copernicus.eu/)
+Sentinel-1 data download functionality require user credentials. More information [here](https://scihub.copernicus.eu/)
 
 ### 1.4 Account setup for global atmospheric models
 ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS), create a new account on the CDS website if you don't own a user account yet. On the profile, you will find your user id (UID) and your personal API Key. Create a file .cdsapirc under your home directory and add the following information:
