@@ -21,10 +21,10 @@ Sentinel-1 data download functionality require user credentials. More informatio
 
 ### 1.4 Account setup for global atmospheric models
 ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS), create a new account on the CDS website if you don't own a user account yet. On the profile, you will find your user id (UID) and your personal API Key. Create a file .cdsapirc under your home directory and add the following information:
-
--url: https://cds.climate.copernicus.eu/api/v2
--key: UID:personal API Key
-
+```
+url: https://cds.climate.copernicus.eu/api/v2
+key: UID:personal API Key
+```
 CDS API is needed to auto-download ERA5 ECMWF data: conda install -c conda-forge cdsapi
 More details on CDSAPI can be found [here](https://cds.climate.copernicus.eu/api-how-to).
 
