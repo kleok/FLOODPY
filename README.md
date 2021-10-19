@@ -84,7 +84,7 @@ scihub_accounts={'USERNAME_1':'PASSWORD_1',
 Algorithms implemented in the software are described in details at our publication. If FLOMPY was useful for you, we encourage you to cite the following work.
 
 Karamvasis, K., & Karathanassi, V. (2021). FLOMPY: An Open-Source Toolbox for Floodwater Mapping
-Using Sentinel-1 Intensity Time Series. Water, XXXX (under review)
+Using Sentinel-1 Intensity Time Series. Water, XXXX
 
 ## 4. Contact us
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recomendations. Any help is very welcome!
