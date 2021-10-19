@@ -6,7 +6,7 @@ The FLOod Mapping PYthon toolbox is a new fully automatic, free and open-source 
 the FLompy flood maps.
 
 This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS. Use at your own risk.
-![](FLompy_results.png)
+![](pinieios_results.png)
 
 ## 1. Installation
 
