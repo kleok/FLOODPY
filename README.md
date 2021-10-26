@@ -1,4 +1,5 @@
 # FLOMPY - FLOod Mapping PYthon toolbox
+![](Flompy_logo.png)
 
 ## Introduction
 
