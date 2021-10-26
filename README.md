@@ -1,4 +1,4 @@
-# FLOMPY - FLOod Mapping PYthon toolbox <img src="https://github.com/kleok/FLOMPY/blob/main/Flompy_logo.png" width="78">
+# FLOMPY <img src="https://github.com/kleok/FLOMPY/blob/main/Flompy_logo.png" width="68"> - FLOod Mapping PYthon toolbox 
 
 ## Introduction
 
