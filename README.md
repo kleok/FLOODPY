@@ -81,9 +81,9 @@ scihub_accounts={'USERNAME_1':'PASSWORD_1',
 ```
 
 ## 3. Documentation and citation
-Algorithms implemented in the software are described in details at our publication. If FLOMPY was useful for you, we encourage you to cite the following work.
+Algorithms implemented in the software are described in detail at our publication. If FLOMPY was useful for you, we encourage you to cite the following work.
 
 Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapping Using Sentinel-1 Intensity Time Series. Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
 
 ## 4. Contact us
-Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recomendations. Any help is very welcome!
+Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome!
