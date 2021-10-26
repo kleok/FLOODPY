@@ -7,7 +7,7 @@ the FLompy flood maps.
 
 This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS. Use at your own risk.
 
-<img src="https://github.com/kleok/FLOMPY/blob/main/pinieios_results_github.png" width="600">
+<img src="https://github.com/kleok/FLOMPY/blob/main/pinieios_results_github.png" width="900">
 
 ## 1. Installation
 
