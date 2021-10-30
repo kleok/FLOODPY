@@ -44,7 +44,7 @@ import datetime
 
 def months_between(start_datetime, end_datetime):
     """
-    Given two instances of ``datetime.date``, generate a list of dates on
+    Given two instances of ``datetime.date``, the function returns a list of dates on
     the 1st of every month between the two dates (inclusive).
 
     e.g. "5 Jan 2020" to "17 May 2020" would generate:
@@ -81,7 +81,9 @@ def months_between(start_datetime, end_datetime):
     return months
 
 def Get_ERA5_data_single_datetime(S1_datetime, bbox, ERA5_variables, export_filename):
-    
+    '''
+    Downloads ERA5 product for a single datetime object.
+    '''
     c = cdsapi.Client()
     c.retrieve(
         'reanalysis-era5-single-levels',
