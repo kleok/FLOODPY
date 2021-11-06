@@ -11,7 +11,7 @@ This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS.
 
 ## 1. Installation
 
-The installation notes below is tested only on Linux. Recommended minimum setup: Python 3.6, SNAP 8.0
+The installation notes below are tested only on Linux. Recommended minimum setup: Python 3.6, SNAP 8.0
 
 ### 1.1 Create python environment 
 FLOMPY is written in Python3 and relies on several Python modules, check the requirements.txt file for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management.
