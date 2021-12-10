@@ -1,6 +1,7 @@
 # <img src="https://github.com/kleok/FLOMPY/blob/main/Flompy_logo.png" width="58"> FLOMPY - FLOod Mapping PYthon toolbox 
 [![GitHub license](https://img.shields.io/badge/License-GNU3-green.svg)](https://github.com/kleok/FLOMPY)
 [![Release](https://img.shields.io/badge/Release-0.1.0-brightgreen.svg)](https://github.com/kleok/FLOMPY)
+[![Facebook](https://img.shields.io/badge/Group-Flompy-yellowgreen.svg)](https://www.facebook.com/groups/876299509742954)
 
 ## Introduction
 
