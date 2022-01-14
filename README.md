@@ -67,7 +67,7 @@ lry=50.13
 
 # Auto option selects the orbit to minimize the distance between defined
 # flood date and SAR datetime acquisition
-# use can also selects specific Relative orbit number
+# user can also select specific relative orbit number
 relOrbit='Auto' 
 
 # cumulative rain in mm for the last 5 days 
