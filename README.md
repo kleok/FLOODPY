@@ -17,7 +17,7 @@ This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS.
 The installation notes below are tested only on Linux. Recommended minimum setup: Python 3.6, SNAP 8.0
 
 ### 1.1 Create python environment 
-FLOMPY is written in Python3 and relies on several Python modules, check the requirements.txt file for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management.
+FLOMPY is written in Python3 and relies on several Python modules, check the files flompy_requirements.txt and flompy_conda_env.yml for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management.
 
 ### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/)
 
