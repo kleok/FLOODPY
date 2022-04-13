@@ -1,6 +1,6 @@
 # <img src="https://github.com/kleok/FLOMPY/blob/main/figures/Flompy_logo.png" width="58"> FLOMPY - FLOod Mapping PYthon toolbox 
 [![GitHub license](https://img.shields.io/badge/License-GNU3-green.svg)](https://github.com/kleok/FLOMPY)
-[![Release](https://img.shields.io/badge/Release-0.1.0-brightgreen.svg)](https://github.com/kleok/FLOMPY)
+[![Release](https://img.shields.io/badge/Release-0.2.0-brightgreen)](https://github.com/kleok/FLOMPY)
 [![Facebook](https://img.shields.io/badge/Group-Flompy-yellowgreen.svg)](https://www.facebook.com/groups/876299509742954)
 
 ## Introduction
@@ -17,7 +17,7 @@ This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS.
 The installation notes below are tested only on Linux. Recommended minimum setup: Python 3.6, SNAP 8.0
 
 ### 1.1 Create python environment 
-FLOMPY is written in Python3 and relies on several Python modules, check the files flompy_requirements.txt and flompy_conda_env.yml for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management.
+FLOMPY is written in Python3 and relies on several Python modules, check the file [FLOMPY_0.2_env.yml](https://github.com/kleok/FLOMPY/blob/main/docs/FLOMPY_0.2_env.yml) for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management.
 
 ### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/)
 
@@ -43,9 +43,9 @@ export PYTHONPATH=${PYTHONPATH}:${FLOMPY_HOME}
 export PATH=${PATH}:${FLOMPY_HOME}
 ```
 ## 2. Running Flompy
-S1FloodwaterApp.py or S1FloodwaterApp_EMSR.py
+FLOMPYApp.py
 
-FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. FlompyApp.py includes the functionalities for FLOMPY's routine processing for generating floodwater maps. User should provide the following information at configuration file FLOMPYapp_template.cfg
+FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. FLOMPYApp.py includes the functionalities for FLOMPY's routine processing for generating floodwater maps. User should provide the following information at configuration file FLOMPYapp_template.cfg
 ```
 ######### CONFIGURATION FILE ######
 ###################################
@@ -95,7 +95,6 @@ GPTBIN_PATH=/home/kleanthis/bin/snap8/snap/bin/gpt
 CPU=8
 RAM=20G
 ##################################
-
 ```
 ## 3. Documentation and citation
 Algorithms implemented in the software are described in detail at our publication. If FLOMPY was useful for you, we encourage you to cite the following work.
@@ -105,5 +104,5 @@ Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapp
 ## 4. Contact us
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome!
 
-FLOMPY Team: [Kleanthis Karamvasis](https://github.com/kleok), [Alekos Falagas](https://github.com/alekfal), [Olympia Gounari](https://github.com/Olyna),[tsironisbi](https://github.com/tsironisbi), [Fragkiskos Dimos](https://github.com/fdimos),[Panagiotis Sismanidis](https://github.com/pansism)
+FLOMPY Team: [Kleanthis Karamvasis](https://github.com/kleok), [Alekos Falagas](https://github.com/alekfal), [Olympia Gounari](https://github.com/Olyna), [Tsironisbi](https://github.com/tsironisbi), [Fragkiskos Dimos](https://github.com/fdimos),[Panagiotis Sismanidis](https://github.com/pansism)
 
