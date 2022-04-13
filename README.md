@@ -43,7 +43,7 @@ export PYTHONPATH=${PYTHONPATH}:${FLOMPY_HOME}
 export PATH=${PATH}:${FLOMPY_HOME}
 ```
 ## 2. Running Flompy
-[FLOMPYapp.py]("https://github.com/kleok/FLOMPY/blob/main/FLOMPYapp.py"
+[FLOMPYapp.py]("https://github.com/kleok/FLOMPY/blob/main/FLOMPYapp.py")
 
 FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. FLOMPYapp.py includes the functionalities for FLOMPY's routine processing for generating floodwater maps. User should provide the following information at configuration file FLOMPYapp_template.cfg
 ```
