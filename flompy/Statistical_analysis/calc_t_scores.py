@@ -4,9 +4,10 @@
 Calculate t-scores 
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 01.9.2021
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -40,6 +41,9 @@ gdal.PushErrorHandler('CPLQuietErrorHandler')
 gdal.UseExceptions()
 
 def image_combinations(wet_image_date,dry_images_dates):
+    '''
+    Functionality for creating combinations between "dry" and "wet" image dates.
+    '''
     wet_combinations=[]
     for pair in itertools.product(wet_image_date,dry_images_dates):
         wet_combinations.append(pair)
@@ -54,7 +58,18 @@ def image_combinations(wet_image_date,dry_images_dates):
     return wet_combinations, dry_combinations
 
 def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
-    
+    '''
+    Functionality that saves information numpy array to geotiff given a reference
+    geotiff.
+
+    Args:
+        nparray (np.array): information we want to save to geotiff.
+        reference_gdal_dataset (string): path of the reference geotiff file.
+        target_gdal_dataset (string): path of the output geotiff file.
+
+    Returns:
+        None.
+    '''
     # open the reference gdal layer and get its relevant properties
     raster_ds = gdal.Open(reference_gdal_dataset, gdal.GA_ReadOnly)   
     xSize = raster_ds.RasterXSize
@@ -77,26 +92,7 @@ def Calc_t_scores(projectfolder,
                   Preprocessing_dir,
                   band='VV_VH_db'):
     '''
-
-    Parameters
-    ----------
-    SAR_stack_file : (str)
-        full path of preprocessed hdf5 SAR stack .
-    master_tiff_wgs84 : full path of gdal tiff file (str)
-        Used as reference for generation of tiff products
-    flood_date : list of one element
-        DESCRIPTION.
-    baseline_dates : list of multiple elements
-        DESCRIPTION.
-    band : str
-        'VV_VH_db' # other choise can be VH_db or VV_db
-    exportDir : full path of dir to write t_score(str)
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
+    T-score change image functionality
     '''
     # get tiff file
     master_tiff_wgs84=glob.glob(os.path.join(Preprocessing_dir,'*_wgs84.tif'))[0]
@@ -145,31 +141,3 @@ def Calc_t_scores(projectfolder,
     print("T-score changes due to flood can be found at {}".format(export_filename))
     
     return 0
-
-
-def Calc_changes_stat(t_scores, df):
-   # calculate the critical 
-    # The critical value can be calculated using the percent point function 
-    # (PPF) for a given significance level, such as 0.05 (95% confidence).
-    alpha = 0.05
-    cv = stats.t.ppf(1.0 - alpha, df)
-    
-    # interpret via critical value
-    # Reject the null hypothesis that no change has happened
-    change_map_cv=(np.abs(t_scores)>cv).astype(np.int) # 1 is change 0 is no change
-    
-
-    # calculate the p-value map
-    # The p-value can be calculated using the cumulative distribution function 
-    # on the t-distribution, again in SciPy.
-    p = (1 - stats.t.cdf(abs(t_scores), df)) * 2
-    
-    # Here, we assume a two-tailed distribution, where the rejection of the 
-    # null hypothesis could be interpreted as the first mean is either 
-    # smaller or larger than the second mean.
-    
-    p=p/2 
-    
-    change_map_p=(np.abs(t_scores)>p).astype(np.int) # 1 is change 0 is no change
-    
-    return change_map_cv, change_map_p

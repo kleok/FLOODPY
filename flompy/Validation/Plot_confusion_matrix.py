@@ -4,9 +4,10 @@
 Plotting
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 01.9.2021
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -43,23 +44,6 @@ def make_confusion_matrix(cf,
                           title=None):
     '''
     This function will make a pretty plot of an sklearn Confusion Matrix cm using a Seaborn heatmap visualization.
-    Arguments
-    ---------
-    cf:            confusion matrix to be passed in
-    group_names:   List of strings that represent the labels row by row to be shown in each square.
-    categories:    List of strings containing the categories to be displayed on the x,y axis. Default is 'auto'
-    count:         If True, show the raw number in the confusion matrix. Default is True.
-    normalize:     If True, show the proportions for each category. Default is True.
-    cbar:          If True, show the color bar. The cbar values are based off the values in the confusion matrix.
-                   Default is True.
-    xyticks:       If True, show x and y ticks. Default is True.
-    xyplotlabels:  If True, show 'True Label' and 'Predicted Label' on the figure. Default is True.
-    sum_stats:     If True, display summary statistics below the figure. Default is True.
-    figsize:       Tuple representing the figure size. Default will be the matplotlib rcParams value.
-    cmap:          Colormap of the values displayed from matplotlib.pyplot.cm. Default is 'Blues'
-                   See http://matplotlib.org/examples/color/colormaps_reference.html
-                   
-    title:         Title for the heatmap. Default is None.
     '''
 
 

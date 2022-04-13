@@ -3,9 +3,26 @@
 """
 Downloads Sentinel-1 imagery
 
-Project: Water/flood detection using S1 time series
-Author: Kleanthis Karamvasis
-Creation date: 31/12/2020
+Copyright (C) 2022 by K.Karamvasis
+Email: karamvasis_k@hotmail.com
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
+
+This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
+
+    FLOMPY is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    FLOMPY is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
 
 """
 from sentinelsat.sentinel import SentinelAPI, read_geojson, geojson_to_wkt
@@ -22,6 +39,9 @@ import pyproj
 import pandas as pd
 
 def check_downloaded_data(S1_GRD_dir,product_df):
+    '''
+    Checks the progress of downloading procedure
+    '''
     
     delete_flag=False
     download_flag=False
@@ -61,7 +81,9 @@ def check_downloaded_data(S1_GRD_dir,product_df):
     return product_df, delete_flag, download_flag
 
 def download_products(product_to_be_downloaded_df, api, S1_GRD_dir):
-    
+    '''
+    Download functionality of Sentinel-1 products
+    '''
     try:
         os.chdir(S1_GRD_dir)
         if 'index' in product_to_be_downloaded_df:
@@ -82,6 +104,17 @@ def download_products(product_to_be_downloaded_df, api, S1_GRD_dir):
     return 0
 
 def get_flood_image(S1_df,flood_datetime):
+    '''
+    Finds the closest Sentinel-1 acquisition after the defined flood datetime.
+
+    Args:
+        S1_df (pd.DataFrame): the dataframe with Sentinel-1 acquisition metadata.
+        flood_datetime (datetime object): the user-defined time point of the flood.
+
+    Returns:
+        string: the title of the flood image
+
+    '''
     S1_df.reset_index(inplace=True)
     
     S1_temp=S1_df.copy()
@@ -113,10 +146,29 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
                 flood_datetime,
                 time_sleep=1800, # half an hour
                 max_tries=50):
+    '''
+    This function is the main functionaliry for downloading Sentinel-1 GRD data.
+    It uses multiple scihub accounts to speed up the LTA retrieval of offline 
+    products. It has been tested for products released after May 2017
+
+    Args:
+        scihub_accounts (dict): dictionary with keys (scihub_username) and items (scihub_passwords).
+        S1_GRD_dir (string): directory that Sentinel-1 are stored.
+        geojson_S1 (string): geojson vector file of the AOI.
+        Start_time (string): Starting Date (YYYYMMDD) e.g.  20200924
+        End_time (string): Starting Date (YYYYMMDD) e.g.  20201225
+        relOrbit (string): number of relative orbit of Sentinel-1 data.
+        flood_datetime (datetime object):the user-defined time point of the flood.
+        time_sleep (integer, optional): time span for each request (in seconds). Defaults to 1800.
+        max_tries (integer, optional): the number of the requests. Defaults to 50.
+
+    Returns:
+        int: zero is downloading is successful.
+
+    '''
     
-    ''' This function download Sentinel-2 data. It uses multiple scihub accounts
-    to speed up the LTA retrieval of offline products. It has been tested for 
-    products released after May 2017'''
+    
+
     
     # Create download directory
     if not os.path.exists(S1_GRD_dir): os.mkdir(S1_GRD_dir)

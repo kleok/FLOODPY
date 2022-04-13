@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This script performs the preprocessing of a Sentinel-1 GRD 
-
+This script performs the preprocessing of a Sentinel-1 GRDs
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 01.4.2021
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -65,21 +65,8 @@ def _extract_geo_bounds(vector_file, buffer_distance=0.01):
 
 def _refine_geo_bounds(S1_products_df, S1_filename, bb_polygon):
     '''
-    refines the borders of the AOI
-    Parameters
-    ----------
-    S1_products_df : string
-        filename of the csv of the query results for the S1 GRD products.
-    S1_filename : string
-        the filename of the image that will be used as a master.
-    bb_polygon : string
-        the filename of the geojson of the AOI.
-
-    Returns
-    -------
-    shapely polygon
-        The intersection of the AOI and the footprint of the master image.
-
+    Refines the borders of the AOI based on footprint geometries of Sentinel-1
+    acquisitions.
     '''
     # read the metadata of S1 products
     footprints=pd.read_csv(S1_products_df)
@@ -99,9 +86,7 @@ def _refine_geo_bounds(S1_products_df, S1_filename, bb_polygon):
 
 def _Select_slave_image(pair_dataset):
     ''' 
-    This function 
-    1. reads the created hdf file for each pair 
-    2. returns only the slave data
+    This function returns the secondary image from a given pair of images
     '''
     All_data=h5py.File(pair_dataset,'r')['bands']
     slave_data=[All_data[data] for data in All_data if 'slv' in data]
@@ -110,24 +95,9 @@ def _Select_slave_image(pair_dataset):
 
 def check_coregistration_validity(Master_datetime, Slave_datetimes, Preprocessing_dir, valid_ratio = 0.25):
     '''
-    discards the pairs of images that the coregistration was not sucessful.
+    Discards the pairs of images that the coregistration was not sucessful.
     Assumes that if the coregistration is not sucessful the result is a numpy 
     full of zeros!
-
-    Parameters
-    ----------
-    Master_datetime : str
-        the datetime of the master image of the stack.
-    Slave_datetimes : list
-        the datetimes of the slav images of the stack.
-    Preprocessing_dir : str
-        the directory of the preprocessing.
-
-    Returns
-    -------
-    Slave_datetimes_refined : list
-        the datetimes of the images that coregistration was sucessful.
-
     '''
     
     Slave_datetimes_refined = np.array(Slave_datetimes)
@@ -286,6 +256,9 @@ def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_f
         pass
 
 def _Plot_SAR_Stack(hdf5_stack_file,Stack_dir):
+    '''
+    Plotting functionality of SAR stack
+    '''
     
     Plot_dir=os.path.join(Stack_dir,'Plots')
     if not os.path.exists(Plot_dir): os.makedirs(Plot_dir)
@@ -337,38 +310,13 @@ def _normalize_raster(numpy_array_3d):
     return temp_norm_3d
 
 
-def get_flood_image(S1_GRD_dir, flood_datetime):
-    S1_products = glob.glob(S1_GRD_dir+'/S1_products.csv')[0]
-    S1_df=pd.read_csv(S1_products)
-    S1_df.reset_index(inplace=True)
-    
-    S1_temp=S1_df.copy()
-    S1_temp.index=pd.to_datetime(S1_temp['beginposition'])
-    
-    S1_flood_datetime_diffs=(S1_temp.index-flood_datetime).tolist()
-    S1_flood_diffs = [S1_flood_datetime_diff.days for S1_flood_datetime_diff in S1_flood_datetime_diffs ]
-    
-    if np.all(np.array(S1_flood_diffs)<0):
-        day_diff=np.max(np.array(S1_flood_diffs))
-    else:
-        day_diff = min([i for i in S1_flood_diffs if i >= 0])
-   
-    S1_flood_index = S1_flood_diffs.index(day_diff)
-    flood_S1_image = S1_df['filename'].iloc[S1_flood_index]
-    print('{} product is picked \n as the "Flood image" because it was \
-          acquired after {} days \n from the time of flood event'.format(flood_S1_image,day_diff))
-    flood_S1_filename_df = pd.DataFrame([flood_S1_image])
-    flood_S1_filename_df.to_csv(os.path.join(S1_GRD_dir,'flood_S1_filename.csv'))
-    
-    return 0
-
 def Run_Preprocessing(gpt_exe,
                       graph_dir,
                       S1_GRD_dir,
                       geojson_S1,
                       Preprocessing_dir):
     '''
-    Performs all the preprocessing procedure 
+    Performs all the preprocessing procedure of Sentinel-1 dataset
     '''
     
     S1_products = os.path.join(S1_GRD_dir,'S1_products.csv')

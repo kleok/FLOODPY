@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
+Reprojecting functionality
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 10.4.2022
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -28,29 +30,9 @@ This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 from osgeo import gdal
 
 def reproject_image_to_master ( master, slave, dst_filename, res=None ):
-    """This function reprojects an image (``slave``) to
-    match the extent, resolution and projection of another
-    (``master``) using GDAL. The newly reprojected image
-    is a GDAL VRT file for efficiency. A different spatial
-    resolution can be chosen by specifyign the optional
-    ``res`` parameter. The function returns the new file's
-    name.
-    Parameters
-    -------------
-    master: str 
-        A filename (with full path if required) with the 
-        master image (that that will be taken as a reference)
-    slave: str 
-        A filename (with path if needed) with the image
-        that will be reprojected
-    res: float, optional
-        The desired output spatial resolution, if different 
-        to the one in ``master``.
-    Returns
-    ----------
-    The reprojected filename
-    TODO Have a way of controlling output filename
-    """
+    '''
+    Reprojection funcionality
+    '''
     slave_ds = gdal.Open( slave )
 
     slave_proj = slave_ds.GetProjection()

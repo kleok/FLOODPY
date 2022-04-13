@@ -4,9 +4,10 @@
 Validation metrics calculation
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 01.9.2021
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -31,6 +32,16 @@ from sklearn.metrics import cohen_kappa_score, confusion_matrix
 
 
 def Accuracy_metrics_calc(EMS_gdal_raster, Floodpy_gdal_raster, EMS_AOI_mask):
+    '''
+    Calculation of accuracy metrics between a given map and FLOMPY`s map. 
+    Args:
+        EMS (TYPE): DESCRIPTION.
+        Floodpy (TYPE): DESCRIPTION.
+
+    Returns:
+        accuracy_dict (dictionary): Dictionary with accuracy metrics.
+
+    '''
     EMS=gdal.Open(EMS_gdal_raster).ReadAsArray()
     Floodpy=gdal.Open(Floodpy_gdal_raster).ReadAsArray()
     EMS_AOI = gdal.Open(EMS_AOI_mask).ReadAsArray()

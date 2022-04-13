@@ -3,10 +3,11 @@
 """
 Creates a geojson file from N/W/S/E bbox 
 
-Copyright (C) 2021 by K.Karamvasis
-
+Copyright (C) 2022 by K.Karamvasis
 Email: karamvasis_k@hotmail.com
-Last edit: 01.9.2021
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -33,14 +34,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def Coords_to_geojson(bbox, outdir, out_name='AOI.geojson'):
     '''
-    Writes a geojson file from the Input EOM json file.
-        
-    *args: 
-        temp_data_df (pandas dataframe). one row dataframe
-        outdir (str) the path that the geojson file will be saved.
-    
-    returns:
-        polygon (geojson object) Default name: 'input_EOM.geojson'
+    Functionality to convert list of lats/lons to lat/lon Geojson file
     '''
 
     LONMIN, LATMIN,  LONMAX, LATMAX = bbox   
@@ -62,7 +56,10 @@ def Coords_to_geojson(bbox, outdir, out_name='AOI.geojson'):
     return geojson_filename
     
 def Input_vector_to_geojson(vector_filename, outdir, out_name='AOI.geojson'):
-    
+    '''
+    Functionality to convert provided vector file to lat/lon Geojson file
+    '''
+
     given_polygon = gpd.read_file(vector_filename)
     polygon_wgs_84 = given_polygon.to_crs("EPSG:4326")
     

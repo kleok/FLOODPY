@@ -4,9 +4,10 @@
 Region Growing functionality
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 10.4.2022
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -31,7 +32,6 @@ from scipy.stats import kurtosis, skew
 from scipy.ndimage import gaussian_filter
    
 def Bimodality_test(region):
-    
     '''
     A more robust split selection methodology has been developed by means of the 
     application of the bimodality coefficient (BC) [1]. The BC is based on a 
@@ -77,6 +77,9 @@ def Bimodality_test(region):
     
 
 def Create_Regions(data, window_size=200):
+    '''
+    Creates blocks of a certain size from a given numpy array
+    '''
     shape1, shape2 = data.shape
     new_shape1=int(np.ceil(shape1/window_size)*window_size)
     new_shape2=int(np.ceil(shape2/window_size)*window_size)
@@ -87,51 +90,9 @@ def Create_Regions(data, window_size=200):
     
     return Blocks
 
-def Kittler(data):
-    """
-    The reimplementation of Kittler-Illingworth Thresholding algorithm by Bob Pepin
-    Works on 8-bit images only
-    Original Matlab code: https://www.mathworks.com/matlabcentral/fileexchange/45685-kittler-illingworth-thresholding
-    Paper: Kittler, J. & Illingworth, J. Minimum error thresholding. Pattern Recognit. 19, 41–47 (1986).
-    """
-    min_value=int(np.percentile(data, 0.1))
-    max_value=int(np.percentile(data, 99.9))
-    num_values=len(range(min_value,max_value+1))*10
-    h,g = np.histogram(data.ravel(),num_values,[min_value,max_value])
-    h = h.astype(np.float)
-    g = g.astype(np.float)
-    g = g[:-1]
-    c = np.cumsum(h)
-    m = np.cumsum(h * g)
-    s = np.cumsum(h * g**2)
-    sigma_f = np.sqrt(s/c - (m/c)**2)
-    cb = c[-1] - c
-    mb = m[-1] - m
-    sb = s[-1] - s
-    sigma_b = np.sqrt(sb/cb - (mb/cb)**2)
-    p =  c / c[-1]
-    v = p * np.log(sigma_f) + (1-p)*np.log(sigma_b) - p*np.log(p) - (1-p)*np.log(1-p)
-    v[~np.isfinite(v)] = np.inf
-    idx = np.argmin(v)
-    thres = g[idx]
-    return thres
-
 def RG(window_data,window_current_result,RG_thres):
     '''
-
-    Parameters
-    ----------
-    window_data : TYPE
-        DESCRIPTION.
-    window_current_result : TYPE
-        DESCRIPTION.
-    RG_thres : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
+    Regions growing functionality in a single block/window
     '''
     
     # find center pixel
@@ -149,6 +110,9 @@ def RG(window_data,window_current_result,RG_thres):
 
     
 def adapt_RG_threshold(RG_thres,window_data, water_mean_float,std_water_float ):
+    '''
+    Adapts threshold for regions growing functionality
+    '''
     low_value=water_mean_float
     high_value=water_mean_float+2*std_water_float
     
@@ -177,6 +141,9 @@ def Region_Growing(t_score_dataset_temp,
                    std_water_float,
                    max_num_iter=1000,
                    search_window_size=1):
+    '''
+    Adaptive region growing functionality
+    '''
 
     # Assert that the shapes of image and seed mask agree
     assert (t_score_dataset_temp.shape==seeds.shape)

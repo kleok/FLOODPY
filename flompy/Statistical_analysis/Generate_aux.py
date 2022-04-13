@@ -5,9 +5,10 @@ This script generates auxiliary data that can be used for postprocessing
 for flood water mapping
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 01.4.2021
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -35,7 +36,18 @@ import richdem as rd
 import pyproj
 
 def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
-    
+    '''
+    Functionality that saves information numpy array to geotiff given a reference
+    geotiff.
+
+    Args:
+        nparray (np.array): information we want to save to geotiff.
+        reference_gdal_dataset (string): path of the reference geotiff file.
+        target_gdal_dataset (string): path of the output geotiff file.
+
+    Returns:
+        None.
+    '''
     # open the reference gdal layer and get its relevant properties
     raster_ds = gdal.Open(reference_gdal_dataset, gdal.GA_ReadOnly)   
     xSize = raster_ds.RasterXSize
@@ -54,27 +66,28 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
 
 
 def reproject(outname, infilename, UTM_CRS_EPSG ):
+    '''
+    Reproject funcionality
+    '''
     
     ds = gdal.Warp(outname, infilename, dstSRS='EPSG:{}'.format(UTM_CRS_EPSG),
                    srcNodata = -32768, dstNodata = -32768)
                #outputType=gdal.GDT_Int16, xRes=0.00892857142857143, yRes=0.00892857142857143)
     ds = None
+    return 0
     
 def generate_slope_aspect(dem_file, slope_outname, aspect_outname):
     '''
+    Calculates aspect and slope of given DEM 
+    Args:
+        dem_file (string): path to DEM geotiff file .
+        slope_outname (string): path to DEM-slope generated geotiff file.
+        aspect_outname (string): path to DEM-aspect generated geotiff file.
 
-    Parameters
-    ----------
-    dem_file : tiff file
-        The dem file that will be used for slope generation.
-        Needs to be in UTM projection
+    Returns:
+        None.
 
-    Returns
-    -------
-    slope mask
-    aspect mask
-
-    '''   
+    '''
     dem_temp = rd.LoadGDAL(dem_file, no_data=-32768)
     slope = rd.TerrainAttribute(dem_temp, attrib='slope_degrees')
     rd.SaveGDAL(slope_outname, slope)
@@ -82,7 +95,16 @@ def generate_slope_aspect(dem_file, slope_outname, aspect_outname):
     rd.SaveGDAL(aspect_outname, aspect)
 
 def WGS84_to_UTM(lon_list, lat_list):
-    
+    '''
+    Finds the best WGS84 UTM projection given a list of lats/lons
+    Args:
+        lon_list (list): list of longitudes.
+        lat_list (list): list of latitudes.
+
+    Returns:
+        utm_crs_epsg (string): the UTM code projection.
+
+    '''
     representative_longitude = round(np.mean(lon_list), 10)
     utm_zone = int(np.floor((representative_longitude + 180) / 6) + 1)
     representative_latitude = round(np.mean(lat_list), 10)
@@ -98,7 +120,10 @@ def WGS84_to_UTM(lon_list, lat_list):
     
 
 def get_S1_aux (Preprocessed_dir):
-
+    '''
+    Funcionality that calculates and reprojects to UTM the auxiliary data 
+    (DEM-slope & aspect) that are required for latest steps.
+    '''
     SAR_stack_file=os.path.join(Preprocessed_dir,'Stack/SAR_Stack.h5')
     SAR_stack=h5py.File(SAR_stack_file,'r')
     
@@ -144,13 +169,6 @@ def get_S1_aux (Preprocessed_dir):
     reproject_image_to_master(master_tiff_wgs84, dem_utm_dataset, dem_utm_dataset[:-7]+'wgs84.tif')
     reproject_image_to_master(master_tiff_wgs84, slope_outname, slope_outname[:-7]+'wgs84.tif')
     reproject_image_to_master(master_tiff_wgs84, aspect_outname, aspect_outname[:-7]+'wgs84.tif')
-    
-    #############################
-    # C. Calculate shadow/layover region from localincidenceangle
-    #############################
-    #
-    # https://www.mdpi.com/2072-4292/12/11/1867
-    #
     
     
     
