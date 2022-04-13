@@ -45,45 +45,58 @@ export PATH=${PATH}:${FLOMPY_HOME}
 ## 2. Running Flompy
 S1FloodwaterApp.py or S1FloodwaterApp_EMSR.py
 
-FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. In case of S1FloodwaterApp_EMSR the user should download EMS product in order to compare FLOMPY and EMS results. The user should provide the following information at the Set parameter section in S1FloodwaterApp.py or S1FloodwaterApp_EMSR.py. 
+FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. FlompyApp.py includes the functionalities for FLOMPY's routine processing for generating floodwater maps. User should provide the following information at configuration file FLOMPYapp_template.cfg
 ```
-src_dir='directory of the flompy'
-projectfolder='project directory'
-
-snap_dir = 'path to Sentinel-1 orbit directory for snap processing'
-#example: '/home/kleanthis/.snap/auxdata/Orbits/Sentinel-1'
-
-gpt_exe = 'path to gpt exe'
-#example:'/home/kleanthis/bin/snap8/snap/bin/gpt'
-    
-# example datetime
-flood_datetime=datetime.datetime(2021,7,16,5,00,00) 
-
-# example boundary coordinates
-ulx=7.14
-uly=50.35
-lrx=7.48
-lry=50.13
-
-# Auto option selects the orbit to minimize the distance between defined
-# flood date and SAR datetime acquisition
-# user can also select specific relative orbit number
-relOrbit='Auto' 
-
-# cumulative rain in mm for the last 5 days 
-rain_thres=45 
-
+######### CONFIGURATION FILE ######
+###################################
+# PROJECT DEFINITION
+Projectname=Palamas
+projectfolder=/RSL03/FLOMPY_palamas
+src_dir=/home/kleanthis/bin/FLOMPY/flompy
+##################################
+# Processing parameters
+# number of relative orbit (Default value: Auto)
+relOrbit=Auto
+# code of Sentinel-2 tile (Default value: Auto)
+S2_TILE=Auto
+# precipitation threshold in mm for 5 days
+rain_thres=40
 # minimum mapping unit area in square meters
-minimum_mapping_unit_area_m2=4000 
+minimum_mapping_unit_area_m2=3000
+##################################
+# Credentials
+scihub_username = *****
+scihub_password = *****
+##################################
+# Time information of the Flood event
+# the datetime of flood event (Format is YYYYMMDDTHHMMSS
+Flood_datetime = 20200921T030000
+# Days before flood event for baseline stack construction
+before_flood_days = 60
+# Days after flood event for floodwater detection
+after_flood_days = 3
+##################################
+# Spatial information of the Flood event
+# AOI VECTOR FILE (if given AOI BBOX parameters can be ommited)
+AOI_File = /home/kleanthis/bin/FLOMPY/tests/Palamas_AOI.geojson
+# AOI BBOX DEFINITION (WGS84)
+LONMIN=22.02
+LATMIN=39.38
+LONMAX=22.245
+LATMAX=39.518
 
-EMS_vector_folder='path to EMS directory that contains vector files' 
-# example: '/RSL03/Flood_detection/EMSR517/EMS/EMSR517_AOI01_DEL_MONIT01_r1_RTP04_v1_vector'
-
-scihub_accounts={'USERNAME_1':'PASSWORD_1',
-                 'USERNAME_2':'PASSWORD_2'}
+##################################
+# SNAP ORBIT DIRECTORY
+snap_dir = /home/kleanthis/.snap/auxdata/Orbits/Sentinel-1
+# SNAP GPT 
+GPTBIN_PATH=/home/kleanthis/bin/snap8/snap/bin/gpt
+##################################
+# COMPUTING RESOURCES TO EMPLOY
+CPU=8
+RAM=20G
+##################################
 
 ```
-
 ## 3. Documentation and citation
 Algorithms implemented in the software are described in detail at our publication. If FLOMPY was useful for you, we encourage you to cite the following work.
 
@@ -91,3 +104,6 @@ Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapp
 
 ## 4. Contact us
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome!
+
+FLOMPY Team: Kleanthis Karamvasis, 
+
