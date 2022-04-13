@@ -1,5 +1,0 @@
-1. Contextualization of the extracted floodwater regions. Use of other datasets such as Sentinel-2 ndvi, OSM data (buildings, roads,..), Population data, Land use land cover information, etc.
-2. Validation of Flompy`s results using more EMS products and other datasets (e.g. https://mlhub.earth/data/sen12floods, https://nasa-impact.github.io/etci2021/).
-3. Add social network information to the existing Flompy`s results.
-4. Add coherence information exploiting SLC products.
-5. Provide an uncertainty analysis based on other datasets/models.
