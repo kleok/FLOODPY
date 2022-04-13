@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
+Loads information from Template file to a dictionary
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 10.4.2022
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -27,19 +29,17 @@ This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 import os
 
 def read_template(fname, delimiter='='):
-    """Reads the template file into a python dictionary structure.
-    Parameters: fname : str
-                    full path to the template file
-                delimiter : str
-                    string to separate the key and value
-                print_msg : bool
-                    print message or not
-    Returns:    template_dict : dict
-                    file content
-    Examples:
-        tmpl = read_template(Kastoria.template)
+    '''
+    Reads the template file into a python dictionary structure.
 
-    """
+    Args:
+        fname (str): full path to the template file.
+        delimiter (str, optional): string to separate the key and value. Defaults to '='.
+
+    Returns:
+        template_dict (dict): python dictionary with information from template file
+
+    '''
     template_dict = {}
 
     if os.path.isfile(fname):

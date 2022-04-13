@@ -10,9 +10,10 @@ Downloads ERA-5 variables
 
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 10.4.2022
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -35,16 +36,21 @@ import os
 import cdsapi
 import datetime
 
+        
 def months_between(start_datetime, end_datetime):
-    """
-    Given two instances of ``datetime.date``, the function returns a list of dates on
-    the 1st of every month between the two dates (inclusive).
+    '''
+    Find months between two datetimes
+    Args:
+        start_datetime (datetime.date): starting datetime
+        end_datetime (datetime.date): ending datetime
 
-    e.g. "5 Jan 2020" to "17 May 2020" would generate:
+    Raises:
+        ValueError: Checks ordering of Start and End date.
 
-        1 Jan 2020, 1 Feb 2020, 1 Mar 2020, 1 Apr 2020, 1 May 2020
+    Yields:
+        list: list of dates on the 1st of every month between the two dates (inclusive).
 
-    """
+    '''
     if start_datetime > end_datetime:
         raise ValueError(f"Start date {start_datetime} is not before end date {end_datetime}")
     
@@ -73,35 +79,20 @@ def months_between(start_datetime, end_datetime):
         
     return months
 
-def Get_ERA5_data_single_datetime(S1_datetime, bbox, ERA5_variables, export_filename):
-    '''
-    Downloads ERA5 product for a single datetime object.
-    '''
-    c = cdsapi.Client()
-    c.retrieve(
-        'reanalysis-era5-single-levels',
-        {
-            'product_type': 'reanalysis',
-            'variable': ERA5_variables,
-            'year': str(S1_datetime.year),
-            'month': str(S1_datetime.month),
-            'day': str(S1_datetime.day),
-            'time': [
-                '00:00', '01:00', '02:00',
-                '03:00', '04:00', '05:00',
-                '06:00', '07:00', '08:00',
-                '09:00', '10:00', '11:00',
-                '12:00', '13:00', '14:00',
-                '15:00', '16:00', '17:00',
-                '18:00', '19:00', '20:00',
-                '21:00', '22:00', '23:00',
-            ],
-            'area': bbox,
-            'format': 'netcdf',
-        },
-        export_filename)
-
 def Get_ERA5_data_time_period(ERA5_variables, Start_time, End_time, bbox, ERA5_dir):
+    '''
+    Downloads ERA5 datasets between two dates.
+    Args:
+        ERA5_variables (list): list of ERA variable e.g. ['total_precipitation',]
+        Start_time (string): Starting Date (YYYYMMDD) e.g.  20200924
+        End_time (string): Starting Date (YYYYMMDD) e.g.  20201225
+        bbox (list): List of latitude/longitude [LONMIN, LATMIN,  LONMAX, LATMAX]
+        ERA5_dir (string): Path that ERA5 will be saved.
+
+    Returns:
+        int. Zero for successful run
+
+    '''
     LONMIN, LATMIN,  LONMAX, LATMAX = bbox
     bbox_cdsapi = [LATMAX, LONMIN, LATMIN, LONMAX, ]
     

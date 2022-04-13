@@ -5,9 +5,10 @@ Define a baseline dataset based on ERA-5 variables
 Plots the dates of the SAR images and the Rain time series
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 01.4.2021
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -36,6 +37,9 @@ import os
 import datetime
 
 def cftime_to_datetime(cfdatetime):
+    '''
+    Time convertion functionality
+    '''
     year=cfdatetime.year
     month=cfdatetime.month
     day=cfdatetime.day
@@ -52,6 +56,12 @@ def Get_images_for_baseline_stack(ERA5_dir,
                                   flood_datetime,
                                   days_back=5,
                                   rain_thres=20):
+    '''
+    Creates a pandas DataFrame of Sentinel-1 acquisitions. Creates a column with
+    boolean values with name 'baseline'. If True the particular acquisition 
+    can be used for calculation of baseline stack
+
+    '''
     
     netcdf_file = glob.glob(os.path.join(ERA5_dir,'*{}*{}*.nc'.format(Start_time, End_time)))
     assert len(netcdf_file)==1

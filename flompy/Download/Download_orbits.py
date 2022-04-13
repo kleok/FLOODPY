@@ -2,11 +2,28 @@
 # -*- coding: utf-8 -*-
 """
 
-Downloads orbit data
+Downloads Sentinel-1 orbit data
 
-Project: Water/flood detection using S1 time series
-Author: Kleanthis Karamvasis
-Creation date: 01/07/2021
+Copyright (C) 2022 by K.Karamvasis
+Email: karamvasis_k@hotmail.com
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
+
+This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
+
+    FLOMPY is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    FLOMPY is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
 """
 import os, subprocess
 import datetime
@@ -15,6 +32,18 @@ import requests
 from tqdm import tqdm
 
 def _get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, orbit_type='AUX_POEORB'):
+    '''
+    Gets orbit filenames
+    Args:
+        start_datetime (datetime object): starting date.
+        end_datetime (datetime object): ending date.
+        temp_export_dir (string): temporary directory.
+        orbit_type (string, optional): Type of orbit. Defaults to 'AUX_POEORB'.
+
+    Returns:
+        TYPE: DESCRIPTION.
+
+    '''
 
     username = "gnssguest"
     password = "gnssguest"
@@ -40,7 +69,10 @@ def _get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, orbit_ty
 
 
 def download_single_orbit(single_orbit_dictionary, snap_orbit_dir, S1_datetime, username, password, orbit_type ):
-    
+    '''
+    Downloads and saves single orbit filename
+
+    '''
     if orbit_type=='AUX_POEORB':
         export_name=single_orbit_dictionary['title'].split('.')[0]+'.EOF'
     else:
@@ -74,11 +106,11 @@ def download_single_orbit(single_orbit_dictionary, snap_orbit_dir, S1_datetime, 
             file.write(data.content)     
     
 
-def downloads_orbit_filename(orbit_dictionary, snap_orbit_dir,S1_filename, S1_datetime, username, password, orbit_type):  
+def downloads_orbit_filename(orbit_dictionary, snap_orbit_dir,S1_filename, S1_datetime, username, password, orbit_type):    
     '''
-    Download the selected orbit file
-    '''    
-    
+    Downloads single orbit filename
+
+    '''
     if isinstance(orbit_dictionary, dict):
         Orbit_filename=orbit_dictionary['str'][6]['content']
         if Orbit_filename.startswith(S1_filename[0:3]):
@@ -92,6 +124,17 @@ def downloads_orbit_filename(orbit_dictionary, snap_orbit_dir,S1_filename, S1_da
     
  
 def download_orbits(snap_dir, temp_export_dir, S1_GRD_dir):
+    '''
+    Download Sentinel-1 orbits
+    Args:
+        snap_dir (string): directory that snap stores Sentinel-1 orbits files.
+        temp_export_dir (string): temporary directory.
+        S1_GRD_dir (string): directory the Sentinel-1 images are stored.
+
+    Returns:
+        None.
+
+    '''
     S1_products = os.path.join(S1_GRD_dir,'S1_products.csv')
     assert os.path.exists(S1_products)
     S1_filenames=pd.read_csv(S1_products)

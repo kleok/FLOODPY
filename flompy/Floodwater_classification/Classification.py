@@ -4,9 +4,10 @@
 Classification/Clustering of t_scores
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 10.4.2022
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -52,22 +53,6 @@ gdal.UseExceptions()
 def fxnUw():
     warnings.warn("UserWarning arose", UserWarning)
     
-def Accuracy_metrics_calc(EMS, Floodpy):
-   
-    EMS=EMS>0
-    Floodpy=Floodpy>0    
-    cf=confusion_matrix(EMS.flatten(), Floodpy.flatten())
-    #Accuracy is sum of diagonal divided by total observations
-    accuracy  = np.trace(cf) / float(np.sum(cf))
-    precision = cf[1,1] / sum(cf[:,1]) # precision (i.e., user’s accuracy) 
-    recall    = cf[1,1] / sum(cf[1,:]) # recall (i.e., producer’s accuracy)
-    f1_score  = 2*precision*recall / (precision + recall)
-    Kappa_score =  cohen_kappa_score(EMS.flatten(), Floodpy.flatten())
-    
-    accuracy_dict={'Overall_accuracy':accuracy, 'Precision':precision, 'Recall':recall,'F1_score':f1_score,'Kappa_score':Kappa_score}
-    
-    return accuracy_dict
-
 def Kittler(data):
     """
     The reimplementation of Kittler-Illingworth Thresholding algorithm by Bob Pepin
@@ -99,6 +84,9 @@ def Kittler(data):
     return thres
 
 def Create_Regions(data, window_size=200):
+    '''
+    Creates blocks of a certain size from a given numpy array
+    '''
     shape1, shape2 = data.shape
     new_shape1=int(np.ceil(shape1/window_size)*window_size)
     new_shape2=int(np.ceil(shape2/window_size)*window_size)
@@ -110,7 +98,19 @@ def Create_Regions(data, window_size=200):
     return Blocks
 
 def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
-    
+    '''
+    Functionality that saves information numpy array to geotiff given a reference
+    geotiff.
+
+    Args:
+        nparray (np.array): information we want to save to geotiff.
+        reference_gdal_dataset (string): path of the reference geotiff file.
+        target_gdal_dataset (string): path of the output geotiff file.
+
+    Returns:
+        None.
+
+    '''
     # open the reference gdal layer and get its relevant properties
     raster_ds = gdal.Open(reference_gdal_dataset, gdal.GA_ReadOnly)   
     xSize = raster_ds.RasterXSize
@@ -182,29 +182,20 @@ def Calculation_bimodality_mask(t_score_dataset,
                                 bimodality_thres=0.555,
                                 segmentation_thres=0.5):
     '''
+    Calculation of the bimodality mask. Maybe i should consider to add an 
+    extra condition on the selected of bimodal tiles. I can compare the mean 
+    intensity value of the tile with the mean value of all intensity.
 
-    Parameters
-    ----------
-    t_score_filename : TYPE
-        DESCRIPTION.
-    min_window_size : TYPE, optional
-        DESCRIPTION. The default is 25.
-    max_window_size : TYPE, optional
-        DESCRIPTION. The default is 500.
-    step_window_size : TYPE, optional
-        DESCRIPTION. The default is 25.
-    bimodality_thres : TYPE, optional
-        DESCRIPTION. The default is 0.555.
-    segmentation_thres : TYPE, optional
-        DESCRIPTION. The default is 0.5.
+    Args:
+        t_score_dataset (np.array): the t-score dataset.
+        min_window_size (int, optional): min_window_size. Defaults to 25.
+        max_window_size (int, optional): max_window_size. Defaults to 500.
+        step_window_size (int, optional): step_window_size. Defaults to 50.
+        bimodality_thres (int, optional): bimodality_thres. Defaults to 0.555.
+        segmentation_thres (int, optional): segmentation_thres. Defaults to 0.5.
 
-    Returns
-    -------
-    bimodality_mask : TYPE
-        DESCRIPTION.
-        
-    Maybe i should consider to add an extra condition on the selected of bimodal tiles.
-    I can compare the mean intensity value of the tile with the mean value of all intensity
+    Returns:
+        None.
 
     '''
 
@@ -248,6 +239,9 @@ def Calculation_bimodality_mask(t_score_dataset,
     return bimodality_mask.astype(np.bool_)
 
 def Is_similar_non_parametric(cand_values, ref_values, p_value=0.05, norm_flag=False):
+    '''
+    Similarity check using non-parametric test (Kolmogorov-Smirnov) 
+    '''
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         fxnUw()
@@ -275,7 +269,9 @@ def Is_similar_non_parametric(cand_values, ref_values, p_value=0.05, norm_flag=F
         
 
 def Is_distr_water(values, water_mean_float, std_water_float, threshold):
-    
+    '''
+    Similarity check using Jensen–Shannon divergence metric
+    '''
     
     try:
         water_mean=water_mean_float
@@ -299,7 +295,10 @@ def Is_distr_water(values, water_mean_float, std_water_float, threshold):
     return result
 
 def Is_darkest_than(values, water_mean_float, std_water_float):
-    
+    '''
+    Checking if provided values are significatly lower that water distribution
+    using False discovery rate.
+    '''
     water_mean=water_mean_float
     water_std=std_water_float 
         
@@ -322,7 +321,10 @@ def Is_darkest_than(values, water_mean_float, std_water_float):
     return result
 
 def Is_brighter_than(values, water_mean_float, std_water_float):
-    
+    '''
+    Checking if provided values are significatly bigger that water distribution
+    using False discovery rate.
+    '''
     water_mean=water_mean_float
     water_std=std_water_float 
         
@@ -361,7 +363,9 @@ def thresholding_pixel(row,
                        thresholding_method,
                        p_value,
                        flood_percentage_threshold):
-    
+    '''
+    Adaptive local thresholding fucntionality at a single pixel
+    '''
     ##################################
     #=======================================================
     # 1. For a range of window sizes calculate Bimodality index values.
@@ -562,7 +566,9 @@ def Adaptive_local_thresholdin_parallel(t_score_dataset_temp,
                                         num_cores,
                                         bimodality_thres,
                                         flood_percentage_threshold):
-
+    '''
+    Parallelized Adaptive local thresholding fucntionality.
+    '''
     # adaptive thresholding
     rows=Flood_global_binary_temp.shape[0]
     columns=Flood_global_binary_temp.shape[1]
@@ -598,6 +604,11 @@ def Adaptive_local_thresholdin_parallel(t_score_dataset_temp,
     return probability_map
 
 def morphological_postprocessing(Flood_map, minimum_mapping_unit_area_m2=1000):
+    '''
+    Morphological processing based on provided minimum mapping unit. Procedure
+    consists of steps (a) remove_small_holes (b) diameter_opening 
+    and (c) remove_small_objects
+    '''
     
     # Remove small objects based on given minimum mapping unit area
     #Flood_local_map_RG_closing = morphology.closing(Flood_local_map_RG, morphology.square(3))
@@ -619,6 +630,9 @@ def morphological_postprocessing(Flood_map, minimum_mapping_unit_area_m2=1000):
     return Flood_map_temp3
 
 def RG_processing(t_score_dataset, Flood_map, RG_weight, search_window_size ):
+    '''
+    Region growing processing functionality
+    '''
     # get updated information of floodwater based on local adaptive thresholding
     floodwater_pixels=t_score_dataset[Flood_map]
     # discard pixel with nan values
@@ -642,6 +656,9 @@ def Get_flood_map(Preprocessing_dir,
                   num_cores,
                   fast_flag = True,
                   minimum_mapping_unit_area_m2 = 1000): # 4000 m2 equals 4 stremata
+    '''
+    The main funcionality that detected floodwater from t-score change image.
+    '''
 
     processing_parms={'thresholding_method':'Otsu',
                       'p_value': 0.05,

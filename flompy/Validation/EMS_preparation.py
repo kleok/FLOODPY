@@ -4,9 +4,10 @@
 Rasterize the EMS vector data based on floodpy results
 
 Copyright (C) 2022 by K.Karamvasis
-
 Email: karamvasis_k@hotmail.com
-Last edit: 01.9.2022
+
+Authors: Karamvasis Kleanthis
+Last edit: 13.4.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -29,6 +30,10 @@ from osgeo import gdal
 from osgeo import ogr
 
 def rasterize(vector_layer, raster_layer, target_layer, field_name):
+    '''
+    Rasterize functionality
+
+    '''
     # open the raster layer and get its relevant properties
     raster_ds = gdal.Open(raster_layer, gdal.GA_ReadOnly)
     xSize = raster_ds.RasterXSize
