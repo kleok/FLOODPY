@@ -21,4 +21,5 @@ install:
   - conda activate flompy
   #- python -m pip install .
 
-script: pytest
+script: 
+  - python tests/dummyTest.py
