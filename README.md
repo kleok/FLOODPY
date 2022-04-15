@@ -103,7 +103,7 @@ Algorithms implemented in the software are described in detail at our publicatio
 Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapping Using Sentinel-1 Intensity Time Series. Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
 
 ## 4. Contact us
-Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome!
+Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome! :heart:
 
 FLOMPY Team: [Kleanthis Karamvasis](https://github.com/kleok), [Alekos Falagas](https://github.com/alekfal), [Olympia Gounari](https://github.com/Olyna), [Tsironisbi](https://github.com/tsironisbi), [Fragkiskos Dimos](https://github.com/fdimos), [Panagiotis Sismanidis](https://github.com/pansism)
 
