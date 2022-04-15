@@ -15,8 +15,7 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION dep1 dep2 ...
-  - conda create --name flompy --file requirements.txt
+  - conda create --name flompy python=$TRAVIS_PYTHON_VERSION --file requirements.txt
   - conda activate flompy
   #- python -m pip install .
 
