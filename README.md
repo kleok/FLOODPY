@@ -105,5 +105,5 @@ Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapp
 ## 4. Contact us
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome! :heart:
 
-FLOMPY Team: [Kleanthis Karamvasis](https://github.com/kleok), [Alekos Falagas](https://github.com/alekfal), [Olympia Gounari](https://github.com/Olyna), [Tsironisbi](https://github.com/tsironisbi), [Fragkiskos Dimos](https://github.com/fdimos), [Panagiotis Sismanidis](https://github.com/pansism)
+FLOMPY Team: [Kleanthis Karamvasis](https://github.com/kleok), [Ioanna Zotou](https://www.linkedin.com/in/ioanna-zotou-614b7799/), [Alekos Falagas](https://github.com/alekfal), [Olympia Gounari](https://github.com/Olyna), [Vasileios Tsironis](https://github.com/tsironisbi), [Fragkiskos Dimos](https://github.com/fdimos), [Panagiotis Sismanidis](https://github.com/pansism), [Pavlos Alexantonakis](https://www.linkedin.com/in/pavlos-alexantonakis)
 
