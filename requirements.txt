@@ -197,7 +197,7 @@ re2=2021.11.01=h9c3ff4c_0
 readline=8.1=h46c0cb4_0
 requests=2.27.1=pyhd8ed1ab_0
 requests-oauthlib=1.3.1=pyhd8ed1ab_0
-richdem=2.3.0=py39hc5a795b_0
+richdem=2.3.0
 rsa=4.8=pyhd8ed1ab_0
 rtree=1.0.0=py39hb102c33_1
 scikit-image=0.19.2=py39hde0f152_0
