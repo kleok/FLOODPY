@@ -3,11 +3,11 @@
 """
 Downloads Sentinel-1 imagery
 
-Copyright (C) 2022 by K.Karamvasis
+Copyright (C) 2021-2022 by K.Karamvasis
 Email: karamvasis_k@hotmail.com
 
 Authors: Karamvasis Kleanthis
-Last edit: 13.4.2022
+Last edit: 6.6.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
