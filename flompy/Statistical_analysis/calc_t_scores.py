@@ -110,7 +110,7 @@ def Calc_t_scores(projectfolder,
     # get flood_date
     flood_S1_image_filename = os.path.join(S1_GRD_dir,'flood_S1_filename.csv')
     assert os.path.exists(flood_S1_image_filename)
-    flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).iloc[0][0]
+    flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).loc['title'].values[0]
     flood_date = flood_S1_image[17:32]
 
     

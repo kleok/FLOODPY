@@ -275,8 +275,8 @@ class FloodwaterEstimation:
                           End_time = self.End_time,
                           relOrbit = self.relOrbit,
                           flood_datetime = self.flood_datetime,
-                          time_sleep=100, # 1 minute
-                          max_tries=50)
+                          time_sleep=120, # 1 minute
+                          max_tries=10)
         
         download_orbits(snap_dir = self.snap_dir,
                 temp_export_dir = self.temp_export_dir,
