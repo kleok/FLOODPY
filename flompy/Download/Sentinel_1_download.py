@@ -216,6 +216,7 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
             products_df = api.to_dataframe(products)
             # get flood_date image
             flood_S1_image = get_flood_image(products_df,flood_datetime)
+            flood_S1_image.to_csv(os.path.join(S1_GRD_dir,'flood_S1_filename.csv'))
 
             # Filter only images that matches the flood image orbit/slice_number
             products_df=products_df[products_df['orbitdirection']==flood_S1_image['orbitdirection'].upper()]

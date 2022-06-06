@@ -335,7 +335,7 @@ def Run_Preprocessing(gpt_exe,
     flood_S1_image_filename = os.path.join(S1_GRD_dir,'flood_S1_filename.csv')
     assert os.path.exists(flood_S1_image_filename)
     
-    flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).iloc[0][0]
+    flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).loc['title'].values[0]
     
     if not flood_S1_image.endswith('zip'):
         flood_S1_image = flood_S1_image.split('.')[0]+'.zip'
