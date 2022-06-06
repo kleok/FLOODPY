@@ -3,9 +3,9 @@
 """
 The routine application for floodwater detection using Sentinel-1 GRD products
 
-Copyright (C) 2021 by K.Karamvasis
+Copyright (C) 2021-2022 by K.Karamvasis
 Email: karamvasis_k@hotmail.com
-Last edit: 10.4.2022
+Last edit: 6.6.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
     FLOMPY is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ from Download.Sentinel_1_download import Download_S1_data
 from Download.Download_orbits import download_orbits
 from Download.Download_ERA5 import Get_ERA5_data_time_period
 from Preprocessing_S1_data.Classify_S1_images import Get_images_for_baseline_stack
-from Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing, get_flood_image
+from Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
 from Statistical_analysis.Generate_aux import get_S1_aux
 from Statistical_analysis.calc_t_scores import Calc_t_scores
 from Floodwater_classification.Classification import Get_flood_map
@@ -40,7 +40,7 @@ from Floodwater_classification.Classification import Get_flood_map
 # from Validation.EMS_preparation import rasterize
 
 print('FLOod Mapping PYthon toolbox (FLOMPY) v.1.0')
-print('Copyright (c) 2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
+print('Copyright (c) 2021-2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
 print('Remote Sensing Laboratory of National Technical University of Athens')
 print('-----------------------------------------------------------------')
 print('License: GNU GPL v3+')
@@ -58,15 +58,11 @@ STEP_LIST = [
 STEP_HELP = """Command line options for steps processing with \n names are chosen from the following list:
 
 {}
-{}
-{}
-{}
-{}
 
 In order to use either --start or --dostep, it is necessary that a
 previous run was done using one of the steps options to process at least
 through the step immediately preceding the starting step of the current run.
-""".format(STEP_LIST[0], STEP_LIST[1], STEP_LIST[2], STEP_LIST[3], STEP_LIST[4])
+""".format("\n".join(STEP_LIST))
 
 ##########################################################################
 EXAMPLE = """example:
@@ -300,8 +296,8 @@ class FloodwaterEstimation:
                                       days_back=5,
                                       rain_thres=self.rain_thres)
         
-        get_flood_image(self.S1_GRD_dir, 
-                        self.flood_datetime)
+#        get_flood_image(self.S1_GRD_dir, 
+#                        self.flood_datetime)
         
         Run_Preprocessing(gpt_exe = self.gptcommand,
                   graph_dir = self.graph_dir,
