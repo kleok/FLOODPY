@@ -5,7 +5,7 @@ The routine application for floodwater detection using Sentinel-1 GRD products
 
 Copyright (C) 2021-2022 by K.Karamvasis
 Email: karamvasis_k@hotmail.com
-Last edit: 6.6.2022
+Last edit: 7.6.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
     FLOMPY is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ from utils.read_template_file import read_template
 from utils.read_AOI import Coords_to_geojson, Input_vector_to_geojson
 from Download.Sentinel_1_download import Download_S1_data
 from Download.Download_orbits import download_orbits
-from Download.Download_ERA5 import Get_ERA5_data_time_period
+from Download.Download_ERA5_precipitation import Get_ERA5_data
 from Preprocessing_S1_data.Classify_S1_images import Get_images_for_baseline_stack
 from Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
 from Statistical_analysis.Generate_aux import get_S1_aux
@@ -257,12 +257,13 @@ class FloodwaterEstimation:
     
 
     def run_download_Precipitation_data(self, step_name):
-        
-        Get_ERA5_data_time_period(['total_precipitation',],
-                                  self.Start_time,
-                                  self.End_time,
-                                  self.bbox,
-                                  self.ERA5_dir)
+
+        Get_ERA5_data(ERA5_variables = ['total_precipitation',],
+                      start_datetime = self.start_datetime,
+                      end_datetime = self.end_datetime,
+                      bbox = self.bbox,
+                      ERA5_dir = self.ERA5_dir )
+
         print("Precipitation data can be found at {}".format(self.ERA5_dir))
         return 0    
     
@@ -296,14 +297,11 @@ class FloodwaterEstimation:
                                       days_back=5,
                                       rain_thres=self.rain_thres)
         
-#        get_flood_image(self.S1_GRD_dir, 
-#                        self.flood_datetime)
-        
         Run_Preprocessing(gpt_exe = self.gptcommand,
-                  graph_dir = self.graph_dir,
-                  S1_GRD_dir = self.S1_GRD_dir,
-                  geojson_S1 = self.geojson_S1,
-                  Preprocessing_dir = self.Preprocessing_dir) 
+                          graph_dir = self.graph_dir,
+                          S1_GRD_dir = self.S1_GRD_dir,
+                          geojson_S1 = self.geojson_S1,
+                          Preprocessing_dir = self.Preprocessing_dir) 
         
         return 0 
 
