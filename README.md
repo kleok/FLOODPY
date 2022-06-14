@@ -38,7 +38,7 @@ git clone https://github.com/kleok/FLOMPY.git
 
 on GNU/Linux, append to .bashrc file:
 ```
-export FLOMPY_HOME=~/FLOMPY
+export FLOMPY_HOME=~/FLOMPY/flompy
 export PYTHONPATH=${PYTHONPATH}:${FLOMPY_HOME}
 export PATH=${PATH}:${FLOMPY_HOME}
 ```
