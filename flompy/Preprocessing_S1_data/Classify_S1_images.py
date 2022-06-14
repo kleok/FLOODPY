@@ -93,6 +93,13 @@ def Get_images_for_baseline_stack(ERA5_dir,
     
     Good_images_for_baseline['baseline'].loc[flood_datetime:]=False
     
+    flood_S1_image_filename = os.path.join(S1_GRD_dir,'flood_S1_filename.csv')
+    assert os.path.exists(flood_S1_image_filename)
+    flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).loc['title'].values[0]
+    flood_S1_datetime = pd.Timestamp(flood_S1_image[17:32])
+    
+    Good_images_for_baseline['baseline'].loc[flood_S1_datetime:]=False
+
     if np.all(S1_df.index==Good_images_for_baseline.index)==True:
         Good_images_for_baseline['S1_GRD']=S1_df['S1_GRD']
     Good_images_for_baseline.to_csv(os.path.join(S1_GRD_dir,'baseline_images.csv'))
