@@ -38,51 +38,56 @@ import numpy as np
 import pyproj
 import pandas as pd
 
-def check_downloaded_data(S1_GRD_dir,product_df):
+def check_downloaded_data(S1_GRD_dir,product_df_suffle):
     '''
-    Checks the progress of downloading procedure
+    Based on already downloaded Sentinel-1 products in S1_GRD_dir we return 
+    only the products that we still need to download.
+    
+    Improvements: Check the size and the integrity of each downloaded product.
+    
+    Args:
+        S1_GRD_dir (string): The directory that the Sentinel-1 products will be
+                             downloaded.
+        product_df_suffle (pandas.DataFrame): The results from sentinesat 
+                                                request.
+
+    Returns:
+        product_df_suffle (pandas.DataFrame): The Sentinel-1 products that 
+                                              will be downloaded
+        download_flag (boolean): True if we have products to download.
+        
     '''
     
-    delete_flag=False
     download_flag=False
     
     # checking if all the products are already downloaded!
     already_downloaded_data=glob.glob(os.path.join(S1_GRD_dir,'S1*.zip'))
-    already_downloaded_data_parent_dir=glob.glob(os.path.join(os.path.dirname(S1_GRD_dir),'S1*.zip'))
     
-    products_to_be_download=sorted([product.split('.')[0] for product in product_df['filename'].tolist()])
-    
+    products_to_be_download=sorted([product.split('.')[0] for product in product_df_suffle['filename'].tolist()])
     products_already_download=sorted([os.path.basename(product).split('.')[0] for product in already_downloaded_data])
-    
-    products_already_download_parent_dir=sorted([os.path.basename(product).split('.')[0] for product in already_downloaded_data_parent_dir])
-    
-    if len(products_already_download)>0 :        # Some downloaded products exist
-        for product in products_already_download:
-            if product not in products_to_be_download:
-                delete_flag = True
-                # print( "{} product dont meet the query parameters. Consider to manualy delete them.".format(product))
-            else:
-                product_df.drop(product_df[product_df['title']==product].index, inplace=True)
-    
-    if len(already_downloaded_data_parent_dir)>0:
-        for index, product in enumerate(products_already_download_parent_dir):
-            if product in products_to_be_download:
-                # discared already downloaded product
-                product_df.drop(product_df[product_df['title']==product].index, inplace=True)
-                
-                # moving downloaded file to the right directory
-                old_filename=os.path.join(os.path.dirname(S1_GRD_dir),product+'.zip')
-                new_filename=os.path.join(S1_GRD_dir,product+'.zip')
-                shutil.move(old_filename, new_filename)
-    
-    if len(product_df)>0:
+
+    for product in products_to_be_download:
+        if product not in products_already_download:
+            download_flag = True
+        else:
+            product_df_suffle.drop(product_df_suffle[product_df_suffle['title']==product].index, inplace=True)
+            
+    if len(product_df_suffle)>0:
        download_flag = True 
-        
-    return product_df, delete_flag, download_flag
+    
+    return product_df_suffle, download_flag   
+
 
 def download_products(product_to_be_downloaded_df, api, S1_GRD_dir):
     '''
     Download functionality of Sentinel-1 products
+    
+    Args:
+        product_to_be_downloaded_df (pandas.DataFrame): DESCRIPTION.
+        api (sentinelsat.sentinel.SentinelAPI ): The api sentinelsat request.
+        S1_GRD_dir (string): The directory that the Sentinel-1 products will be
+                             downloaded.
+
     '''
     try:
         os.chdir(S1_GRD_dir)
@@ -91,17 +96,16 @@ def download_products(product_to_be_downloaded_df, api, S1_GRD_dir):
         for product_id in product_to_be_downloaded_df.index:
             product_info = api.get_product_odata(product_id)
             if product_info['Online']:
-                print('Acquisition {} seems to be online. Starting downloading.'.format(product_id))
+                print('Acquisition {} seems to be online. Starting downloading.'.format(product_info['title']))
                 api.download(product_id)
             else:
-                print('Acquisition {} is not online.'.format(product_id))
+                print('Acquisition {} is not online.'.format(product_info['title']))
                 api.download(product_id)    
     except:
         print ("[I'm sorry] the number of requests to activate off-line products has been reached in this account.")
         print ("[I'm sorry] the number of requests to download this particular product has been reached its limit.")
-        print ("We will try again with other provided account")
+        print ("We will try again ....")
 
-    return 0
 
 def get_flood_image(S1_df,flood_datetime):
     '''
@@ -112,28 +116,31 @@ def get_flood_image(S1_df,flood_datetime):
         flood_datetime (datetime object): the user-defined time point of the flood.
 
     Returns:
-        string: the title of the flood image
-
+        pandas.core.series.Series: the metadata of the considered flood image
     '''
+    # Get the datime information from all S1 products
     S1_df.reset_index(inplace=True)
-    
     S1_temp=S1_df.copy()
     S1_temp.index=pd.to_datetime(S1_temp['beginposition'])
     
+    # Find the S1 product that has the smallest time difference from the 
+    # use-defined flood event datetime.
     S1_flood_datetime_diffs=(S1_temp.index-flood_datetime).tolist()
-
-
     S1_flood_diffs = [S1_flood_datetime_diff.total_seconds() for S1_flood_datetime_diff in S1_flood_datetime_diffs]
     
     if np.all(np.array(S1_flood_diffs)<0):
+        print ("\n At your AOI, 0 (zero) Sentinel-1 images have been acquired")
+        print ("from your specified [Flood_datetime] till [Flood_datetime] + [after_flood_days]\n")
+        print ("Consider to change your [Flood_datetime] or [after_flood_days] configuration parameters\n")
         day_diff=np.max(np.array(S1_flood_diffs))
     else:
         day_diff = min([i for i in S1_flood_diffs if i >= 0])
    
     S1_flood_index = S1_flood_diffs.index(day_diff)
     flood_S1_image = S1_df['filename'].iloc[S1_flood_index]
-    print('{} acquisition \n was acquired after {} hours from the predefined flood event'.format(flood_S1_image,
-                                                                                          round(day_diff/3600,2)))
+    print('{} acquisition \n was acquired after {} hours from the user-defined datetime of flood event {}'.format(flood_S1_image,
+                                                                                                                  round(day_diff/3600,2),
+                                                                                                                  flood_datetime))
     
     return S1_df.iloc[S1_flood_index]
 
@@ -148,11 +155,14 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
                 max_tries=50):
     '''
     This function is the main functionaliry for downloading Sentinel-1 GRD data.
-    It uses multiple scihub accounts to speed up the LTA retrieval of offline 
+    It support multiple scihub accounts to speed up the LTA retrieval of offline 
     products. It has been tested for products released after May 2017
 
+    Improvements:Ensure that slicenumber of slcs products is the same. In some
+                 cases different slicenumber messes up the geocoding procedure.
+    
     Args:
-        scihub_accounts (dict): dictionary with keys (scihub_username) and items (scihub_passwords).
+        scihub_accounts (dict): dict keys (scihub_username) and items (scihub_passwords).
         S1_GRD_dir (string): directory that Sentinel-1 are stored.
         geojson_S1 (string): geojson vector file of the AOI.
         Start_time (string): Starting Date (YYYYMMDD) e.g.  20200924
@@ -166,21 +176,13 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
         int: zero is downloading is successful.
 
     '''
-    
-    
-
-    
-    # Create download directory
-    if not os.path.exists(S1_GRD_dir): os.mkdir(S1_GRD_dir)
 
     download_try_count=0
     download_flag=True
     
     while download_try_count<max_tries and download_flag:
         for username in scihub_accounts:
-            print ('username: {}'.format(username))
             # connect to the API
-            #
             # search by polygon, time, and Hub query keywords
             footprint = geojson_to_wkt(read_geojson(geojson_S1))
             
@@ -214,15 +216,20 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
                 
             # convert to dataframe for easier manipulation
             products_df = api.to_dataframe(products)
-            # get flood_date image
+            
+            # get information of S1 image that will be used a flood image
             flood_S1_image = get_flood_image(products_df,flood_datetime)
             flood_S1_image.to_csv(os.path.join(S1_GRD_dir,'flood_S1_filename.csv'))
-
-            # Filter only images that matches the flood image orbit/slice_number
+            
+            # select only the images that share the same relative orbit with
+            # selected flood image
             products_df=products_df[products_df['orbitdirection']==flood_S1_image['orbitdirection'].upper()]
             relOrbit = flood_S1_image['relativeorbitnumber']
             products_df=products_df[products_df['relativeorbitnumber']==relOrbit]
-            products_df=products_df[products_df['slicenumber']==flood_S1_image['slicenumber']]
+            
+            
+            # Filter only images that matches the flood image orbit/slice_number
+            #products_df=products_df[products_df['slicenumber']==flood_S1_image['slicenumber']]
 
             # discard the images with the same datetime and different ingestion date
             products_df=products_df.sort_values("ingestiondate")
@@ -234,14 +241,17 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
             
             product_df_suffle=product_df_clean.sample(frac=1)
             
-            product_to_be_downloaded_df, delete_flag, download_flag = check_downloaded_data(S1_GRD_dir,product_df_suffle)
+            [product_to_be_downloaded_df,
+             download_flag] = check_downloaded_data(S1_GRD_dir,product_df_suffle)
             
             if download_flag:
-                download_products(product_to_be_downloaded_df, api, S1_GRD_dir)                                 
-          
+                download_products(product_to_be_downloaded_df, api, S1_GRD_dir)       
+            else:
+                break         
+                                
         download_try_count+=1
         print ("This is download try # {}.".format(download_try_count))
-        print (" We will try to download the requested products in {} minutes.".format(round(time_sleep/60)))
-        time.sleep(time_sleep) # sleeping for one hour
+        print (" We will try to download the requested products in {:02.0f} minutes.".format(time_sleep/60))
+        time.sleep(time_sleep)
 
     return 0

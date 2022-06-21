@@ -144,7 +144,7 @@ def get_S1_aux (Preprocessed_dir):
     lat_list = list(lat_nparray[np.nonzero(lat_nparray)])
     
     UTM_CRS_EPSG = WGS84_to_UTM(lon_list, lat_list)
-    
+    del lon_nparray, lon_list, lat_nparray, lat_list
     #############################
     # B. Calculate slopes from DEM and threshold (<12 degrees) to get low slopes [slope_mask]
     #############################
@@ -154,15 +154,15 @@ def get_S1_aux (Preprocessed_dir):
     reproject(master_tiff_utm, master_tiff_wgs84,UTM_CRS_EPSG )
     
     # write dem_utm
-    dem_nparray=gdal.Open(master_tiff_utm).ReadAsArray()[2,:,:] # order of writing
+    dem_nparray=gdal.Open(master_tiff_utm).ReadAsArray()[1,:,:] # order of writing
     dem_nparray[dem_nparray==-32768]=np.nan # nan values
     dem_utm_dataset=os.path.join(os.path.dirname(master_tiff_utm), 'dem_utm.tif')
     nparray_to_tiff(dem_nparray, master_tiff_utm, dem_utm_dataset)
+    del dem_nparray
     
     # calculate aspect and slope at UTM projection
     slope_outname=os.path.join(os.path.dirname(master_tiff_utm),'dem_slope_utm.tif')
     aspect_outname=os.path.join(os.path.dirname(master_tiff_utm),'dem_aspect_utm.tif')
-    
     generate_slope_aspect(dem_utm_dataset, slope_outname, aspect_outname)
     
     # reproject dem,slope,aspect UTM to WGS84

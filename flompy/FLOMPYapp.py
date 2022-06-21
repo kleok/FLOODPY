@@ -39,7 +39,7 @@ from Floodwater_classification.Classification import Get_flood_map
 # from Validation.Validation import Accuracy_metrics_calc
 # from Validation.EMS_preparation import rasterize
 
-print('FLOod Mapping PYthon toolbox (FLOMPY) v.1.0')
+print('FLOod Mapping PYthon toolbox')
 print('Copyright (c) 2021-2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
 print('Remote Sensing Laboratory of National Technical University of Athens')
 print('-----------------------------------------------------------------')
@@ -75,10 +75,18 @@ EXAMPLE = """example:
   FLOMPYapp.py LPS2022.cfg --end download_S2_data    #end after step 'download_S2_data'
 """
 ##########################################################################
-REFERENCE = """reference:
-     Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for 
+REFERENCE = """
+     References:
+         
+     Karamvasis K., Karathanassi V. FLOMPY: An Open-Source Toolbox for 
      Floodwater Mapping Using Sentinel-1 Intensity Time Series. 
      Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
+     
+     Gounari 0., Falagas A., Karamvasis K., Tsironis V., Karathanassi V.,
+     Karantzalos K.: Floodwater Mapping & Extraction of Flood-Affected 
+     Agricultural Fields. Living Planet Symposium Bonn 23-27 May 2022.      
+     https://drive.google.com/file/d/1HiGkep3wx45gAQT6Kq34CdECMpQc8GUV/view?usp=sharing
+     
 """
 
 def create_parser():
@@ -183,55 +191,34 @@ class FloodwaterEstimation:
            3) creates directory structure
         
         """
+    
+        #-- Reading configuration parameters
+        
         template_file = os.path.join(self.cwd, self.customTemplateFile)
         self.template_dict=read_template(template_file)
         [print(key,':',value) for key, value in self.template_dict.items()]
         
-        self.credentials    = {self.template_dict['scihub_username']:self.template_dict['scihub_password']}
+        # Project Definition
         self.projectname    = self.template_dict['Projectname']
         self.projectfolder  = self.template_dict['projectfolder']
         self.scriptsfolder  = self.template_dict['src_dir']
-        self.flood_datetime = datetime.datetime.strptime(self.template_dict['Flood_datetime'],
-                                                         '%Y%m%dT%H%M%S')
-        self.baseline_days  = int(self.template_dict['before_flood_days'])
-        self.after_flood_days = int(self.template_dict['after_flood_days'])
-        self.relOrbit       = self.template_dict['relOrbit']
-        self.S2tileid       = self.template_dict['S2_TILE']
-        self.rain_thres     = float(self.template_dict['rain_thres'])
-        self.min_map_area   = float(self.template_dict['minimum_mapping_unit_area_m2'])
         self.gptcommand     = self.template_dict['GPTBIN_PATH']
         self.snap_dir       = self.template_dict['snap_dir']
-        self.CPU            = int(self.template_dict['CPU'])
-        self.RAM            = self.template_dict['RAM']
+        
+        # Flood event temporal information
+        self.flood_datetime = datetime.datetime.strptime(self.template_dict['Flood_datetime'],'%Y%m%dT%H%M%S')
+        self.baseline_days  = int(self.template_dict['before_flood_days'])
+        self.after_flood_days = int(self.template_dict['after_flood_days'])
+        
+        # Flood event spatial information
         self.AOI_File       = self.template_dict['AOI_File']
         self.LATMIN         = float(self.template_dict['LATMIN'])
         self.LONMIN         = float(self.template_dict['LONMIN'])
         self.LATMAX         = float(self.template_dict['LATMAX'])
         self.LONMAX         = float(self.template_dict['LONMAX'])
         
-        
-        
-        if self.AOI_File.upper() == "NONE":
-            self.bbox           = [self.LONMIN,
-                                   self.LATMIN,
-                                   self.LONMAX,
-                                   self.LATMAX,] 
-    
-            self.geojson_S1     = Coords_to_geojson(self.bbox,
-                                                    self.projectfolder,
-                                                    '{}_AOI.geojson'.format(self.projectname))
-        else:
-            self.bbox, self.geojson_S1 = Input_vector_to_geojson(self.AOI_File,
-                                                                 self.projectfolder,
-                                                                 '{}_AOI.geojson'.format(self.projectname))
-        
-        self.start_datetime = self.flood_datetime-datetime.timedelta(days=self.baseline_days)
-        self.end_datetime = self.flood_datetime+datetime.timedelta(days=self.after_flood_days)                               
-        self.Start_time=self.start_datetime.strftime("%Y%m%d")
-        self.End_time=self.end_datetime.strftime("%Y%m%d")
 
-
-        #--- Creating directory structure
+        #-- Creating directory structure
         if not os.path.exists(self.snap_dir): os.makedirs(self.snap_dir)
         if not os.path.exists(self.projectfolder): os.mkdir(self.projectfolder)
         self.graph_dir = os.path.join(self.scriptsfolder,'Preprocessing_S1_data/Graphs')
@@ -252,6 +239,43 @@ class FloodwaterEstimation:
                             self.temp_export_dir,]
         
         [os.mkdir(directory) for directory in self.directories if not os.path.exists(directory)]
+          
+        
+        if self.AOI_File.upper() == "NONE":
+            self.bbox           = [self.LONMIN,
+                                   self.LATMIN,
+                                   self.LONMAX,
+                                   self.LATMAX,] 
+    
+            self.geojson_S1     = Coords_to_geojson(self.bbox,
+                                                    self.projectfolder,
+                                                    '{}_AOI.geojson'.format(self.projectname))
+        else:
+            self.bbox, self.geojson_S1 = Input_vector_to_geojson(self.AOI_File,
+                                                                 self.projectfolder,
+                                                                 '{}_AOI.geojson'.format(self.projectname))
+        
+        #Precipitation information
+        self.days_back     = int(self.template_dict['days_back'])
+        self.rain_thres     = float(self.template_dict['accumulated_precipitation_threshold'])
+        
+        # Data access and processing
+        self.relOrbit       = self.template_dict['relOrbit']
+        self.S2tileid       = self.template_dict['S2_TILE']
+        self.min_map_area   = float(self.template_dict['minimum_mapping_unit_area_m2'])
+        self.CPU            = int(self.template_dict['CPU'])
+        self.RAM            = self.template_dict['RAM']
+        self.credentials    = {self.template_dict['scihub_username']:self.template_dict['scihub_password']}
+        
+        
+        # Define start and end time of analysis
+        self.start_datetime = self.flood_datetime-datetime.timedelta(days=self.baseline_days)
+        self.end_datetime = self.flood_datetime+datetime.timedelta(days=self.after_flood_days)                               
+        self.Start_time=self.start_datetime.strftime("%Y%m%d")
+        self.End_time=self.end_datetime.strftime("%Y%m%d")
+
+
+
 
         return 0
     
@@ -276,8 +300,8 @@ class FloodwaterEstimation:
                           End_time = self.End_time,
                           relOrbit = self.relOrbit,
                           flood_datetime = self.flood_datetime,
-                          time_sleep=120, # 1 minute
-                          max_tries=10)
+                          time_sleep=600, # 1 minute
+                          max_tries=100)
         
         download_orbits(snap_dir = self.snap_dir,
                 temp_export_dir = self.temp_export_dir,
@@ -289,15 +313,17 @@ class FloodwaterEstimation:
     
     def run_preprocessing_S1_data(self, step_name):
         
-        Get_images_for_baseline_stack(ERA5_dir = self.ERA5_dir,
+        Get_images_for_baseline_stack(projectfolder = self.projectfolder,
+                                      ERA5_dir = self.ERA5_dir,
                                       S1_GRD_dir = self.S1_GRD_dir,
                                       Start_time = self.Start_time,
                                       End_time = self.End_time,
                                       flood_datetime = self.flood_datetime,
-                                      days_back=5,
+                                      days_back = self.days_back,
                                       rain_thres=self.rain_thres)
         
-        Run_Preprocessing(gpt_exe = self.gptcommand,
+        Run_Preprocessing(projectfolder = self.projectfolder,
+                          gpt_exe = self.gptcommand,
                           graph_dir = self.graph_dir,
                           S1_GRD_dir = self.S1_GRD_dir,
                           geojson_S1 = self.geojson_S1,
