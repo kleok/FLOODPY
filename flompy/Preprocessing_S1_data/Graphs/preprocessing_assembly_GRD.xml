@@ -4,7 +4,7 @@
     <operator>Read</operator>
     <sources/>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <file>$filein</file>
+      <file>$filein1</file>
     </parameters>
   </node>
   <node id="Apply-Orbit-File">
@@ -21,11 +21,12 @@
   <node id="Subset">
     <operator>Subset</operator>
     <sources>
-      <sourceProduct refid="Apply-Orbit-File"/>
+      <sourceProduct refid="SliceAssembly"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands>Amplitude_VH,Intensity_VH,Amplitude_VV,Intensity_VV</sourceBands>
-      <region>0,0,25753,16698</region>
+      <region>0,0,0,0</region>
+      <referenceBand/>
       <geoRegion>$polygon</geoRegion>
       <subSamplingX>1</subSamplingX>
       <subSamplingY>1</subSamplingY>
@@ -47,7 +48,7 @@
       <outputImageScaleInDb>false</outputImageScaleInDb>
       <createGammaBand>false</createGammaBand>
       <createBetaBand>false</createBetaBand>
-      <selectedPolarisations>VV,VH</selectedPolarisations>
+      <selectedPolarisations>VH,VV</selectedPolarisations>
       <outputSigmaBand>true</outputSigmaBand>
       <outputGammaBand>false</outputGammaBand>
       <outputBetaBand>false</outputBetaBand>
@@ -85,7 +86,7 @@
       <saveLocalIncidenceAngle>true</saveLocalIncidenceAngle>
       <saveProjectedLocalIncidenceAngle>false</saveProjectedLocalIncidenceAngle>
       <saveSelectedSourceBand>true</saveSelectedSourceBand>
-      <outputComplex>false</outputComplex>
+      <saveLayoverShadowMask>false</saveLayoverShadowMask>
       <applyRadiometricNormalization>false</applyRadiometricNormalization>
       <saveSigmaNought>false</saveSigmaNought>
       <saveGammaNought>false</saveGammaNought>
@@ -96,6 +97,34 @@
       <externalAuxFile/>
     </parameters>
   </node>
+  <node id="Read(2)">
+    <operator>Read</operator>
+    <sources/>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <file>$filein2</file>
+    </parameters>
+  </node>
+  <node id="Apply-Orbit-File(2)">
+    <operator>Apply-Orbit-File</operator>
+    <sources>
+      <sourceProduct refid="Read(2)"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <orbitType>Sentinel Precise (Auto Download)</orbitType>
+      <polyDegree>3</polyDegree>
+      <continueOnFail>false</continueOnFail>
+    </parameters>
+  </node>
+  <node id="SliceAssembly">
+    <operator>SliceAssembly</operator>
+    <sources>
+      <sourceProduct refid="Apply-Orbit-File"/>
+      <sourceProduct.1 refid="Apply-Orbit-File(2)"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <selectedPolarisations>VH,VV</selectedPolarisations>
+    </parameters>
+  </node>
   <node id="Write">
     <operator>Write</operator>
     <sources>
@@ -103,7 +132,37 @@
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <file>$fileout</file>
-      <formatName>GeoTIFF</formatName>
+      <formatName>HDF5</formatName>
     </parameters>
   </node>
+  <applicationData id="Presentation">
+    <Description/>
+    <node id="Read">
+      <displayPosition x="13.0" y="121.0"/>
+    </node>
+    <node id="Apply-Orbit-File">
+      <displayPosition x="91.0" y="133.0"/>
+    </node>
+    <node id="Subset">
+      <displayPosition x="316.0" y="186.0"/>
+    </node>
+    <node id="Calibration">
+      <displayPosition x="380.0" y="230.0"/>
+    </node>
+    <node id="Terrain-Correction">
+      <displayPosition x="415.0" y="161.0"/>
+    </node>
+    <node id="Read(2)">
+      <displayPosition x="16.0" y="276.0"/>
+    </node>
+    <node id="Apply-Orbit-File(2)">
+      <displayPosition x="59.0" y="229.0"/>
+    </node>
+    <node id="SliceAssembly">
+      <displayPosition x="176.0" y="189.0"/>
+    </node>
+    <node id="Write">
+      <displayPosition x="529.0" y="226.0"/>
+    </node>
+  </applicationData>
 </graph>

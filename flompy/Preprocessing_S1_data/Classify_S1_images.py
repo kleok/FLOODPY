@@ -10,7 +10,7 @@ Copyright (C) 2021-2022 by K.Karamvasis
 Email: karamvasis_k@hotmail.com
 
 Authors: Karamvasis Kleanthis
-Last edit: 8.6.2022
+Last edit: 19.6.2022
 
 This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 
@@ -37,7 +37,8 @@ pd.options.mode.chained_assignment = None
 import glob
 import os
 
-def Get_images_for_baseline_stack(ERA5_dir,
+def Get_images_for_baseline_stack(projectfolder,
+                                  ERA5_dir,
                                   S1_GRD_dir,
                                   Start_time,
                                   End_time,
@@ -51,6 +52,7 @@ def Get_images_for_baseline_stack(ERA5_dir,
 
     '''
     ERA5_data_filename = glob.glob(os.path.join(ERA5_dir,'*{}*{}*.csv'.format(Start_time, End_time)))
+    assert len(ERA5_data_filename)==1
     Precipitation_data= pd.read_csv(ERA5_data_filename[0])
     Precipitation_data.index = Precipitation_data['Datetime']
     Precipitation_data.drop(columns = ['Datetime'], inplace=True)
@@ -70,11 +72,14 @@ def Get_images_for_baseline_stack(ERA5_dir,
     S1_df=pd.DataFrame(index=S1_dates, columns=['S1_GRD'], data=S1_products)
     S1_df.sort_index(inplace=True)
     
+    # TODO 
+    # Maybe it is better to get S1_dates from S1_products.csv
+    
     # plot
     ax = df2[['ERA5_tp_mm']].plot()
     ymin, ymax = ax.get_ylim()
     ax.vlines(x=S1_dates, ymin=ymin, ymax=ymax-1, color='k', linestyle='--')
-    plt.savefig(os.path.join(S1_GRD_dir,'baseline_images.png'), dpi=200)
+    plt.savefig(os.path.join(projectfolder,'baseline_images.png'), dpi=200)
     plt.close()
     
     # get values at the specific S1_dates
@@ -93,16 +98,19 @@ def Get_images_for_baseline_stack(ERA5_dir,
     
     Good_images_for_baseline['baseline'].loc[flood_datetime:]=False
     
+    # make sure the Image corresponds to flood state is not selected for
+    # baseline stack creation
     flood_S1_image_filename = os.path.join(S1_GRD_dir,'flood_S1_filename.csv')
     assert os.path.exists(flood_S1_image_filename)
     flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).loc['title'].values[0]
     flood_S1_datetime = pd.Timestamp(flood_S1_image[17:32])
     
     Good_images_for_baseline['baseline'].loc[flood_S1_datetime:]=False
-
-    if np.all(S1_df.index==Good_images_for_baseline.index)==True:
-        Good_images_for_baseline['S1_GRD']=S1_df['S1_GRD']
-    Good_images_for_baseline.to_csv(os.path.join(S1_GRD_dir,'baseline_images.csv'))
+    assert np.all(S1_df.index==Good_images_for_baseline.index)==True
+    
+    Good_images_for_baseline['S1_GRD']=S1_df['S1_GRD']
+    Good_images_for_baseline['Datetime'] =  pd.to_datetime(S1_df.index)
+    Good_images_for_baseline.to_csv(os.path.join(S1_GRD_dir,'baseline_images.csv'), index=False)
     
     return 0
     
