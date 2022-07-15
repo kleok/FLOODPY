@@ -37,7 +37,6 @@ This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 import os, subprocess, glob
 import pandas as pd
 import geopandas as gpd
-import itertools
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
