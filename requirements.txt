@@ -17,3 +17,8 @@ matplotlib
 richdem
 pyproj
 seaborn
+rasterio
+rasterstats
+tensorflow
+keras_unet
+awscli
