@@ -13,9 +13,12 @@ from rasterstats import zonal_stats
 import multiprocessing as mp
 from Preprocessing_S2_data.sts import sentimeseries
 from Crop_delineation import utils
+import requests
+from rasterio.windows import from_bounds
+from tqdm.auto import tqdm
 
 class CropDelineation():
-    def __init__(self, eodata:sentimeseries, dst_path:str, corine_path:str):
+    def __init__(self, eodata:sentimeseries, dst_path:str, lc_path:str):
         """Compute edge probability map for dates in given sentimeseries object.
         Args:
             eodata (sentimeseries): sentimeseries object, after having bands 11, 12 resamled
@@ -27,7 +30,7 @@ class CropDelineation():
         self.eodt = eodata
         self.tmp_rng = (self.eodt.dates[0].strftime('%Y%m%d'),
                             self.eodt.dates[-1].strftime('%Y%m%d'))
-        self.corine_path = corine_path
+        self.lc_path = lc_path
 
         self.dst_path = os.path.join(dst_path, f"result__{dt.datetime.now().strftime('%Y%m%dT%H%M')}")
         os.mkdir(self.dst_path)
@@ -184,9 +187,12 @@ class CropDelineation():
                     dst.set_band_description(b+1, f"{self.eodt.dates[b].strftime('%Y%m%d')}")
 
 
-    def town_mask(self, write:bool=False):
+    def town_mask(self, aoi:str, write:bool=False):
+        
+        _, corine_path = utils.corine(self.aoi, to_file = True, fname = os.path.join(self.lc_path, "corine_2018.shp"))
+
         # maintain agricultural corine classes
-        corine_data = utils.filter_corine(self.corine_path)
+        corine_data = utils.filter_corine(corine_path)
         # source metadata by a random image masked by aoi
         with rio.open(self.eodt.data[0].NDVI_masked, 'r') as src:
             mask_meta = src.meta
@@ -215,6 +221,38 @@ class CropDelineation():
             mask_meta.update(dtype=self.masks['town_mask'].dtype, nodata=0, count=1)
             with rio.open(outfname, 'w', **mask_meta) as dst:
                 dst.write(self.masks['town_mask'])
+
+    def lc_mask(self, aoi:str, write:bool = False):
+    
+        aoi = gpd.read_file(aoi).iloc[0].explode().geometry
+    
+        # load worldcover grid
+        s3_url_prefix = "https://esa-worldcover.s3.eu-central-1.amazonaws.com"
+        url = f'{s3_url_prefix}/v100/2020/esa_worldcover_2020_grid.geojson'
+        grid = gpd.read_file(url)
+
+        # get grid tiles intersecting AOI
+        tiles = grid[grid.intersects(aoi)]
+
+        for tile in tqdm(tiles.ll_tile):
+            url = f"{s3_url_prefix}/v100/2020/map/ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
+            r = requests.get(url, allow_redirects=True)
+            out_fn = f"ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
+            with open(os.path.join(self.lc_path, out_fn), 'wb') as f:
+                f.write(r.content)    
+        
+        left, bottom, right, top = aoi.bounds
+        with rio.open(url) as src:
+            img = src.read(1, window=from_bounds(left, bottom, right, top, src.transform))
+            metadata = src.meta
+            
+        img[img!=40] = 0
+
+        self.masks['town_mask'] = img[np.newaxis,:,:]
+
+        if write:
+            with rio.open(os.path.join(self.dst_path, 'lc.tif'), 'w', **metadata) as dst:
+                dst.write(img, 1)
 
 
     def cloud_mask(self, write:bool=False):
@@ -301,8 +339,6 @@ class CropDelineation():
                 with rio.open(outfname, 'w', **cbmeta) as dst:
                     dst.write(res)
 
-
-
     def active_fields(self):
 
         meta = self.ndviseries_meta.copy()
@@ -338,8 +374,6 @@ class CropDelineation():
                 })
             dst.write(active_fields)
 
-
-
     def delineation(self, aoi_path:str, unet_pred_path:str):
         print('Delineation')
 
@@ -364,8 +398,6 @@ class CropDelineation():
         # Invert and convert from bool to binary (edge=0, noedge=1)
         combined_edges = 1-combined_edges
         self.combined_edges = combined_edges
-
-
 
     def flooded_fields(self, flood_tif_path:str):
         print('Flooded fields')
@@ -416,7 +448,6 @@ class CropDelineation():
                 return True
             else:
                 return False
-
 
         # Select fields flooded over 10%
         flooded_fields['flooded'] = flooded_fields.apply(lambda x: selected_most_flooded(x, flood), axis=1)

@@ -243,14 +243,14 @@ def _wkt2esri(wkt:str)->str:
 
     return esri
 
-def corine(aoi:str, to_file:bool = False, fname:str = "corine_2018.shp")->gpd.GeoDataFrame:
+def corine(aoi:str, to_file:bool = False, fname:str = "corine_2018.shp")->tuple:
     """Downloads Corine Land Cover 2018 data from Copernicus REST API.
     Args:
         aoi (str): Path to file with the region of interest
         to_file (bool, optional): Save result to file. Defaults to False
         fname (str, optional): Path and name of the created file. Defaults to "corine_2018.shp"
     Returns:
-        gpd.GeoDataFrame: Corine Land Cover 2018 data
+        tuple: Corine Land Cover 2018 data as GeoDataFrame and the path to saved file
     """
     HTTP_OK = 200
 
@@ -280,4 +280,4 @@ def corine(aoi:str, to_file:bool = False, fname:str = "corine_2018.shp")->gpd.Ge
     if to_file:
         data.to_file(fname)
     
-    return data
+    return data, fname

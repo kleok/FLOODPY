@@ -39,6 +39,12 @@ from Floodwater_classification.Classification import Get_flood_map
 # from Validation.Validation import Accuracy_metrics_calc
 # from Validation.EMS_preparation import rasterize
 
+# Agriculture fields extraction
+from Download.Sentinel_2_download import Download_S2_data
+from Preprocessing_S2_data.sts import sentimeseries
+from Crop_delineation.delineate import CropDelineation
+from Crop_delineation_unet.Pretrained_networks import Crop_delinieation_Unet
+
 print('FLOod Mapping PYthon toolbox')
 print('Copyright (c) 2021-2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
 print('Remote Sensing Laboratory of National Technical University of Athens')
@@ -52,7 +58,9 @@ STEP_LIST = [
     'Download_S1_data',
     'Preprocessing_S1_data',
     'Statistical_analysis',
-    'Floodwater_classification',]
+    'Floodwater_classification',
+    'Download_S2_data',
+    'Crop_delineation',]
 
 ##########################################################################
 STEP_HELP = """Command line options for steps processing with \n names are chosen from the following list:
@@ -159,7 +167,7 @@ def cmd_line_parse(iargs=None):
         raise ValueError(msg)
     inps.runSteps = STEP_LIST[idx0:idx1+1]
 
-    # mssage - processing steps
+    # message - processing steps
     if len(inps.runSteps) > 0:
         print('--RUN-at-{}--'.format(datetime.datetime.now()))
         print('Run routine processing with {} on steps: {}'.format(os.path.basename(__file__), inps.runSteps))
@@ -179,7 +187,7 @@ class FloodwaterEstimation:
     """
 
     def __init__(self, customTemplateFile=None, workDir=None):
-        ''' customTemplateFile and scihub account is required. ''' 
+        """customTemplateFile and scihub account is required.""" 
         self.customTemplateFile = customTemplateFile
         self.cwd = os.path.abspath(os.getcwd())
         return
@@ -230,13 +238,18 @@ class FloodwaterEstimation:
         self.Preprocessing_dir = os.path.join(self.projectfolder, 'Preprocessed')
         self.Results_dir = os.path.join(self.projectfolder, 'Results')
         self.temp_export_dir = os.path.join(self.S1_GRD_dir,"S1_orbits")
-        
+        self.S2_dir = os.path.join(self.projectfolder,'Sentinel_2_imagery')
+        self.Land_Cover = os.path.join(self.projectfolder, "Land_Cover")
+        self.Results_crop_delineation =  os.path.join(self.projectfolder, "Results_crop_delineation")
         self.directories = [self.projectfolder,
                             self.ERA5_dir,
                             self.S1_GRD_dir,
                             self.Preprocessing_dir,
                             self.Results_dir,
-                            self.temp_export_dir,]
+                            self.temp_export_dir,
+                            self.S2_dir,
+                            self.Land_Cover,
+                            self.Results_crop_delineation]
         
         [os.mkdir(directory) for directory in self.directories if not os.path.exists(directory)]
           
@@ -274,12 +287,8 @@ class FloodwaterEstimation:
         self.Start_time=self.start_datetime.strftime("%Y%m%d")
         self.End_time=self.end_datetime.strftime("%Y%m%d")
 
-
-
-
         return 0
     
-
     def run_download_Precipitation_data(self, step_name):
 
         Get_ERA5_data(ERA5_variables = ['total_precipitation',],
@@ -356,6 +365,88 @@ class FloodwaterEstimation:
     def plot_results(self, print_aux, plot):
         pass
 
+    def run_download_S2_data(self, step_name):
+
+        Download_S2_data(
+                        AOI = self.geojson_S1,
+                        user = list(self.credentials.keys())[0],
+                        passwd = list(self.credentials.values())[0],
+                        Start_time = self.Start_time,
+                        End_time = self.End_time,
+                        write_dir = self.S2_dir,
+                        product = 'S2MSI2A',
+                        download = True,
+                        cloudcoverage = 100)
+
+        print("Sentinel-2 data have been successfully downloaded")
+        
+        return 0
+
+    def run_crop_delineation(self, step_name):
+        """
+        #TODO: Use a functionallity to find zip and unzipped data -> Done in #5
+        #TODO: remove orbits if pixels with nan values are above a certain 
+        threshold -> Done in #5
+        """
+        
+        # Get data
+        eodata = sentimeseries("S2-timeseries")
+        
+        eodata.find_all(self.S2_dir)
+        eodata.sort_images(date=True)
+        
+        # Get VIs
+        eodata.getVI("NDVI")
+        
+        # Clip data
+        eodata.clipbyMask(self.geojson_S1, resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = "NDVI", new ="masked")
+        
+        self.S2timeseries = eodata
+        
+
+        # create obj
+        parcels = CropDelineation(eodata = self.S2timeseries,
+                                  dst_path = self.Results_crop_delineation,
+                                  lc_path = self.Land_Cover)
+        
+
+        # corine and scl masks
+        parcels.lc_mask(aoi = self.geojson_S1, write=True)
+        parcels.cloud_mask(write=True)
+
+        # edge intensity (0-100) map
+        parcels.edge_probab_map(write=True)
+        
+        # create ndvi series and apply any created mask (clouds, towns)
+        parcels.create_series(write=False)
+
+        # fill values removed by cloud mask
+        parcels.crop_probab_map(
+            cube = parcels.ndviseries,
+            cbmeta = parcels.ndviseries_meta,
+            write=True,
+            )
+
+        # edges, active and inactive fields Map
+        parcels.active_fields()
+
+        # Pretrained 
+        Crop_delinieation_Unet(model_name = 'UNet3',
+                               model_dir = self.scriptsfolder,
+                               BASE_DIR = self.S2_dir,
+                               results_pretrained = self.Results_crop_delineation_unet,
+                               force_cpu = True )
+
+        # Delineate fields: Combine EPM and UNet
+        parcels.delineation(self.geojson_S1, os.path.join(self.Results_crop_delineation_unet,
+        'UNet3_crop_delineation.tif'))
+
+        # Characterize Cultivated and Not-Cultivated fields
+        parcels.flooded_fields(os.path.join(self.Results_dir,'Flood_map_{}.tif'.format(self.projectname)))
+        
+        return 0 
+
     def run(self, steps=STEP_LIST, plot=True):
         # run the chosen steps
         for sname in steps:
@@ -375,7 +466,13 @@ class FloodwaterEstimation:
 
             elif sname == 'Floodwater_classification':
                 self.run_get_flood_map(sname)
-
+            
+            elif sname == 'Download_S2_data':
+                self.run_download_S2_data(sname)
+                
+            elif sname == 'Crop_delineation':
+                self.run_crop_delineation(sname)
+        
         # plot result (show aux visualization message more multiple steps processing)
         print_aux = len(steps) > 1
         self.plot_results(print_aux=print_aux, plot=plot)
