@@ -1,4 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jul 29 19:47:35 2022
+
+Authors : Kleanthis Karamvasis, Bill Tsironis
+"""
+
 import os, glob
+from traceback import print_tb
 import typing
 from tqdm import tqdm
 from osgeo import gdal
@@ -14,6 +23,8 @@ from tensorflow.keras.layers import (
     ZeroPadding2D,
 )
 from keras_unet.models import satellite_unet
+
+
 
 def get_weights(uuid, name, network_path):
     """Generates three file names for the model, weights and history file and
@@ -40,6 +51,7 @@ def read_tif_FLOMPY(index, IMAGE_DIRS,  fit_size=None):
     bands_data = []
     for band in ["B02", "B03", "B04", "B08"]:
         base_image_name = glob.glob(IMAGE_DIRS[index]+'/GRANULE/*/IMG_DATA/R10m/*{}*.tif'.format(band))[0]
+        print(base_image_name)
         bands_data.append(gdal.Open(base_image_name).ReadAsArray())
 
     if fit_size is None:
@@ -75,8 +87,7 @@ def build_fcndk(
     y: int,
     bands: int,
     labels: int,
-    layers=4,
-) -> tf.keras.Model:
+    layers=4,) -> tf.keras.Model:
     """Build a new network model based on the configuration of the networks
     FCNDK2, ..., FCNDK6. Specify the layers to use in the parameters.
 
@@ -221,9 +232,70 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     target_ds.GetRasterBand(1).WriteArray(nparray)  
     
     target_ds = None
-
-def Crop_delinieation_Unet(model_name, model_dir, BASE_DIR , results_pretrained, force_cpu = True):
     
+from numpy.lib.stride_tricks import as_strided as ast
+
+def chunk_data(data, window_size, overlap_size=0, flatten_inside_window=False):
+    assert data.ndim == 1 or data.ndim == 2
+    if data.ndim == 1:
+        data = data.reshape((-1,1))
+
+    # get the number of overlapping windows that fit into the data
+    num_windows = (data.shape[0] - window_size) // (window_size - overlap_size) + 1
+    overhang = data.shape[0] - (num_windows*window_size - (num_windows-1)*overlap_size)
+
+    # if there's overhang, need an extra window and a zero pad on the data
+    # (numpy 1.7 has a nice pad function I'm not using here)
+    if overhang != 0:
+        num_windows += 1
+        newdata = np.zeros((num_windows*window_size - (num_windows-1)*overlap_size,data.shape[1]))
+        newdata[:data.shape[0]] = data
+        data = newdata
+
+    sz = data.dtype.itemsize
+    ret = ast(
+            data,
+            shape=(num_windows,window_size*data.shape[1]),
+            strides=((window_size-overlap_size)*data.shape[1]*sz,sz)
+            )
+
+    if flatten_inside_window:
+        return ret
+    else:
+        return ret.reshape((num_windows,-1,data.shape[1]))
+
+
+def model_predict_batch(A, model, force_cpu, window_size=512, overlap_size = 50):
+
+    # break down A to overlapping batches
+    A_batches = chunk_data(A, window_size, overlap_size)
+    preds_batches = np.zeros_like(A_batches)
+    
+    for batch_ind in A_batches.shape[0]:
+        
+        A_batch = A_batches[batch_ind,:,:]
+        # batch size =1 
+        input = np.expand_dims(A_batch, 0)
+
+        # model prediction
+        if force_cpu:
+            with tf.device("/CPU:0"):
+                pred_batch = model.predict(input)[0]
+        else:
+            pred_batch = model.predict(input)[0]
+            
+        preds_batches[batch_ind,:,:] = pred_batch
+            
+    preds = np.lib.stride_tricks.as_strided(preds_batches, A.shape, A.strides)
+    preds = 255 * np.argmax(preds, axis=2).astype(np.uint8)
+    
+    return preds
+
+def Crop_delineation_Unet(model_name, model_dir, BASE_DIR , results_pretrained, force_cpu = True):
+
+    if not os.path.exists(results_pretrained):
+        os.makedirs(results_pretrained)
+
     IMAGE_DIRS = glob.glob(BASE_DIR+'/*.SAFE')
     
     PRETRAINED_MODELS = {
@@ -244,9 +316,11 @@ def Crop_delinieation_Unet(model_name, model_dir, BASE_DIR , results_pretrained,
     model_uuid, model_path = PRETRAINED_MODELS[model_name]
     fit_in_size = None
     
+    # initial shape of first image
     A = read_tif_FLOMPY(0, IMAGE_DIRS, fit_in_size)
     x, y, bands = A.shape
 
+    # we change the dimension because unet needs 512
     if "unet" in model_name.lower():
         if x % 512 != 0:
             x = (x // 512 + 1) * 512
@@ -257,26 +331,23 @@ def Crop_delinieation_Unet(model_name, model_dir, BASE_DIR , results_pretrained,
 
     A = read_tif_FLOMPY(0, IMAGE_DIRS, fit_in_size)
 
+    # we load the model
     model_builder_fun: typing.Callable = build_network(model_name)
     model = model_builder_fun(x, y, bands, 2)
     model.load_weights(get_weights(model_uuid, model_name, model_path))
 
-    if not os.path.exists(results_pretrained):
-        os.makedirs(results_pretrained)
+    # we get the geographic infromation
+    src =  rasterio.open(glob.glob(IMAGE_DIRS[0]+'/GRANULE/*/IMG_DATA/R10m/*B02_*.tif')[0])
 
     for i in tqdm(range(len(IMAGE_DIRS))):
-        src =  rasterio.open(glob.glob(IMAGE_DIRS[i]+'/GRANULE/*/IMG_DATA/R10m/*B02_*.tif')[0])
+
+        # load and normalize each image
+        A = read_tif_FLOMPY(i, IMAGE_DIRS, fit_in_size)
         A = normalize_array(A)
 
-        input = np.expand_dims(A, 0)
-        
-        if force_cpu:
-            with tf.device("/CPU:0"):
-                preds = model.predict(input)[0]
-        else:
-            preds = model.predict(input)[0]
-        preds = 255 * np.argmax(preds, axis=2).astype(np.uint8)
+        preds = model_predict_batch(A, model, force_cpu)
 
+        # save result as tiff
         with rasterio.open(
             os.path.join(results_pretrained, os.path.basename(IMAGE_DIRS[i]).split('.')[0] + "_" + model_name + ".tif" ),
             "w",
@@ -289,19 +360,24 @@ def Crop_delinieation_Unet(model_name, model_dir, BASE_DIR , results_pretrained,
             transform=src.transform
         ) as dst:
             dst.write(preds, 1)
-        src.close()
-    # Add georeference
     
+    #src.close()
+
+    # get filenames of all model predictions
     Results_Model_filenames = glob.glob(os.path.join(results_pretrained,'*{}*'.format(model_name)))
     
+    # read the first image 
     Image_Model_temp = gdal.Open(Results_Model_filenames[0]).ReadAsArray()
     Crop_delineation = np.zeros(Image_Model_temp.shape)
     
+    # Add all predictions
     for Image_Model_filename in Results_Model_filenames:
         Image_Model_temp = gdal.Open(Image_Model_filename).ReadAsArray()
-        Crop_delineation = Crop_delineation+Image_Model_temp
+        Crop_delineation = Crop_delineation + Image_Model_temp
     
+    # create boolean mask
     Crop_delineation_bool = Crop_delineation>0
+
     nparray_to_tiff(Crop_delineation_bool.astype(np.bool_),
                     Results_Model_filenames[0],
                     os.path.join(results_pretrained,'{}_crop_delineation.tif'.format(model_name)))
