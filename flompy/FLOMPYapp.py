@@ -43,7 +43,7 @@ from Floodwater_classification.Classification import Get_flood_map
 from Download.Sentinel_2_download import Download_S2_data
 from Preprocessing_S2_data.sts import sentimeseries
 from Crop_delineation.delineate import CropDelineation
-from Crop_delineation_unet.Pretrained_networks import Crop_delinieation_Unet
+from Crop_delineation_unet.Pretrained_networks import Crop_delineation_Unet
 
 print('FLOod Mapping PYthon toolbox')
 print('Copyright (c) 2021-2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
@@ -392,9 +392,10 @@ class FloodwaterEstimation:
         # Get data
         eodata = sentimeseries("S2-timeseries")
         
-        eodata.find_all(self.S2_dir)
+        eodata.find_zip(self.S2_dir)
         eodata.sort_images(date=True)
         
+        print(eodata.show_metadata)
         # Get VIs
         eodata.getVI("NDVI")
         
@@ -417,7 +418,7 @@ class FloodwaterEstimation:
 
         # edge intensity (0-100) map
         parcels.edge_probab_map(write=True)
-        
+
         # create ndvi series and apply any created mask (clouds, towns)
         parcels.create_series(write=False)
 
@@ -432,20 +433,20 @@ class FloodwaterEstimation:
         parcels.active_fields()
 
         # Pretrained 
-        Crop_delinieation_Unet(model_name = 'UNet3',
-                               model_dir = self.scriptsfolder,
-                               BASE_DIR = self.S2_dir,
-                               results_pretrained = self.Results_crop_delineation_unet,
-                               force_cpu = True )
+        Crop_delineation_Unet(model_name = 'UNet3',
+                            model_dir = self.scriptsfolder,
+                            BASE_DIR = self.S2_dir,
+                            results_pretrained = self.Results_crop_delineation,
+                            force_cpu = True)
 
         # Delineate fields: Combine EPM and UNet
-        parcels.delineation(self.geojson_S1, os.path.join(self.Results_crop_delineation_unet,
+        parcels.delineation(self.geojson_S1, os.path.join(self.Results_crop_delineation,
         'UNet3_crop_delineation.tif'))
 
         # Characterize Cultivated and Not-Cultivated fields
         parcels.flooded_fields(os.path.join(self.Results_dir,'Flood_map_{}.tif'.format(self.projectname)))
-        
-        return 0 
+
+        return 0
 
     def run(self, steps=STEP_LIST, plot=True):
         # run the chosen steps
