@@ -223,7 +223,11 @@ class CropDelineation():
                 dst.write(self.masks['town_mask'])
 
     def lc_mask(self, aoi:str, write:bool = False):
-    
+        '''
+        TODO: modify functionality in case AOI intersects two world cover tiles.
+        '''
+        
+        # works for one polygon/multipolygon
         aoi = gpd.read_file(aoi).iloc[0].explode().geometry
     
         # load worldcover grid
@@ -233,7 +237,8 @@ class CropDelineation():
 
         # get grid tiles intersecting AOI
         tiles = grid[grid.intersects(aoi)]
-
+        
+        # works only if AOI covers one tile
         for tile in tqdm(tiles.ll_tile):
             url = f"{s3_url_prefix}/v100/2020/map/ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
             r = requests.get(url, allow_redirects=True)
@@ -245,7 +250,8 @@ class CropDelineation():
         with rio.open(url) as src:
             img = src.read(1, window=from_bounds(left, bottom, right, top, src.transform))
             metadata = src.meta
-            
+        
+        # 40 is the code id for agriculture class
         img[img!=40] = 0
 
         self.masks['town_mask'] = img[np.newaxis,:,:]
