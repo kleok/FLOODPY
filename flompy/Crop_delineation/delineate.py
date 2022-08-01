@@ -226,7 +226,11 @@ class CropDelineation():
                 dst.write(self.masks['town_mask'])
 
     def lc_mask(self, aoi:str, write:bool = False):
-    
+        '''
+        TODO: modify functionality in case AOI intersects two world cover tiles.
+        '''
+        
+        # works for one polygon/multipolygon
         aoi = gpd.read_file(aoi).iloc[0].explode().geometry
     
         # load worldcover grid
@@ -236,7 +240,8 @@ class CropDelineation():
 
         # get grid tiles intersecting AOI
         tiles = grid[grid.intersects(aoi)]
-
+        
+        # works only if AOI covers one tile
         for tile in tqdm(tiles.ll_tile):
             url = f"{s3_url_prefix}/v100/2020/map/ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
             r = requests.get(url, allow_redirects=True)
@@ -246,7 +251,7 @@ class CropDelineation():
         
             
         left, bottom, right, top = aoi.bounds
-        
+      
         if len(tiles) > 1:
             lc_data = os.listdir(self.lc_path)
             raster_data = []
@@ -264,7 +269,7 @@ class CropDelineation():
             
             with rio.open(os.path.join(self.lc_path, "LC_mosaic.tif"), "w", **output_meta) as m:
                 m.write(mosaic)
-
+                
             out_file = os.path.join(self.lc_path, "LC_mosaic_reprj.tif")
             utils.reproj_match(image = os.path.join(self.lc_path, "LC_mosaic.tif"), base = self.eodt.data[0].NDVI_masked, outfile = out_file)
         else:

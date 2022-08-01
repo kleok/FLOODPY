@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jul 29 19:47:35 2022
+
+Authors : Kleanthis Karamvasis, Bill Tsironis
+"""
+
 import os, glob
 from traceback import print_tb
 import typing
@@ -15,6 +23,7 @@ from tensorflow.keras.layers import (
     ZeroPadding2D,
 )
 from keras_unet.models import satellite_unet
+from numpy.lib.stride_tricks import as_strided as ast
 
 def get_weights(uuid, name, network_path):
     """Generates three file names for the model, weights and history file and
@@ -77,8 +86,7 @@ def build_fcndk(
     y: int,
     bands: int,
     labels: int,
-    layers=4,
-) -> tf.keras.Model:
+    layers=4,) -> tf.keras.Model:
     """Build a new network model based on the configuration of the networks
     FCNDK2, ..., FCNDK6. Specify the layers to use in the parameters.
 
@@ -223,7 +231,6 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     target_ds.GetRasterBand(1).WriteArray(nparray)  
     
     target_ds = None
-from numpy.lib.stride_tricks import as_strided as ast
 
 def chunk_data(data, window_size, overlap_size=0, flatten_inside_window=False):
     assert data.ndim == 1 or data.ndim == 2
@@ -254,17 +261,15 @@ def chunk_data(data, window_size, overlap_size=0, flatten_inside_window=False):
     else:
         return ret.reshape((num_windows,-1,data.shape[1]))
 
-def model_prediction(A, model, force_cpu, window_size=1000, overlap_size=100):
+def model_predict_batch(A, model, force_cpu, window_size=512, overlap_size = 50):
 
     # break down A to overlapping batches
     A_batches = chunk_data(A, window_size, overlap_size)
-
-    pred_batches = np.zeros_like(A_batches)
-
-    for batch_ind in A_batches.shape[-1]:
-
-        A_batch = A_batches[:,:,batch_ind]
-
+    preds_batches = np.zeros_like(A_batches)
+    
+    for batch_ind in A_batches.shape[0]:
+        
+        A_batch = A_batches[batch_ind,:,:]
         # batch size =1 
         input = np.expand_dims(A_batch, 0)
 
@@ -274,11 +279,13 @@ def model_prediction(A, model, force_cpu, window_size=1000, overlap_size=100):
                 pred_batch = model.predict(input)[0]
         else:
             pred_batch = model.predict(input)[0]
-
-        pred_batches[:,:,batch_ind] = pred_batch
-
-    preds = pred_batches # reshape it 
+            
+        preds_batches[batch_ind,:,:] = pred_batch
+            
+    preds = np.lib.stride_tricks.as_strided(preds_batches, A.shape, A.strides)
     preds = 255 * np.argmax(preds, axis=2).astype(np.uint8)
+    
+    return preds
 
 def Crop_delineation_Unet(model_name, model_dir, BASE_DIR , results_pretrained, force_cpu = True):
 
@@ -335,8 +342,8 @@ def Crop_delineation_Unet(model_name, model_dir, BASE_DIR , results_pretrained, 
         A = normalize_array(A)
         A = A[:1000,:1000,:]
 
-        preds = model_prediction(A, model, force_cpu)
-
+        preds = model_predict_batch(A, model, force_cpu)
+        
         # save result as tiff
         with rasterio.open(
             os.path.join(results_pretrained, os.path.basename(IMAGE_DIRS[i]).split('.')[0] + "_" + model_name + ".tif" ),
