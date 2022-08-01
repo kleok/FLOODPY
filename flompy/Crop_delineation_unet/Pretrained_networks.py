@@ -23,8 +23,7 @@ from tensorflow.keras.layers import (
     ZeroPadding2D,
 )
 from keras_unet.models import satellite_unet
-
-
+from numpy.lib.stride_tricks import as_strided as ast
 
 def get_weights(uuid, name, network_path):
     """Generates three file names for the model, weights and history file and
@@ -232,8 +231,6 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     target_ds.GetRasterBand(1).WriteArray(nparray)  
     
     target_ds = None
-    
-from numpy.lib.stride_tricks import as_strided as ast
 
 def chunk_data(data, window_size, overlap_size=0, flatten_inside_window=False):
     assert data.ndim == 1 or data.ndim == 2
@@ -263,7 +260,6 @@ def chunk_data(data, window_size, overlap_size=0, flatten_inside_window=False):
         return ret
     else:
         return ret.reshape((num_windows,-1,data.shape[1]))
-
 
 def model_predict_batch(A, model, force_cpu, window_size=512, overlap_size = 50):
 
@@ -344,9 +340,10 @@ def Crop_delineation_Unet(model_name, model_dir, BASE_DIR , results_pretrained, 
         # load and normalize each image
         A = read_tif_FLOMPY(i, IMAGE_DIRS, fit_in_size)
         A = normalize_array(A)
+        A = A[:1000,:1000,:]
 
         preds = model_predict_batch(A, model, force_cpu)
-
+        
         # save result as tiff
         with rasterio.open(
             os.path.join(results_pretrained, os.path.basename(IMAGE_DIRS[i]).split('.')[0] + "_" + model_name + ".tif" ),

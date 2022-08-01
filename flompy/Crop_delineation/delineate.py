@@ -15,6 +15,7 @@ from Preprocessing_S2_data.sts import sentimeseries
 from Crop_delineation import utils
 import requests
 from rasterio.windows import from_bounds
+from rasterio.merge import merge
 from tqdm.auto import tqdm
 
 class CropDelineation():
@@ -32,8 +33,9 @@ class CropDelineation():
                             self.eodt.dates[-1].strftime('%Y%m%d'))
         self.lc_path = lc_path
 
-        self.dst_path = os.path.join(dst_path, f"result__{dt.datetime.now().strftime('%Y%m%dT%H%M')}")
-        os.mkdir(self.dst_path)
+        self.dst_path = dst_path
+        if not os.path.exists(self.dst_path):
+            os.mkdir(self.dst_path)
 
         self.senbands = ['B03_masked',
                         'B04_masked',
@@ -150,6 +152,7 @@ class CropDelineation():
         self.epm_meta = cb_metadata
 
         if write:
+            
             outfname = os.path.join(self.dst_path,
                                 f"epm__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
 
@@ -246,20 +249,44 @@ class CropDelineation():
             with open(os.path.join(self.lc_path, out_fn), 'wb') as f:
                 f.write(r.content)    
         
+            
         left, bottom, right, top = aoi.bounds
-        with rio.open(url) as src:
-            img = src.read(1, window=from_bounds(left, bottom, right, top, src.transform))
-            metadata = src.meta
-        
-        # 40 is the code id for agriculture class
+      
+        if len(tiles) > 1:
+            lc_data = os.listdir(self.lc_path)
+            raster_data = []
+            for r in lc_data:
+                raster = rio.open(r)
+                raster_data.append(raster)
+
+            mosaic, output = merge(raster_data)
+            output_meta = raster.meta.copy()
+            output_meta = output_meta.update(
+                {"driver": "GTiff",
+                "height": mosaic.shape[1],
+                "width": mosaic.shape[2],
+                "transform": output,})
+            
+            with rio.open(os.path.join(self.lc_path, "LC_mosaic.tif"), "w", **output_meta) as m:
+                m.write(mosaic)
+                
+            out_file = os.path.join(self.lc_path, "LC_mosaic_reprj.tif")
+            utils.reproj_match(image = os.path.join(self.lc_path, "LC_mosaic.tif"), base = self.eodt.data[0].NDVI_masked, outfile = out_file)
+        else:
+            lc_data = f"ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
+            out_file = os.path.join(self.lc_path, "LC_reprj.tif")
+            utils.reproj_match(image = os.path.join(self.lc_path, lc_data), base = self.eodt.data[0].NDVI_masked, outfile = out_file)
+
+        src = rio.open(out_file)
+        img = src.read()            
+        metadata = src.meta
         img[img!=40] = 0
+        img[img==40] = 1
 
-        self.masks['town_mask'] = img[np.newaxis,:,:]
-
+        self.masks['town_mask'] = img[:,:]
         if write:
             with rio.open(os.path.join(self.dst_path, 'lc.tif'), 'w', **metadata) as dst:
-                dst.write(img, 1)
-
+                dst.write(img)
 
     def cloud_mask(self, write:bool=False):
         """Create an image containing the number of dates having unreliable pixel value

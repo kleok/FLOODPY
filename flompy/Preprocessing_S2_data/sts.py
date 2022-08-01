@@ -113,51 +113,6 @@ class sentimeseries(timeseries):
 
         logging.info("---------------------------------------------------------------------------------------------")
 
-    def find_all(self, path, level = "L2A"):
-        
-        image = None
-        logging.info("---------------------------------------------------------------------------------------------")
-        logging.info("Searching for Sentinel 2 Satellite data (*.SAFE or *.zip)...")
-        for (dirpath, _, _) in os.walk(path):
-            for file in os.listdir(dirpath):
-                # Find data
-                if fnmatch.fnmatch(str(file), 'S2*{}*.*'.format(level)):
-                    logging.info("Raw data found : {}".format(str(file)))
-                    
-                    if file.endswith(".zip"):
-                        unzipped = "{}.SAFE".format(os.path.splitext(file)[0])
-                        if not os.path.isfile(unzipped):
-                            with zipfile.ZipFile(os.path.join(dirpath, file), 'r') as src:
-                                src.extractall(dirpath)
-                            
-                        image = senimage(dirpath, unzipped)
-                        image.getmetadata()
-                        image.getBands()
-                        self.data.append(image)
-                        self.names.append(image.name)
-                        self.dates.append(image.datetime)
-                        self.cloud_cover.append(image.cloud_cover)
-                        self.tiles.append(image.tile_id)
-                    else:
-                        image = senimage(dirpath, file)
-                        image.getmetadata()
-                        image.getBands()
-                        self.data.append(image)
-                        self.names.append(image.name)
-                        self.dates.append(image.datetime)
-                        self.cloud_cover.append(image.cloud_cover)
-                        self.tiles.append(image.tile_id)
-
-        if len(self.data) == 0:
-            raise NoDataError("0 Sentinel 2 raw data found in the selected path.")
-        else:
-            self.total = len(self.data)
-        
-        if len(list(set(self.tiles))) > 1:
-            logging.warning("Available data are in more than one tiles!")
-
-        logging.info("---------------------------------------------------------------------------------------------")
-
     def getVI(self, index, image = None):
         """Calculates a vegetation index for an image if the user provides an image or
         for all the time series.
