@@ -1,5 +1,7 @@
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 import geopandas as gpd
+import pandas as pd
+import os
 
 def S2_AOI_coverage(aoi_geometry, products_df):
     """Generates the coverage between the satellite images and the AOI.
@@ -19,7 +21,7 @@ def S2_AOI_coverage(aoi_geometry, products_df):
     return products_df
     
 
-def Download_S2_data(AOI, user, passwd, Start_time, End_time, write_dir, product = 'S2MSI2A', download = False, cloudcoverage = 100, cov_thres = 0.5):
+def Download_S2_data(AOI, user, passwd, Start_time, End_time, write_dir, product = 'S2MSI2A', download = False, cloudcoverage = 100, cov_thres = 0.5, to_file = True):
     """Download Sentinel 2 imagery.
     Args:
         AOI (str): Path to AOI file
@@ -32,6 +34,7 @@ def Download_S2_data(AOI, user, passwd, Start_time, End_time, write_dir, product
         download (bool, optional): If True downloads data. Defaults to True
         cloudcoverage(float, optional): Maximum cloud coverage. Defaults to 100
         cov_thres(float, optional): Minimum allowed coverage percentage between AOI and data footprint
+        to_file(bool, optional): Save all product to be downloaded to a CSV file. Defaults to True
     """
     
     api = SentinelAPI(user, passwd, api_url='https://apihub.copernicus.eu/apihub', show_progressbars=True, timeout=None)
@@ -51,10 +54,13 @@ def Download_S2_data(AOI, user, passwd, Start_time, End_time, write_dir, product
     
     products_df = products_df[products_df['coverages']> cov_thres] 
     
+    if to_file:
+        df = pd.DataFrame(products_df.drop(columns='geometry'))
+        df.to_csv(os.path.join(write_dir, "S2_products.csv"))
+
     if download == True:
         # When trying to download an offline product with download_all(), the method will instead attempt to trigger its retrieval from the LTA.
         api.download_all(products_df.index , directory_path = write_dir)
     else:
         print ("No download option is enabled. Printing the query results...")
-        for p in products_df:
-            print (api.get_product_odata(p))
+        print (products_df)

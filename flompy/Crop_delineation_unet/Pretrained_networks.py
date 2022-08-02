@@ -7,7 +7,6 @@ Authors : Kleanthis Karamvasis, Bill Tsironis
 """
 
 import os, glob
-from traceback import print_tb
 import typing
 from tqdm import tqdm
 from osgeo import gdal
@@ -23,7 +22,7 @@ from tensorflow.keras.layers import (
     ZeroPadding2D,
 )
 from keras_unet.models import satellite_unet
-from numpy.lib.stride_tricks import as_strided as ast
+from patchify import patchify, unpatchify
 
 def get_weights(uuid, name, network_path):
     """Generates three file names for the model, weights and history file and
@@ -50,7 +49,6 @@ def read_tif_FLOMPY(index, IMAGE_DIRS,  fit_size=None):
     bands_data = []
     for band in ["B02", "B03", "B04", "B08"]:
         base_image_name = glob.glob(IMAGE_DIRS[index]+'/GRANULE/*/IMG_DATA/R10m/*{}*.tif'.format(band))[0]
-        print(base_image_name)
         bands_data.append(gdal.Open(base_image_name).ReadAsArray())
 
     if fit_size is None:
@@ -213,76 +211,85 @@ def build_network(name: str) -> typing.Callable:
     elif name.lower() == "unet3":
         return build_unet3
 
-
-def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
+def save_tif(array:np.array, name:str, metadata:dict)->None:
+    """Save array to image by providing all the necessary metadata. Can be used by copying
+    metadata from a source rasterio object with src.meta.copy().
     
-    # open the reference gdal layer and get its relevant properties
-    raster_ds = gdal.Open(reference_gdal_dataset, gdal.GA_ReadOnly)   
-    xSize = raster_ds.RasterXSize
-    ySize = raster_ds.RasterYSize
-    geotransform = raster_ds.GetGeoTransform()
-    projection = raster_ds.GetProjection()
+    Args:
+        array (np.array): Numpy array
+        name (str): Path to store the image
+        metadata (dict): Metadata to write the image
+    """
+    with rasterio.open(name, "w", **metadata) as dst:
+        if array.ndim == 2:
+            dst.write(array, 1)
+        else:
+            dst.write(array)
+
+def construct_patches(data, patch_size=512, stride=500, bands=4):
+    '''
+
+    Args:
+        data (np.array): the image that we want to patchify. 
+                        example shape = (3072,4608,4)
+        patch_size (integer, optional): patch window size. Defaults to 512.
+        stride (integer, optional): stride. Defaults to 500.
+        bands (integer, optional): number of bands. Defaults to 4.
+
+    Returns:
+        patches (np.array): array with patches.
+                            example shape (6, 9, 1, 512, 512, 4)
+
+    '''
+    patches = patchify(data, (patch_size,patch_size,bands), step=stride)
+    return patches
+
+def reconstruct_patches (patches, rows, cols, bands):
+    '''
+
+    Args:
+        patches (np.array): array with patches.
+                            example shape (6, 9, 1, 512, 512, 1)
+        rows (integer): first dimension of initial image.
+        cols (integer): second dimension of initial image.
+        bands (integer): number of bands.
+
+    Returns:
+        reconstructed_image (np.array): array with patches.
+                            example shape (3072,4608,1)
+
+    '''
     
-    # create the target layer 1 (band)
-    driver = gdal.GetDriverByName('GTIFF')
-    target_ds = driver.Create(target_gdal_dataset, xSize, ySize, bands = 1, eType = gdal.GDT_Float32)
-    target_ds.SetGeoTransform(geotransform)
-    target_ds.SetProjection(projection)
-    target_ds.GetRasterBand(1).WriteArray(nparray)  
+    reconstructed_image = unpatchify(patches,(rows, cols, bands))
     
-    target_ds = None
+    return reconstructed_image
 
-def chunk_data(data, window_size, overlap_size=0, flatten_inside_window=False):
-    assert data.ndim == 1 or data.ndim == 2
-    if data.ndim == 1:
-        data = data.reshape((-1,1))
-
-    # get the number of overlapping windows that fit into the data
-    num_windows = (data.shape[0] - window_size) // (window_size - overlap_size) + 1
-    overhang = data.shape[0] - (num_windows*window_size - (num_windows-1)*overlap_size)
-
-    # if there's overhang, need an extra window and a zero pad on the data
-    # (numpy 1.7 has a nice pad function I'm not using here)
-    if overhang != 0:
-        num_windows += 1
-        newdata = np.zeros((num_windows*window_size - (num_windows-1)*overlap_size,data.shape[1]))
-        newdata[:data.shape[0]] = data
-        data = newdata
-
-    sz = data.dtype.itemsize
-    ret = ast(
-            data,
-            shape=(num_windows,window_size*data.shape[1]),
-            strides=((window_size-overlap_size)*data.shape[1]*sz,sz)
-            )
-
-    if flatten_inside_window:
-        return ret
-    else:
-        return ret.reshape((num_windows,-1,data.shape[1]))
-
-def model_predict_batch(A, model, force_cpu, window_size=512, overlap_size = 50):
+def model_predict_batch(A, model, force_cpu, window_size=512, stride = 500):
 
     # break down A to overlapping batches
-    A_batches = chunk_data(A, window_size, overlap_size)
-    preds_batches = np.zeros_like(A_batches)
-    
-    for batch_ind in A_batches.shape[0]:
-        
-        A_batch = A_batches[batch_ind,:,:]
-        # batch size =1 
-        input = np.expand_dims(A_batch, 0)
+    A_batches = construct_patches(A, stride = stride)
 
-        # model prediction
-        if force_cpu:
-            with tf.device("/CPU:0"):
-                pred_batch = model.predict(input)[0]
-        else:
-            pred_batch = model.predict(input)[0]
+    rows_batches = A_batches.shape[0]
+    cols_batches = A_batches.shape[1]
+    band_batches = 2
+
+    preds_batches = np.zeros((rows_batches, cols_batches,1,window_size,window_size,band_batches))
+
+    for row_batches in range(rows_batches):
+        for col_batches in range(cols_batches):
+            A_batch = A_batches[row_batches,col_batches,...]
+            # model prediction
+            if force_cpu:
+                with tf.device("/CPU:0"):
+                    pred_batch = model.predict(A_batch)[0]
+            else:
+                pred_batch = model.predict(A_batch)[0]
             
-        preds_batches[batch_ind,:,:] = pred_batch
+            preds_batches[row_batches,col_batches,:,...] = pred_batch
             
-    preds = np.lib.stride_tricks.as_strided(preds_batches, A.shape, A.strides)
+    rows = A.shape[0]
+    cols = A.shape[1]
+    preds = reconstruct_patches(preds_batches, rows, cols, bands=2)
     preds = 255 * np.argmax(preds, axis=2).astype(np.uint8)
     
     return preds
@@ -329,52 +336,40 @@ def Crop_delineation_Unet(model_name, model_dir, BASE_DIR , results_pretrained, 
 
     # we load the model
     model_builder_fun: typing.Callable = build_network(model_name)
-    model = model_builder_fun(x, y, bands, 2)
+    model = model_builder_fun(512, 512, bands, 2)
     model.load_weights(get_weights(model_uuid, model_name, model_path))
 
     # we get the geographic infromation
     src =  rasterio.open(glob.glob(IMAGE_DIRS[0]+'/GRANULE/*/IMG_DATA/R10m/*B02_*.tif')[0])
 
+    print("Running pretrained model...")
     for i in tqdm(range(len(IMAGE_DIRS))):
 
         # load and normalize each image
         A = read_tif_FLOMPY(i, IMAGE_DIRS, fit_in_size)
         A = normalize_array(A)
-        A = A[:1000,:1000,:]
-
-        preds = model_predict_batch(A, model, force_cpu)
         
-        # save result as tiff
-        with rasterio.open(
-            os.path.join(results_pretrained, os.path.basename(IMAGE_DIRS[i]).split('.')[0] + "_" + model_name + ".tif" ),
-            "w",
-            driver="GTiff",
-            height=preds.shape[0],
-            width=preds.shape[1],
-            count=1,
-            dtype="uint8",
-            crs = src.crs,
-            transform=src.transform
-        ) as dst:
-            dst.write(preds, 1)
-    
-    #src.close()
+        preds = model_predict_batch(A, model, force_cpu, stride = 512)
+        metadata = src.meta.copy()
+        metadata.update(dtype = np.uint8, height = preds.shape[0], width = preds.shape[1])
+        save_tif(preds, os.path.join(results_pretrained, os.path.basename(IMAGE_DIRS[i]).split('.')[0] + "_" + model_name + ".tif"), metadata)
 
     # get filenames of all model predictions
     Results_Model_filenames = glob.glob(os.path.join(results_pretrained,'*{}*'.format(model_name)))
     
-    # read the first image 
-    Image_Model_temp = gdal.Open(Results_Model_filenames[0]).ReadAsArray()
+    # read the first image
+    src = rasterio.open(Results_Model_filenames[0])
+    metadata = src.meta.copy()
+
+    Image_Model_temp = src.read()
     Crop_delineation = np.zeros(Image_Model_temp.shape)
     
     # Add all predictions
     for Image_Model_filename in Results_Model_filenames:
-        Image_Model_temp = gdal.Open(Image_Model_filename).ReadAsArray()
+        Image_Model_temp = rasterio.open(Image_Model_filename).read()
         Crop_delineation = Crop_delineation + Image_Model_temp
-    
     # create boolean mask
     Crop_delineation_bool = Crop_delineation>0
-
-    nparray_to_tiff(Crop_delineation_bool.astype(np.bool_),
-                    Results_Model_filenames[0],
-                    os.path.join(results_pretrained,'{}_crop_delineation.tif'.format(model_name)))
+    print("Saving result...")
+    metadata.update(dtype = np.uint8)
+    save_tif(Crop_delineation_bool.astype(np.uint8), os.path.join(results_pretrained,'{}_crop_delineation.tif'.format(model_name)), metadata)
