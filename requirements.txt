@@ -22,3 +22,4 @@ rasterstats
 tensorflow
 keras_unet
 awscli
+patchify

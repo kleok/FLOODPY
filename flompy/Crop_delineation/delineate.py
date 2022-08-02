@@ -65,47 +65,46 @@ class CropDelineation():
 
         pool = mp.Pool(mp.cpu_count() - 2)
         for ms_im in self.eodt.data:
-            # apply kernels on NDVI image 
-            src = ms_im.ReadData(band=self.senbands[-1])
-            metadata = src.meta
-            ndvi = src.read(1)
-            ndvi[ndvi == metadata['nodata']] = np.nan
-            # TODO: mask with scl-cloud-mask
-            dndvi = pool.starmap_async(
-                utils.equation_4, [(ndvi, wk.iloc[i]) for i in range(0, len(wk))]).get()
+            outfname = os.path.join(ms_im.datapath_10, f"T{ms_im.tile_id}_{ms_im.str_datetime}_edge.tif")
+            if os.path.isfile(outfname) and os.stat(outfname).st_size != 0:
+                print(f"File {outfname} exists.")
+            else:
+                # apply kernels on NDVI image 
+                src = ms_im.ReadData(band=self.senbands[-1])
+                metadata = src.meta
+                ndvi = src.read(1)
+                ndvi[ndvi == metadata['nodata']] = np.nan
+                # TODO: mask with scl-cloud-mask
+                dndvi = pool.starmap_async(
+                    utils.equation_4, [(ndvi, wk.iloc[i]) for i in range(0, len(wk))]).get()
 
-            # apply kernels on bands b03, b04, b08, b11, b12
-            five_bands = [getattr(ms_im, im) for im in self.senbands[:-1]]
-            dweeks = pool.starmap_async(
-                utils.equation_3, [(five_bands, wk.iloc[i]) for i in range(0, len(wk))]).get()
+                # apply kernels on bands b03, b04, b08, b11, b12
+                five_bands = [getattr(ms_im, im) for im in self.senbands[:-1]]
+                dweeks = pool.starmap_async(
+                    utils.equation_3, [(five_bands, wk.iloc[i]) for i in range(0, len(wk))]).get()
 
-            # edge estimation of current data
-            edge_estim = utils.equation_5(ndvi, dweeks, dndvi, wk)
+                # edge estimation of current data
+                edge_estim = utils.equation_5(ndvi, dweeks, dndvi, wk)
 
-            # Cut values
-            edge_estim[edge_estim > 100] = 100
-            edge_estim[edge_estim < 0] = 0
+                # Cut values
+                edge_estim[edge_estim > 100] = 100
+                edge_estim[edge_estim < 0] = 0
 
-            # Normalize to some limits
-            up_limit = np.nanpercentile(edge_estim, 40)
-            down_limit = np.nanpercentile(edge_estim, 5)
-            edge_estim = (edge_estim - np.nanmin(edge_estim)) * ((up_limit-down_limit)/(np.nanmax(edge_estim) - np.nanmin(edge_estim))) + down_limit
-            # Normalize to 0-100
-            edge_estim = (edge_estim - np.nanmin(edge_estim)) * ((100-0)/(np.nanmax(edge_estim) - np.nanmin(edge_estim))) + 0
-            edge_estim = edge_estim.astype(np.float32)
+                # Normalize to some limits
+                up_limit = np.nanpercentile(edge_estim, 40)
+                down_limit = np.nanpercentile(edge_estim, 5)
+                edge_estim = (edge_estim - np.nanmin(edge_estim)) * ((up_limit-down_limit)/(np.nanmax(edge_estim) - np.nanmin(edge_estim))) + down_limit
+                # Normalize to 0-100
+                edge_estim = (edge_estim - np.nanmin(edge_estim)) * ((100-0)/(np.nanmax(edge_estim) - np.nanmin(edge_estim))) + 0
+                edge_estim = edge_estim.astype(np.float32)
 
-            outfname = os.path.join(ms_im.datapath_10,
-                                f"T{ms_im.tile_id}_{ms_im.str_datetime}_edge.tif")
-
-            metadata.update(count=1, dtype=edge_estim.dtype)
-            with rio.open(outfname, 'w', **metadata) as dst:
-                dst.write(edge_estim, 1)
+                metadata.update(count=1, dtype=edge_estim.dtype)
+                with rio.open(outfname, 'w', **metadata) as dst:
+                    dst.write(edge_estim, 1)
 
             # gather edge estimation images fullpaths
             ms_im.edge = outfname
             self.estim_paths.append(ms_im.edge)
-        # self.estim_meta = metadata
-
 
     def edge_probab_map(self, write:bool=False):
         """Compute final edge probability map, using Equation (6) of original paper.
@@ -152,13 +151,13 @@ class CropDelineation():
         self.epm_meta = cb_metadata
 
         if write:
-            
-            outfname = os.path.join(self.dst_path,
-                                f"epm__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
-
-            with rio.open(outfname, 'w', **cb_metadata) as dst:
-                dst.write(res)
-                dst.set_band_description(1, f"{self.tmp_rng[0]}_{self.tmp_rng[1]}")
+            outfname = os.path.join(self.dst_path, f"epm__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
+            if os.path.isfile(outfname) and os.stat(outfname).st_size != 0:
+                print(f"File {outfname} exists.")
+            else:
+                with rio.open(outfname, 'w', **cb_metadata) as dst:
+                    dst.write(res)
+                    dst.set_band_description(1, f"{self.tmp_rng[0]}_{self.tmp_rng[1]}")
 
 
     def create_series(self, write:bool=False):
@@ -184,10 +183,13 @@ class CropDelineation():
         if write:
             outfname = os.path.join(self.dst_path,
                             f"ndviseries__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
-            with rio.open(outfname, 'w', **self.ndviseries_meta) as dst:
-                dst.write(self.ndviseries)
-                for b in range(0, self.ndviseries.shape[0]):
-                    dst.set_band_description(b+1, f"{self.eodt.dates[b].strftime('%Y%m%d')}")
+            if os.path.isfile(outfname) and os.stat(outfname).st_size != 0:
+                print(f"File {outfname} exists.")
+            else:
+                with rio.open(outfname, 'w', **self.ndviseries_meta) as dst:
+                    dst.write(self.ndviseries)
+                    for b in range(0, self.ndviseries.shape[0]):
+                        dst.set_band_description(b+1, f"{self.eodt.dates[b].strftime('%Y%m%d')}")
 
 
     def town_mask(self, aoi:str, write:bool=False):
@@ -280,8 +282,10 @@ class CropDelineation():
         src = rio.open(out_file)
         img = src.read()            
         metadata = src.meta
-        img[img!=40] = 0
-        img[img==40] = 1
+        # Not agricultural areas
+        img[img!=40] = 1
+        # Agricultural areas
+        img[img==40] = 0
 
         self.masks['town_mask'] = img[:,:]
         if write:
@@ -311,11 +315,14 @@ class CropDelineation():
         if write:
             outfname = os.path.join(self.dst_path,
                             f"cloud_mask__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
-            meta.update(dtype=self.masks['cloud_mask'].dtype, nodata=0)
-            with rio.open(outfname, 'w', **meta) as dst:
-                dst.write(self.masks['cloud_mask'])
-                for b in range(0, self.masks['cloud_mask'].shape[0]):
-                    dst.set_band_description(b+1, f"{self.eodt.dates[b].strftime('%Y%m%d')}")
+            if os.path.isfile(outfname) and os.stat(outfname).st_size != 0:
+                print(f"File {outfname} exists.")
+            else:                
+                meta.update(dtype=self.masks['cloud_mask'].dtype, nodata=0)
+                with rio.open(outfname, 'w', **meta) as dst:
+                    dst.write(self.masks['cloud_mask'])
+                    for b in range(0, self.masks['cloud_mask'].shape[0]):
+                        dst.set_band_description(b+1, f"{self.eodt.dates[b].strftime('%Y%m%d')}")
 
 
     def crop_probab_map(self, cube:np.ndarray, cbmeta:dict, write:bool=False):
@@ -366,11 +373,13 @@ class CropDelineation():
         if write:
             outfname=os.path.join(self.dst_path,
                 f"cpm__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
-
-            if outfname is not None:
-                assert os.path.isabs(outfname)
-                with rio.open(outfname, 'w', **cbmeta) as dst:
-                    dst.write(res)
+            if os.path.isfile(outfname) and os.stat(outfname).st_size != 0:
+                print(f"File {outfname} exists.")
+            else:
+                if outfname is not None:
+                    assert os.path.isabs(outfname)
+                    with rio.open(outfname, 'w', **cbmeta) as dst:
+                        dst.write(res)
 
     def active_fields(self):
 
@@ -396,19 +405,21 @@ class CropDelineation():
 
         self.active_fields_fpath=os.path.join(self.dst_path,
             f"active_fields__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
+        if os.path.isfile(self.active_fields_fpath) and os.stat(self.active_fields_fpath).st_size != 0:
+            print(f"File {self.active_fields_fpath} exists.")
+        else:
+            with rio.open(self.active_fields_fpath, 'w', **meta) as dst:
+                dst.write_colormap(
+                1, {
+                    0: (0, 0, 0, 0),
+                    1: (0, 0, 0, 255),
+                    2: (3, 100, 0, 255),
+                    3: (166, 217, 62, 255),
+                    })
+                dst.write(active_fields)
 
-        with rio.open(self.active_fields_fpath, 'w', **meta) as dst:
-            dst.write_colormap(
-            1, {
-                0: (0, 0, 0, 0),
-                1: (0, 0, 0, 255),
-                2: (3, 100, 0, 255),
-                3: (166, 217, 62, 255),
-                })
-            dst.write(active_fields)
-
-    def delineation(self, aoi_path:str, unet_pred_path:str):
-        print('Delineation')
+    def delineation(self, aoi_path:str, unet_pred_path:str, to_file = True)->None:
+        print('Running delineation...')
 
         # Threshold epm to mean value of the image (edge=1, noedge=0)
         threshold = np.nanmean(self.epm)
@@ -432,18 +443,28 @@ class CropDelineation():
         combined_edges = 1-combined_edges
         self.combined_edges = combined_edges
 
+        if to_file:
+            outfname = os.path.join(self.dst_path, "combined.tif")
+            if os.path.isfile(outfname) and os.stat(outfname).st_size != 0:
+                print(f"File {outfname} exists.")
+            else:
+                with rio.open(outfname, 'w', **self.epm_meta) as dst:
+                    dst.write(self.combined_edges)
+
     def flooded_fields(self, flood_tif_path:str):
-        print('Flooded fields')
+        print('Running flooded fields estimation procedure...')
 
         # Morphological Opening
         opening = binary_opening(self.combined_edges, structure=np.ones((1,2,2))).astype(np.int16)
 
         opening[self.active_fields == 0] = 0
-
         opening_fpath=os.path.join(self.dst_path,
             f"opening__{self.tmp_rng[0]}_{self.tmp_rng[1]}.tif")
-        with rio.open(opening_fpath, 'w', **self.epm_meta) as dst:
-            dst.write(opening)
+        if os.path.isfile(opening_fpath) and os.stat(opening_fpath).st_size != 0:
+            print(f"File {opening_fpath} alreaddy exists.")
+        else:        
+            with rio.open(opening_fpath, 'w', **self.epm_meta) as dst:
+                dst.write(opening)
 
         # Vectorize fields
         vfields = ({'properties': {}, 'geometry': s} for i, (s, v) in enumerate(
@@ -477,7 +498,7 @@ class CropDelineation():
             inter_area = flood.intersection(x['geometry']).area
             ratio = inter_area / x['geometry'].area
             ratio = ratio[0]
-            if ratio > 0.1:
+            if ratio > 0.3:
                 return True
             else:
                 return False
@@ -508,5 +529,8 @@ class CropDelineation():
         # Save flooded fields
         flooded_fields_fpath=os.path.join(self.dst_path,
             f"flooded_fields__{self.tmp_rng[0]}_{self.tmp_rng[1]}.shp")
-
-        flooded_fields.to_file(flooded_fields_fpath)
+        
+        if os.path.isfile(flooded_fields_fpath) and os.stat(flooded_fields_fpath).st_size != 0:
+            print(f"File {flooded_fields_fpath} already exists.")
+        else:  
+            flooded_fields.to_file(flooded_fields_fpath)

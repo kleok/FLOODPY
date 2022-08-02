@@ -142,12 +142,15 @@ def cube_by_paths(listOfPaths:list, outfname:str=None, **kwargs)->list:
     cbarr = cbarr.astype(meta['dtype'])
 
     if outfname is not None:
-        assert os.path.isabs(outfname)
-        with rio.open(outfname, 'w', **meta) as dst:
-            for id, layer in enumerate(listOfPaths, start=1):
-                with rio.open(layer) as src:
-                    dst.write_band(id, src.read(1))
-                    dst.set_band_description(id, band_names[id-1])
+        if os.path.isfile(outfname) and os.stat(outfname).st_size != 0:
+            print(f"File {outfname} exists.")
+        else:
+            assert os.path.isabs(outfname)
+            with rio.open(outfname, 'w', **meta) as dst:
+                for id, layer in enumerate(listOfPaths, start=1):
+                    with rio.open(layer) as src:
+                        dst.write_band(id, src.read(1))
+                        dst.set_band_description(id, band_names[id-1])
 
     return cbarr[1:, :, :], meta, band_names
 
