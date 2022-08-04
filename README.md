@@ -32,20 +32,28 @@ $./install_snap.sh
 Sentinel-1 data download functionality require user credentials. More information [here](https://scihub.copernicus.eu/)
 
 ### 1.4 Account setup for downloading global atmospheric model data
-ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS), create a new account on the CDS website if you don't own a user account yet. On the profile, you will find your user id (UID) and your personal API Key. Create a file .cdsapirc under your home directory and add the following information:
+ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS), create a new account on the CDS website if you don't own a user account yet. On the profile, you will find your user id (UID) and your personal API Key. A .cdsapirc file must be created under your home directory and add the following information:
 ```
 url: https://cds.climate.copernicus.eu/api/v2
 key: UID:personal API Key
 ```
-CDS API is needed to auto-download ERA5 ECMWF data: conda install -c conda-forge cdsapi
-More details on CDSAPI can be found [here](https://cds.climate.copernicus.eu/api-how-to).
 
-Use `aux/install_CDS_key.sh` to install the CDS API key.
+You can use `aux/install_CDS_key.sh` to install the CDS API key.
 
 ```bash
 $chmod +x install_CDS_key.sh
 $./install_CDS_key.sh
 ```
+
+CDS API is needed to auto-download ERA5 ECMWF data. If you are using a conda enviroment run the following to install the cdsapi python library:
+
+```bash
+conda install -c conda-forge cdsapi
+```
+
+In other case install the requirements.txt file using pip.
+
+More details on CDSAPI can be found [here](https://cds.climate.copernicus.eu/api-how-to).
 
 ### 1.5 Download FLOMPY
 git clone https://github.com/kleok/FLOMPY.git
