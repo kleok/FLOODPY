@@ -11,6 +11,7 @@ import json
 import shapely.wkt
 import rasterio
 from rasterio.warp import reproject, Resampling
+from tqdm.auto import tqdm
 
 def equation_3(fpaths:list, kernel_N_weight:pd.DataFrame)->list:
     """Square root of gradient between 2 pixels, in selected orientantion, for entire image.
@@ -87,9 +88,9 @@ def equation_5(ndvi:np.array, dweeks:list, dndvi:list, kernels_N_weights:pd.Data
 
 
 def wkernels()->pd.DataFrame:
-    """[summary]
+    """Prepare kernels.
     Returns:
-        pd.DataFrame: [description]
+        pd.DataFrame: Kernels as dataframe
     """
     # Kernels to compute spectral diference.
     _conv_kern_p1 = np.array([[-1,  0,  0], [ 0, 1,  0], [ 0,  0,  0]]) # ul
@@ -286,6 +287,36 @@ def corine(aoi:str, to_file:bool = False, fname:str = "corine_2018.shp")->tuple:
         data.to_file(fname)
     
     return data, fname
+
+def worldcover(aoi:str, savepath:str)->gpd.GeoDataFrame:
+    """Downloads landcover maps from worldcover project
+
+    Args:
+        aoi (str): Path to AOI file to dowload data
+        savepath (str): Path to store data
+
+    Returns:
+        gpd.GeoDataFrame: Downloaded tiles 
+    """
+    # works for one polygon/multipolygon
+    aoi = gpd.read_file(aoi).iloc[0].explode().geometry
+    # load worldcover grid
+    s3_url_prefix = "https://esa-worldcover.s3.eu-central-1.amazonaws.com"
+    url = f'{s3_url_prefix}/v100/2020/esa_worldcover_2020_grid.geojson'
+    grid = gpd.read_file(url)
+
+    # get grid tiles intersecting AOI
+    tiles = grid[grid.intersects(aoi)]
+    
+    # works only if AOI covers one tile
+    for tile in tqdm(tiles.ll_tile):
+        url = f"{s3_url_prefix}/v100/2020/map/ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
+        r = requests.get(url, allow_redirects=True)
+        out_fn = f"ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
+        with open(os.path.join(savepath, out_fn), 'wb') as f:
+            f.write(r.content)    
+    
+    return tiles
 
 def reproj_match(image:str, base:str, outfile:str, resampling:rasterio.warp.Resampling = Resampling.nearest) -> None:
     """Reprojects/Resamples an image to a base image.

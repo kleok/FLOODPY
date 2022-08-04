@@ -396,7 +396,7 @@ class FloodwaterEstimation:
         eodata.find_zip(self.S2_dir)
         eodata.sort_images(date=True)
         
-        print(eodata.show_metadata)
+        print(eodata.cloud_cover)
         # Get VIs
         eodata.getVI("NDVI")
         
@@ -434,11 +434,11 @@ class FloodwaterEstimation:
         parcels.active_fields()
 
         # Pretrained 
-        #Crop_delineation_Unet(model_name = 'UNet3',
-        #                    model_dir = self.scriptsfolder,
-        #                    BASE_DIR = self.S2_dir,
-        #                    results_pretrained = self.Results_crop_delineation,
-        #                    force_cpu = True)
+        Crop_delineation_Unet(model_name = 'UNet3',
+                            model_dir = self.scriptsfolder,
+                            BASE_DIR = self.S2_dir,
+                            results_pretrained = self.Results_crop_delineation,
+                            force_cpu = True)
 
         # Delineate fields: Combine EPM and UNet
         parcels.delineation(self.geojson_S1, os.path.join(self.Results_crop_delineation,

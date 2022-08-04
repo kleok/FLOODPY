@@ -1,6 +1,4 @@
 import os
-import datetime as dt
-from matplotlib.pyplot import axis
 import numpy as np
 import pandas as pd
 from geopandas import gpd
@@ -13,10 +11,7 @@ from rasterstats import zonal_stats
 import multiprocessing as mp
 from Preprocessing_S2_data.sts import sentimeseries
 from Crop_delineation import utils
-import requests
-from rasterio.windows import from_bounds
 from rasterio.merge import merge
-from tqdm.auto import tqdm
 
 class CropDelineation():
     def __init__(self, eodata:sentimeseries, dst_path:str, lc_path:str):
@@ -106,9 +101,12 @@ class CropDelineation():
             ms_im.edge = outfname
             self.estim_paths.append(ms_im.edge)
 
-    def edge_probab_map(self, write:bool=False):
+    def edge_probab_map(self, write:bool=False)->None:
         """Compute final edge probability map, using Equation (6) of original paper.
         Also fix some issues due to nodata values. Epm refers to a temporal range.
+
+        Args:
+            write (bool, optional): Write result to the disk. Defaults to False.
         """
         if hasattr(self, 'estim_paths'):
             pass
@@ -160,8 +158,13 @@ class CropDelineation():
                     dst.set_band_description(1, f"{self.tmp_rng[0]}_{self.tmp_rng[1]}")
 
 
-    def create_series(self, write:bool=False):
-        # TODO: able to create any series
+    def create_series(self, write:bool=False)->None:
+        """Creates the NDVI data series.
+
+        Args:
+            write (bool, optional): Write result to the disk. Defaults to False.
+        """
+        #TODO: able to create any series
 
         # gather absolute paths of ndvi images masked using aoi
         listOfPaths = []
@@ -192,8 +195,13 @@ class CropDelineation():
                         dst.set_band_description(b+1, f"{self.eodt.dates[b].strftime('%Y%m%d')}")
 
 
-    def town_mask(self, aoi:str, write:bool=False):
-        
+    def town_mask(self, aoi:str, write:bool=False)->None:
+        """Mask data with Corine land cover.
+
+        Args:
+            aoi (str): Path to AOI
+            write (bool, optional): Save result to disk. Defaults to False.
+        """
         _, corine_path = utils.corine(self.aoi, to_file = True, fname = os.path.join(self.lc_path, "corine_2018.shp"))
 
         # maintain agricultural corine classes
@@ -227,33 +235,18 @@ class CropDelineation():
             with rio.open(outfname, 'w', **mask_meta) as dst:
                 dst.write(self.masks['town_mask'])
 
-    def lc_mask(self, aoi:str, write:bool = False):
-        '''
-        TODO: modify functionality in case AOI intersects two world cover tiles.
-        '''
-        
-        # works for one polygon/multipolygon
-        aoi = gpd.read_file(aoi).iloc[0].explode().geometry
-    
-        # load worldcover grid
-        s3_url_prefix = "https://esa-worldcover.s3.eu-central-1.amazonaws.com"
-        url = f'{s3_url_prefix}/v100/2020/esa_worldcover_2020_grid.geojson'
-        grid = gpd.read_file(url)
+    def lc_mask(self, aoi:str, write:bool = False)->None:
+        """Download and add WorldCover masking data to the object.
 
-        # get grid tiles intersecting AOI
-        tiles = grid[grid.intersects(aoi)]
+        Args:
+            aoi (str): Path to AOI
+            write (bool, optional): Write result to disk. Defaults to False.
         
-        # works only if AOI covers one tile
-        for tile in tqdm(tiles.ll_tile):
-            url = f"{s3_url_prefix}/v100/2020/map/ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
-            r = requests.get(url, allow_redirects=True)
-            out_fn = f"ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
-            with open(os.path.join(self.lc_path, out_fn), 'wb') as f:
-                f.write(r.content)    
-        
-            
-        left, bottom, right, top = aoi.bounds
-      
+        TODO: Modify functionality in case AOI intersects two world cover tiles->Done in #5
+        """
+
+        tiles = utils.worldcover(aoi, self.lc_path)
+
         if len(tiles) > 1:
             lc_data = os.listdir(self.lc_path)
             raster_data = []
@@ -275,6 +268,7 @@ class CropDelineation():
             out_file = os.path.join(self.lc_path, "LC_mosaic_reprj.tif")
             utils.reproj_match(image = os.path.join(self.lc_path, "LC_mosaic.tif"), base = self.eodt.data[0].NDVI_masked, outfile = out_file)
         else:
+            tile = tiles.ll_tile.iloc[0]
             lc_data = f"ESA_WorldCover_10m_2020_v100_{tile}_Map.tif"
             out_file = os.path.join(self.lc_path, "LC_reprj.tif")
             utils.reproj_match(image = os.path.join(self.lc_path, lc_data), base = self.eodt.data[0].NDVI_masked, outfile = out_file)
@@ -292,9 +286,12 @@ class CropDelineation():
             with rio.open(os.path.join(self.dst_path, 'lc.tif'), 'w', **metadata) as dst:
                 dst.write(img)
 
-    def cloud_mask(self, write:bool=False):
+    def cloud_mask(self, write:bool=False)->None:
         """Create an image containing the number of dates having unreliable pixel value
         based on SCL bands.
+
+        Args:
+            write (bool, optional): Write result to disk. Defaults to False.
         """
         # gather absolute paths of scl images masked using aoi
         listOfPaths = []
@@ -325,7 +322,7 @@ class CropDelineation():
                         dst.set_band_description(b+1, f"{self.eodt.dates[b].strftime('%Y%m%d')}")
 
 
-    def crop_probab_map(self, cube:np.ndarray, cbmeta:dict, write:bool=False):
+    def crop_probab_map(self, cube:np.ndarray, cbmeta:dict, write:bool=False)->None:
         """Interpolate timeseries, where pixels have np.nan value or nodata value
         as defined by cube metadata.
         Args:
@@ -382,7 +379,8 @@ class CropDelineation():
                         dst.write(res)
 
     def active_fields(self):
-
+        """Classifies extracted fields as active or inactive.
+        """
         meta = self.ndviseries_meta.copy()
         meta.update(count=1, dtype=np.uint8, nodata=0)
 
@@ -419,6 +417,13 @@ class CropDelineation():
                 dst.write(active_fields)
 
     def delineation(self, aoi_path:str, unet_pred_path:str, to_file = True)->None:
+        """Performs delineation by combining 2 methodologies, one based on NDVI series and one based on CNNs like Unet.
+
+        Args:
+            aoi_path (str): Path to AOI
+            unet_pred_path (str): Path to Unet result image
+            to_file (bool, optional): Store result to disk. Defaults to True.
+        """
         print('Running delineation...')
 
         # Threshold epm to mean value of the image (edge=1, noedge=0)
@@ -451,7 +456,12 @@ class CropDelineation():
                 with rio.open(outfname, 'w', **self.epm_meta) as dst:
                     dst.write(self.combined_edges)
 
-    def flooded_fields(self, flood_tif_path:str):
+    def flooded_fields(self, flood_tif_path:str)->None:
+        """Extracts the final flooded fields
+
+        Args:
+            flood_tif_path (str): Path to flood Geotiff image from Floodwater classification
+        """
         print('Running flooded fields estimation procedure...')
 
         # Morphological Opening
