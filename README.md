@@ -38,7 +38,7 @@ url: https://cds.climate.copernicus.eu/api/v2
 key: UID:personal API Key
 ```
 
-You can use `aux/install_CDS_key.sh` to install the CDS API key.
+You can use `aux/install_CDS_key.sh` script to install the CDS API key.
 
 ```bash
 $chmod +x install_CDS_key.sh
