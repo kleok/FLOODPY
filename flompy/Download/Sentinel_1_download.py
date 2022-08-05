@@ -27,15 +27,9 @@ This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 """
 from sentinelsat.sentinel import SentinelAPI, read_geojson, geojson_to_wkt
 import os
-import shutil
-import subprocess, glob
-from shapely.geometry import Point, Polygon
-import geopandas as gpd
-import zipfile
-from osgeo import gdal, osr
+import glob
 import time
 import numpy as np
-import pyproj
 import pandas as pd
 
 def check_downloaded_data(S1_GRD_dir,product_df_suffle):
