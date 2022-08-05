@@ -1,11 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jul 29 19:47:35 2022
+Copyright (C) 2021-2022 by K.Karamvasis
+Email: karamvasis_k@hotmail.com
 
-Authors : Kleanthis Karamvasis, Bill Tsironis
+Authors: Tsirwnis Vasileios, Karamvasis Kleanthis, Alekos Falagas
+
+This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
+
+    FLOMPY is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    FLOMPY is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
 """
-
 import os, glob
 import typing
 from tqdm import tqdm
@@ -24,19 +39,17 @@ from tensorflow.keras.layers import (
 from keras_unet.models import satellite_unet
 from patchify import patchify, unpatchify
 
-def get_weights(uuid, name, network_path):
+def get_weights(uuid:str, name:str, network_path:str)->str:
     """Generates three file names for the model, weights and history file and
     the networks readme.
 
-    File name order of returned tuple:
-        * readme
-        * model
-        * weights
-        * history
+    Args:
+        uuid (str): Universal unique identifier of a trained network
+        name (str): Network name
+        network_path (str): Path to network
 
-    :param uuid: Universal unique identifier of a trained network
-    :param name: The networks name
-    :return: Tuple with files in the order mentioned above
+    Returns:
+        str: Path to file with weights 
     """
     base = f"{network_path}/{str(uuid)}-{name}"
 
@@ -45,7 +58,17 @@ def get_weights(uuid, name, network_path):
     return f_weights
 
 
-def read_tif_FLOMPY(index, IMAGE_DIRS,  fit_size=None):
+def read_tif_FLOMPY(index:int, IMAGE_DIRS:list,  fit_size:tuple=None)->np.ndarray:
+    """Reads satellite data and prepares them for inserting into the network.
+
+    Args:
+        index (int): Index of the image
+        IMAGE_DIRS (list): Directory path list with the images 
+        fit_size (tuple, optional): Size to fit data. Defaults to None.
+
+    Returns:
+        np.ndarray: Fitted or not image ready for the network
+    """
     bands_data = []
     for band in ["B02", "B03", "B04", "B08"]:
         base_image_name = glob.glob(IMAGE_DIRS[index]+'/GRANULE/*/IMG_DATA/R10m/*{}*.tif'.format(band))[0]
@@ -62,12 +85,16 @@ def read_tif_FLOMPY(index, IMAGE_DIRS,  fit_size=None):
         return Q
     
 
-def normalize_array(arr):
+def normalize_array(arr:np.ndarray)->np.ndarray:
     """Takes a 3D array as input, iterates over the bands and normalizes those.
 
-    :param arr: input array (original image data)
-    :return: normalized data with values between 0 and 1
+    Args:
+        arr (np.ndarray): Input array (original image data)
+
+    Returns:
+        np.ndarray: Normalized data with values between 0 and 1
     """
+    
     arr_norm = np.zeros(arr.shape, dtype=np.float32)
 
     for i in range(arr.shape[2]):
@@ -79,23 +106,22 @@ def normalize_array(arr):
     return arr_norm
 
 
-def build_fcndk(
-    x: int,
-    y: int,
-    bands: int,
-    labels: int,
-    layers=4,) -> tf.keras.Model:
+def build_fcndk(x: int, y: int, bands: int, labels: int, layers=4,) -> tf.keras.Model:
     """Build a new network model based on the configuration of the networks
     FCNDK2, ..., FCNDK6. Specify the layers to use in the parameters.
 
-    :param x: Number of rows
-    :param y: Number of columns
-    :param bands: Number of bands in the input images
-    :param labels: Number of different labels to choose as the classification
-    :param layers: The number of FCNDK layers; Should be between 2 and 6 [default: 4]
-    :return: Model of the corresponding FCNDK network
+    Args:
+        x (int): Number of rows
+        y (int): Number of columns
+        bands (int): Number of bands in the input images
+        labels (int): Number of different labels to choose as the classification
+        layers (int, optional): The number of FCNDK layers; Should be between 2 and 6. Defaults to 4
+
+    Returns:
+        tf.keras.Model: Model of the corresponding FCNDK network
     """
-    """Model builder function for FCN-DK6."""
+
+    # Model builder function for FCN-DK6
     model = keras.models.Sequential()
     model.add(ZeroPadding2D((2, 2), input_shape=(x, y, bands)))
     model.add(Convolution2D(filters=16, kernel_size=(5, 5), dilation_rate=(1, 1)))
@@ -144,42 +170,29 @@ def build_fcndk(
     return model
 
 
-def build_fcndk5(
-    x: int,
-    y: int,
-    bands: int,
-    labels: int,
-) -> tf.keras.Model:
-    """Wrapper function to build an FCNDK with 5 layers"""
+def build_fcndk5(x:int, y:int, bands:int, labels:int)->tf.keras.Model:
+    """Wrapper function to build an FCNDK with 5 layers."""
     return build_fcndk(x, y, bands, labels, layers=5)
 
 
-def build_fcndk6(
-    x: int,
-    y: int,
-    bands: int,
-    labels: int,
-) -> tf.keras.Model:
-    """Wrapper function to build an FCNDK with 6 layers"""
+def build_fcndk6(x:int, y:int, bands:int, labels:int)->tf.keras.Model:
+    """Wrapper function to build an FCNDK with 6 layers."""
     return build_fcndk(x, y, bands, labels, layers=6)
 
+def build_unet(x:int, y:int, bands:int, labels:int, layers:int = 2)->tf.keras.Model:
+    """Create a model of the popular U-Net network.
 
-def build_unet(
-    x: int,
-    y: int,
-    bands: int,
-    labels: int,
-    layers: int = 2,
-) -> tf.keras.Model:
-    """Create  a model of the popular U-Net network.
+    Args:
+        x (int): Number of rows (x-shape)
+        y (int): Number of columns (y-shape)
+        bands (int): Number of bands (z-shape)
+        labels (int): Number of labels to predict with the network
+        layers (int, optional): Number of layers of the network. Defaults to 2
 
-    :param x: Number of rows (x-shape)
-    :param y: Number of columns (y-shape)
-    :param bands: Number of bands (z-shape)
-    :param lables: Number of labels to predict with the network
-    :param layers: Number of layers of the network
-    :return: Model of the corresponding U-Net network
+    Returns:
+        tf.keras.Model: Model of the corresponding U-Net network
     """
+
     model = satellite_unet(
         input_shape=(x, y, bands),
         num_classes=labels,
@@ -189,20 +202,18 @@ def build_unet(
     return model
 
 
-def build_unet3(
-    x: int,
-    y: int,
-    bands: int,
-    labels: int,
-) -> tf.keras.Model:
-    """Wrapper function to build an UNet with 3 layers"""
+def build_unet3(x:int, y:int, bands:int, labels:int)->tf.keras.Model:
+    """Wrapper function to build an UNet with 3 layers."""
     return build_unet(x, y, bands, labels, layers=3)
 
-
 def build_network(name: str) -> typing.Callable:
-    """Builds a new network, based on the networks name
-    :param name: The networks name
-    :return: The builder function of the corresponding network.
+    """Builds a new network, based on the network name.
+
+    Args:
+        name (str): The network name
+
+    Returns:
+        typing.Callable: The builder function of the corresponding network
     """
     if name.lower() == "fcndk5":
         return build_fcndk5
@@ -226,46 +237,51 @@ def save_tif(array:np.array, name:str, metadata:dict)->None:
         else:
             dst.write(array)
 
-def construct_patches(data, patch_size=512, stride=500, bands=4):
-    '''
+def construct_patches(data:np.ndarray, patch_size:int=512, stride:int=500, bands:int=4)->np.ndarray:
+    """Construct patches over an array.
 
     Args:
-        data (np.array): the image that we want to patchify. 
-                        example shape = (3072,4608,4)
-        patch_size (integer, optional): patch window size. Defaults to 512.
-        stride (integer, optional): stride. Defaults to 500.
-        bands (integer, optional): number of bands. Defaults to 4.
+        data (np.ndarray): The image to be splitted in patches. Example shape (3072,4608,4)
+        patch_size (int, optional): Patch window size. Defaults to 512.
+        stride (int, optional): Stride between patches. Defaults to 500.
+        bands (int, optional): Number of bands. Defaults to 4.
 
     Returns:
-        patches (np.array): array with patches.
-                            example shape (6, 9, 1, 512, 512, 4)
+        np.ndarray: array splitted into patches. Example shape (6, 9, 1, 512, 512, 4)
+    """
 
-    '''
     patches = patchify(data, (patch_size,patch_size,bands), step=stride)
     return patches
 
-def reconstruct_patches (patches, rows, cols, bands):
-    '''
+def reconstruct_patches(patches:np.ndarray, rows:int, cols:int, bands:int)->np.ndarray:
+    """Reconstruct array to original shape from patches.
 
     Args:
-        patches (np.array): array with patches.
-                            example shape (6, 9, 1, 512, 512, 1)
-        rows (integer): first dimension of initial image.
-        cols (integer): second dimension of initial image.
-        bands (integer): number of bands.
+        patches (np.ndarray): Array in patches. Example shape (6, 9, 1, 512, 512, 1)
+        rows (int): First (X) dimension of initial image
+        cols (int): Second (Y) dimension of initial image
+        bands (int): Number of bands
 
     Returns:
-        reconstructed_image (np.array): array with patches.
-                            example shape (3072,4608,1)
-
-    '''
-    
+        np.ndarray: Array restored. Example shape (3072,4608,1)
+    """    
     reconstructed_image = unpatchify(patches,(rows, cols, bands))
     
     return reconstructed_image
 
-def model_predict_batch(A, model, force_cpu, window_size=512, stride = 500):
+def model_predict_batch(A:np.ndarray, model:typing.Callable, force_cpu:bool, window_size:int = 512, stride:int = 500)->np.ndarray:
+    """Estimate delineation using a pretrained model seperated in batches.
 
+    Args:
+        A (np.ndarray): Input data
+        model (typing.Callable): Model to run as typing.Callable object  
+        force_cpu (bool): Use CPU
+        window_size (int, optional): Batch window. Defaults to 512.
+        stride (int, optional): Stride. Defaults to 500.
+
+    Returns:
+        np.ndarray: Returns delineation array
+    """
     # break down A to overlapping batches
     A_batches = construct_patches(A, stride = stride)
 
@@ -295,7 +311,15 @@ def model_predict_batch(A, model, force_cpu, window_size=512, stride = 500):
     return preds
 
 def Crop_delineation_Unet(model_name, model_dir, BASE_DIR , results_pretrained, force_cpu = True):
+    """Delineation over crops using Unet.
 
+    Args:
+        model_name (str): Name of the model
+        model_dir (str): Path to file
+        BASE_DIR (str): Base directory
+        results_pretrained (str): Path to store pretrained data
+        force_cpu (bool, optional): Force CPU acceleration. Defaults to True.
+    """
     if not os.path.exists(results_pretrained):
         os.makedirs(results_pretrained)
 
