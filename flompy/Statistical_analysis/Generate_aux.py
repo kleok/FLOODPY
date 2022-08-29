@@ -31,9 +31,9 @@ import h5py
 from osgeo import gdal
 import numpy as np
 import os, glob
-from utils.Reproject import reproject_image_to_master
 import richdem as rd
 import pyproj
+from ..utils.Reproject import reproject_image_to_master
 
 def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     '''

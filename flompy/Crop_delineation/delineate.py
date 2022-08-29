@@ -32,9 +32,9 @@ from rasterio.mask import mask
 from scipy.ndimage import binary_opening
 from rasterstats import zonal_stats
 import multiprocessing as mp
-from Preprocessing_S2_data.sts import sentimeseries
-from Crop_delineation import utils
 from rasterio.merge import merge
+from ..Preprocessing_S2_data.sts import sentimeseries
+from ..Crop_delineation import utils
 
 class CropDelineation():
     def __init__(self, eodata:sentimeseries, dst_path:str, lc_path:str):
