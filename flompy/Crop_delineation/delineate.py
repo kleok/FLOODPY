@@ -516,8 +516,9 @@ class CropDelineation():
         # Vectorize flood
         flood = ({'properties': {}, 'geometry': s} for i, (s, v) in enumerate(
                 features.shapes(flood_img, connectivity=8, transform=flood_meta['transform'])) if v != 0)
+        # Change transformation to projected, in order to do calculus
         flood = gpd.GeoDataFrame.from_features(flood, crs=flood_meta['crs']).to_crs(self.epm_meta['crs'])
-
+        
         # Zero buffer to correct self-intersected geometries & save as shp
         flood.geometry = flood.geometry.buffer(0)
         # Many geometries to one multipolygon geometry
@@ -545,7 +546,8 @@ class CropDelineation():
             zonal_stats(vectors=flooded_fields, 
                         raster=self.active_fields_fpath,
                         stats='majority',
-                        geojson_out=True))
+                        geojson_out=True),
+            crs=self.epm_meta['crs'])
 
         def actInact(x):
             if x['majority'] == 2:
@@ -565,5 +567,7 @@ class CropDelineation():
         
         if os.path.isfile(flooded_fields_fpath) and os.stat(flooded_fields_fpath).st_size != 0:
             print(f"File {flooded_fields_fpath} already exists.")
-        else:  
+        else:
+            # Set transformation to be common with the flood map crs and save
+            flooded_fields = flooded_fields.to_crs(flood_meta['crs'])
             flooded_fields.to_file(flooded_fields_fpath)

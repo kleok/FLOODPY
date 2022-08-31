@@ -681,10 +681,20 @@ def Get_flood_map(Preprocessing_dir,
     ##########################################################################
     ## Create initial flood map using global thresholding (Step-2)
     ##########################################################################
-    glob_thresh = Kittler(t_score_dataset[multimodality_mask])
-    
-    Flood_global_binary = t_score_dataset < glob_thresh # binary mask (1: water surfaces, 0: non water surfaces)  
+    t_scores_flatten = t_score_dataset[multimodality_mask].flatten()
+    vmin = np.quantile(t_scores_flatten, 0.01)
+    vmax = np.quantile(t_scores_flatten, 0.99)
 
+    t_scores_flatten[t_scores_flatten<vmin]=np.nan
+    t_scores_flatten[t_scores_flatten>vmax]=np.nan
+    t_scores_flatten = t_scores_flatten[~np.isnan(t_scores_flatten)]
+
+    #glob_thresh = Kittler(t_scores_flatten)
+    #print(glob_thresh)
+    glob_thresh = threshold_otsu(t_scores_flatten)
+    print(glob_thresh)
+    Flood_global_binary = t_score_dataset < glob_thresh # binary mask (1: water surfaces, 0: non water surfaces)  
+    
     ##########################################################################
     ##########################################################################
     ## discard high slope regions in order to work on less pixels
@@ -779,11 +789,11 @@ def Get_flood_map(Preprocessing_dir,
                                            Flood_map = Flood_local_map,
                                            RG_weight = processing_parms['RG_weight'],
                                            search_window_size = processing_parms['search_RG_window_size'])
-    
-    Flood_global_map_RG = RG_processing(t_score_dataset,
-                                        Flood_global_binary,
-                                        processing_parms['RG_weight'],
-                                        processing_parms['search_RG_window_size'])
+    Flood_global_map_RG = Flood_global_binary
+    #Flood_global_map_RG = RG_processing(t_score_dataset,
+                                        #Flood_global_binary,
+                                        #processing_parms['RG_weight'],
+                                        #processing_parms['search_RG_window_size'])
         
 
     # diff = np.invert(Flood_global_binary)
@@ -808,7 +818,7 @@ def Get_flood_map(Preprocessing_dir,
     Flood_global_map_RG=Flood_global_map_RG*slope_mask
         
     # morphological filtering of local flood mask
-    Flood_global_map_RG_ref=morphological_postprocessing(Flood_global_map_RG)
+    Flood_global_map_RG_ref=morphological_postprocessing(Flood_global_map_RG, minimum_mapping_unit_area_m2)
     
 
     ##########################################################################

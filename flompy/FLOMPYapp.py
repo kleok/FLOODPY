@@ -274,7 +274,6 @@ class FloodwaterEstimation:
         
         # Data access and processing
         self.relOrbit       = self.template_dict['relOrbit']
-        self.S2tileid       = self.template_dict['S2_TILE']
         self.min_map_area   = float(self.template_dict['minimum_mapping_unit_area_m2'])
         self.CPU            = int(self.template_dict['CPU'])
         self.RAM            = self.template_dict['RAM']
@@ -393,7 +392,7 @@ class FloodwaterEstimation:
         # Get data
         eodata = sentimeseries("S2-timeseries")
         
-        eodata.find_zip(self.S2_dir)
+        eodata.find(self.S2_dir)
         eodata.sort_images(date=True)
         
         print(eodata.cloud_cover)
@@ -401,7 +400,13 @@ class FloodwaterEstimation:
         eodata.getVI("NDVI")
         
         # Clip data
-        eodata.clipbyMask(self.geojson_S1, resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = 'B02', resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = 'B03', resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = 'B04', resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = 'B08', resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = 'B11', resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = 'B12', resize = True, new ="masked")
+        eodata.clipbyMask(self.geojson_S1, band = 'SCL', resize = True, new ="masked")
         eodata.clipbyMask(self.geojson_S1, band = "NDVI", new ="masked")
         
         self.S2timeseries = eodata
