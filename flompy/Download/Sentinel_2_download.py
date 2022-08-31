@@ -86,4 +86,4 @@ def Download_S2_data(AOI, user, passwd, Start_time, End_time, write_dir, product
         api.download_all(products_df.index , directory_path = write_dir)
     else:
         print ("No download option is enabled. Printing the query results...")
-        print (products_df)
+        print (products_df['title'])

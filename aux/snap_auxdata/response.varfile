@@ -1,0 +1,15 @@
+# install4j response file for ESA SNAP 6.0
+deleteSnapDir=ALL
+executeLauncherAction$Boolean=true
+forcePython$Boolean=false
+sys.adminRights$Boolean=false
+sys.component.RSTB$Boolean=false
+sys.component.S1TBX$Boolean=true
+sys.component.S2TBX$Boolean=false
+sys.component.S3TBX$Boolean=false
+sys.component.SMOS$Boolean=false
+sys.component.SNAP$Boolean=false
+sys.installationDir=/home/jovyan/snap
+sys.languageId=en
+sys.programGroupDisabled$Boolean=false
+sys.symlinkDir=/usr/local/bin

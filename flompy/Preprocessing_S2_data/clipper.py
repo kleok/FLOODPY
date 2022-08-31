@@ -218,7 +218,9 @@ class Clipper():
                     return
 
                 if int(resolution) == 20 and resize == True:
-                    logging.info("Extracting {} by mask of inserted SHP and resample to 10 meters resolution...".format(getattr(image, band)))
+                    logging.info("Extracting {} by mask of inserted SHP and resample to 10 meters resolution...".format(
+                        getattr(image, band))
+                                )
                 else:
                     logging.info("Extracting {} by mask of inserted SHP...".format(getattr(image, band)))
 
