@@ -537,7 +537,7 @@ class CropDelineation():
             else:
                 return False
 
-        # Select fields flooded over 10%
+        # Select fields flooded over 30%
         flooded_fields['flooded'] = flooded_fields.apply(lambda x: selected_most_flooded(x, flood), axis=1)
         flooded_fields = flooded_fields.loc[flooded_fields['flooded']==True]
 

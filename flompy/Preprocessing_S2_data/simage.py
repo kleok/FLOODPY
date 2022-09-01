@@ -78,7 +78,7 @@ class senimage():
             path (str, path-like): Path to file
             file (str): Name of the file
         """
-        logging.info("  - Reading {}".format(os.path.join(self.path, self.name, file)))
+        #logging.info("  - Reading {}".format(os.path.join(self.path, self.name, file)))
         tree = Etree.parse(os.path.join(self.path, self.name, file))
         root = tree.getroot()
         self.satellite = root[0][0][9][0].text
@@ -91,7 +91,7 @@ class senimage():
         self.processing_level = root[0][0][3].text
         self.tile_id = self.name[39:44]
         self.orbit = root[0][0][9][3].text
-        logging.info("  - Done!")
+        #logging.info("  - Done!")
 
     @staticmethod
     def setResolution(band):
@@ -177,7 +177,7 @@ class senimage():
             bands = ['B02', 'B03', 'B04', 'B08', 'B05', 'B06', 'B07', 'B8A', 'B11', 'B12']
             images = []
             for b in bands:
-                logging.info("Reading {}".format(getattr(self, b)))
+                # logging.info("Reading {}".format(getattr(self, b)))
                 image = rasterio.open(getattr(self, b))
                 setattr(self, 'rasterio{}'.format(b), image)
                 images.append(image)
@@ -185,7 +185,7 @@ class senimage():
             return images
             
         else:
-            logging.info("Reading {}".format(getattr(self, band)))
+            # logging.info("Reading {}".format(getattr(self, band)))
             image = rasterio.open(getattr(self, band))
             setattr(self, 'rasterio{}'.format(band), image)
         
@@ -207,7 +207,7 @@ class senimage():
              ndarray: Image as numpy array
         """
 
-        logging.info("Reading array...")
+        #logging.info("Reading array...")
         if isinstance(images, list):
             arrays = []
             for image in images:
@@ -298,7 +298,7 @@ class senimage():
                 image = rasterio.open(getattr(self, index))
                 setattr(self, 'rasterio{}'.format(index), image)
                 
-                logging.info("Done!")
+                #logging.info("Done!")
 
         elif index == "NDMI":
             if os.path.isfile(os.path.join(self.datapath_20, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))):

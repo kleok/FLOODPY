@@ -190,7 +190,6 @@ class FloodwaterEstimation:
         """customTemplateFile and scihub account is required.""" 
         self.customTemplateFile = customTemplateFile
         self.cwd = os.path.abspath(os.getcwd())
-        return
 
     def startup(self):
         """The starting point of the workflow. It runs everytime. 
@@ -201,7 +200,6 @@ class FloodwaterEstimation:
         """
     
         #-- Reading configuration parameters
-        
         template_file = os.path.join(self.cwd, self.customTemplateFile)
         self.template_dict=read_template(template_file)
         [print(key,':',value) for key, value in self.template_dict.items()]
@@ -224,7 +222,6 @@ class FloodwaterEstimation:
         self.LONMIN         = float(self.template_dict['LONMIN'])
         self.LATMAX         = float(self.template_dict['LATMAX'])
         self.LONMAX         = float(self.template_dict['LONMAX'])
-        
 
         #-- Creating directory structure
         if not os.path.exists(self.snap_dir): os.makedirs(self.snap_dir)
@@ -232,7 +229,7 @@ class FloodwaterEstimation:
         self.graph_dir = os.path.join(self.scriptsfolder,'Preprocessing_S1_data/Graphs')
         assert os.path.exists(self.graph_dir)
         assert os.path.exists(self.gptcommand)
-        
+
         self.S1_GRD_dir = os.path.join(self.projectfolder,'Sentinel_1_GRD_imagery')
         self.ERA5_dir = os.path.join(self.projectfolder,'ERA5')
         self.Preprocessing_dir = os.path.join(self.projectfolder, 'Preprocessed')
@@ -252,14 +249,14 @@ class FloodwaterEstimation:
                             self.Results_crop_delineation]
         
         [os.mkdir(directory) for directory in self.directories if not os.path.exists(directory)]
-          
+
         
         if self.AOI_File.upper() == "NONE":
             self.bbox           = [self.LONMIN,
                                    self.LATMIN,
                                    self.LONMAX,
                                    self.LATMAX,] 
-    
+
             self.geojson_S1     = Coords_to_geojson(self.bbox,
                                                     self.projectfolder,
                                                     '{}_AOI.geojson'.format(self.projectname))
@@ -267,7 +264,7 @@ class FloodwaterEstimation:
             self.bbox, self.geojson_S1 = Input_vector_to_geojson(self.AOI_File,
                                                                  self.projectfolder,
                                                                  '{}_AOI.geojson'.format(self.projectname))
-        
+
         #Precipitation information
         self.days_back     = int(self.template_dict['days_back'])
         self.rain_thres     = float(self.template_dict['accumulated_precipitation_threshold'])
@@ -513,5 +510,6 @@ def main(iargs=None):
 
 ###########################################################################################
 if __name__ == '__main__':
+    print("fvaf")
     main()
     
