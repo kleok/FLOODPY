@@ -15,7 +15,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-# FIXME: #DAYS BEFORE ?
+
 def dateRange(given_date:str, days_diff:int=30)->Tuple[str, str]:      
     """Produce a temporal range.
 
@@ -47,29 +47,29 @@ def cftime_to_datetime(cfdatetime):
     return datetime.datetime(year,month,day,hour,minute,second)
 
 
-def era5_data(aoi, flood_date, start_datetime, end_datetime, ERA5_dir)->pd.DataFrame:
-    """Retrieve ERA5 data hourly.
+def era5_data(aoi:list, flood_date:datetime.datetime, start_datetime:datetime.datetime, end_datetime:datetime.datetime, ERA5_dir:str)->pd.DataFrame:
+    """Retrieve ERA5 data hourly, using HDA API.
 
     Args:
-        aoi (shapely.geometry.Polygon): Area of interest.
-        flood_event_date (str): Date of flood event.
+        aoi (list): Area of interest bounding box coordinates.
+        flood_date (datetime.datetime): Date of flood event.
+        start_datetime (datetime.datetime): Days to examine before flood event.
+        end_datetime (datetime.datetime): Days to examine after flood event.
         ERA5_dir (str): Location where retrieved data will be saved.
 
     Returns:
-        pd.DataFrame: Retrieved dataset.
+        pd.DataFrame: _description_
     """
+
     flood_event_date = flood_date.strftime('%Y-%m-%d')                    
     start_date=start_datetime.strftime('%Y-%m-%d')
     end_date=end_datetime.strftime('%Y-%m-%d')
     minx, miny, maxx, maxy = aoi
-    
-    LONMIN, LATMIN,  LONMAX, LATMAX = aoi
-    bbox_cdsapi = [LATMAX, LONMIN, LATMIN, LONMAX, ]
 
     precipitation_filename_df = os.path.join(ERA5_dir,'ERA5_{Start_time}_{End_time}_{bbox_cdsapi}.csv'.format(
         Start_time=start_datetime.strftime("%Y%m%dT%H%M%S"),
         End_time=end_datetime.strftime("%Y%m%dT%H%M%S"),
-        bbox_cdsapi='_'.join(str(round(e,5)) for e in bbox_cdsapi)))
+        bbox_cdsapi='_'.join(str(round(e,5)) for e in aoi)))
     
     request = {
         'datasetId': 'EO:ECMWF:DAT:REANALYSIS_ERA5_SINGLE_LEVELS',
@@ -134,7 +134,7 @@ def era5_data(aoi, flood_date, start_datetime, end_datetime, ERA5_dir)->pd.DataF
     ds = xr.open_dataset(m['filename'])
     df = ds.to_dataframe()
     
-    Precipitation_data = pd.DataFrame( index = df.index)
+    Precipitation_data = pd.DataFrame(index = df.index)
 
     ERA5_data=netCDF4.Dataset(m['filename'])
     ERA5_variables = list(ERA5_data.variables.keys())
@@ -174,12 +174,12 @@ def era5_data(aoi, flood_date, start_datetime, end_datetime, ERA5_dir)->pd.DataF
 
 
 
-# TODO: Delete zip after unzip? | Check if .SAFE exists, not .zip
-def S1_data(aoi, path:str):
-    """Retrieve Sentinel-1 data.
+
+def S1_data(aoi:list, path:str):
+    """Retrieve Sentinel-1 data, using HDA API.
 
     Args:
-        aoi (shapely.geometry.Polygon): Area of interest.
+        aoi (list): Area of interest bounding box coordinates.
         path (str): Location where retrieved data will be saved and\
             'S1_products.csv' is saved.
 
@@ -220,7 +220,7 @@ def S1_data(aoi, path:str):
     s1_prod = pd.read_csv(os.path.join(path, 'S1_products.csv'))
     
     # For each entry in 'S1_products.csv', define temporal range of 1 day & orbit direction
-    for index, row in s1_prod.iterrows():                                   # FIXME: Debbug subset
+    for index, row in s1_prod.iterrows():
         start_date, end_date, orbit_dir = _queryArgs(row)
 
         request = {
@@ -245,7 +245,6 @@ def S1_data(aoi, path:str):
                 "value": orbit_dir
             }]
         }
-        # print(f"\n{index} {request}")
 
         os.chdir(path)
         c = Client()
@@ -269,12 +268,12 @@ def S1_data(aoi, path:str):
     return 0
 
 
-# TODO: Delete zip after unzip? | Check if .SAFE exists, not .zip
-def S2_data(aoi, path:str):
-    """Retrieve Sentinel-2 data.
+
+def S2_data(aoi:list, path:str):
+    """Retrieve Sentinel-2 data, using HDA API.
 
     Args:
-        aoi (shapely.geometry.Polygon): Area of interest.
+        aoi (list): Area of interest bounding box coordinates.
         path (str): Location where retrieved data will be saved and\
             'S2_products.csv' is saved.
 
@@ -315,7 +314,7 @@ def S2_data(aoi, path:str):
     s2_prod = pd.read_csv(os.path.join(path, 'S2_products.csv'))
     
     # For each entry in 'S2_products.csv', define temporal arguments and tilename
-    for index, row in s2_prod.iterrows():                       # FIXME: Debbug subset
+    for index, row in s2_prod.iterrows():
         start_date, end_date, tilename = _queryArgs(row)
 
         request = {
