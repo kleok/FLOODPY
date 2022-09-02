@@ -392,7 +392,6 @@ class FloodwaterEstimation:
         eodata.find(self.S2_dir)
         eodata.sort_images(date=True)
         
-        print(eodata.cloud_cover)
         # Get VIs
         eodata.getVI("NDVI")
         
