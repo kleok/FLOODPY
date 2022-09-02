@@ -692,7 +692,7 @@ def Get_flood_map(Preprocessing_dir,
     #glob_thresh = Kittler(t_scores_flatten)
     #print(glob_thresh)
     glob_thresh = threshold_otsu(t_scores_flatten)
-    print(glob_thresh)
+    #print(glob_thresh)
     Flood_global_binary = t_score_dataset < glob_thresh # binary mask (1: water surfaces, 0: non water surfaces)  
     
     ##########################################################################

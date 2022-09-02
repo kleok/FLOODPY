@@ -84,7 +84,8 @@ def template():
     <div class='legend-title'>Legend</div>
     <div class='legend-scale'>
       <ul class='legend-labels'>
-        <li><span style='background:grey;opacity:0.7;'></span>NDVI</li>
+        <li><span style='background:WhiteSmoke;opacity:0.7;'></span>High NDVI</li>
+        <li><span style='background:#202020;opacity:0.7;'></span>Low NDVI</li>
         <li><span style='background:green;opacity:0.7;'></span>Cultivated Flooded Field</li>
         <li><span style='background:red;opacity:0.7;'></span>Not-Cultivated Flooded Field</li>
 
