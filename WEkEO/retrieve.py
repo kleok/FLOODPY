@@ -239,7 +239,7 @@ def S1_data(aoi:list, path:str):
                 "value": "GRD"
             },{
                 "name": "timeliness",
-                "value": "Fast-24h"
+                "value": row['timeliness']
             },{
                 "name": "orbitDirection",
                 "value": orbit_dir
