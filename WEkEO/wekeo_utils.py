@@ -1,3 +1,50 @@
+import os
+import numpy as np
+import rasterio as rio
+from rasterio.warp import calculate_default_transform, reproject, Resampling
+
+
+def ndvi_wgs84(app):
+
+    img_id = np.argmin(getattr(app.S2timeseries, 'cloud_cover'))
+    ndvi_fpath = getattr(app.S2timeseries, 'data')[img_id].NDVI_masked
+
+    dst_crs='EPSG:4326'
+    with rio.open(ndvi_fpath, 'r+') as src:
+        src_crs = src.crs
+
+        dst_transform, width, height = calculate_default_transform(src_crs, dst_crs, src.width, src.height, *src.bounds)
+
+        kwargs = src.meta.copy()
+        kwargs.update({
+            'crs': dst_crs,
+            'transform': dst_transform,
+            'width': width,
+            'height': height})
+
+        out_path = os.path.join(app.S2_dir, 'ndvi_4326.tif')
+        with rio.open(out_path, 'w', **kwargs) as dst:
+            for i in range(1, src.count + 1):
+                reproject(
+                    source=rio.band(src, i),
+                    destination=rio.band(dst, i),
+                    src_transform=src.transform,
+                    src_crs=src.crs,
+                    dst_transform=dst_transform,
+                    dst_crs=dst_crs,
+                    resampling=Resampling.nearest)
+
+    with rio.open(out_path, 'r') as src:
+        ndvi = src.read(1)
+        ndvi_bounds = src.bounds
+
+    ndvi_bounds = [[ndvi_bounds.bottom, ndvi_bounds.left], [ndvi_bounds.top, ndvi_bounds.right]]
+    
+    return ndvi, ndvi_bounds
+
+
+
+
 def template():
     jvscrpt = """
     {% macro html(this, kwargs) %}
@@ -37,9 +84,9 @@ def template():
     <div class='legend-title'>Legend</div>
     <div class='legend-scale'>
       <ul class='legend-labels'>
-        <li><span style='background:blue;opacity:0.7;'></span>Flood</li>
-        <li><span style='background:green;opacity:0.7;'></span>Cultivated Field</li>
-        <li><span style='background:red;opacity:0.7;'></span>Not-Cultivated Field</li>
+        <li><span style='background:grey;opacity:0.7;'></span>NDVI</li>
+        <li><span style='background:green;opacity:0.7;'></span>Cultivated Flooded Field</li>
+        <li><span style='background:red;opacity:0.7;'></span>Not-Cultivated Flooded Field</li>
 
       </ul>
     </div>
