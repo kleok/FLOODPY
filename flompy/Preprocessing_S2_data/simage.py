@@ -91,7 +91,7 @@ class senimage():
         self.cloud_cover = "{:.3f}".format(float(root.findall(".//Cloud_Coverage_Assessment")[0].text))
         self.processing_level = root.findall(".//PROCESSING_LEVEL")[0].text
         self.tile_id = self.name[39:44]
-        self.orbit = root[0][0][9][3].text
+        self.orbit = root.findall(".//SENSING_ORBIT_NUMBER")[0].text
         #logging.info("  - Done!")
 
     @staticmethod
