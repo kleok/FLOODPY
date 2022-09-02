@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(message)s', level = logging.INFO)
 
 # Define a lambda function to convert dates
-convert = lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.%f')
+convert = lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 class senimage():
     """A Sentinel 2 image."""
@@ -81,14 +81,15 @@ class senimage():
         #logging.info("  - Reading {}".format(os.path.join(self.path, self.name, file)))
         tree = Etree.parse(os.path.join(self.path, self.name, file))
         root = tree.getroot()
-        self.satellite = root[0][0][9][0].text
+        self.satellite = root.findall(".//SPACECRAFT_NAME")[0].text
         self.str_datetime = self.name[11:26]
-        self.datetime = convert(root[0][0][9][2].text.split('Z')[0])
+        self.datetime = convert(root.findall(".//DATATAKE_SENSING_START")[0].text)
         self.date = self.datetime.date()
         self.time = self.datetime.time()
-        self.gml_coordinates = root[1][0][0][0][0].text
-        self.cloud_cover = float("{:.3f}".format(float(root[3][0].text)))
-        self.processing_level = root[0][0][3].text
+        self.gml_coordinates = root.findall(".//EXT_POS_LIST")[0].text
+  
+        self.cloud_cover = "{:.3f}".format(float(root.findall(".//Cloud_Coverage_Assessment")[0].text))
+        self.processing_level = root.findall(".//PROCESSING_LEVEL")[0].text
         self.tile_id = self.name[39:44]
         self.orbit = root[0][0][9][3].text
         #logging.info("  - Done!")
