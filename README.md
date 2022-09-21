@@ -46,6 +46,8 @@ $./install_CDS_key.sh
 More details on CDSAPI can be found [here](https://cds.climate.copernicus.eu/api-how-to).
 
 ### 1.5 Download FLOMPY
+
+
 git clone https://github.com/kleok/FLOMPY.git
 
 on GNU/Linux, append to .bashrc file:
@@ -60,9 +62,9 @@ export PATH=${PATH}:${FLOMPY_HOME}
 FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. FLOMPYapp.py includes the functionalities for FLOMPY's routine processing for generating floodwater maps. User should provide the following information at configuration file FLOMPYapp_template.cfg
 We suggest you to can have a look at the plots for each Sentinel-1 image (located at projectfolder) to find out if you have a considerable decrease of backscatter in the flood image with respect to the baseline images. If you are able to identify a decrease of backscatter in the flood image (darker tones), then you can expect that FLOMPY will generate a useful floodwater map. In cases that you have similar or bigger backscatter values of flood image with respect to baseline images (due to complex backscatter mechanisms) FLOMPY`s results cannot be trusted.
 ```
-					#######################################
-					#             CONFIGURATION FILE      #
-					#######################################
+#######################################
+#             CONFIGURATION FILE      #
+#######################################
 
 #######################################
 # 				A. Project Definition #
@@ -146,17 +148,14 @@ accumulated_precipitation_threshold = 40
 #       the Sentinel-1 image closer to the Flood_datetime is selected. 
 relOrbit=Auto
 
-#E2. The code of Sentinel-2 tile. (Default value: Auto)
-S2_TILE=Auto
-
-#E3. The minimum mapping unit area in square meters
+#E2. The minimum mapping unit area in square meters
 minimum_mapping_unit_area_m2=4000
 
-#E4. Computing resources to employ
+#E3. Computing resources to employ
 CPU=8
 RAM=20G
 
-#E5. Credentials for Sentinel-1/2 downloading
+#E4. Credentials for Sentinel-1/2 downloading
 scihub_username = ******
 scihub_password = ******
 ```
@@ -164,31 +163,31 @@ scihub_password = ******
 After the setup of the configuration file you can use the default recipe script FLOMPYapp.py to run the following following individual steps that will
 automatically run for the selected AOI:
 
-1. Download Precipitation data from ERA5.
+2.1. Download Precipitation data from ERA5.
 
 ```bash
 $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_Precipitation_data
 ```
 
-2. Download Sentinel 1 data.
+2.2. Download Sentinel 1 data.
 
 ```bash
 $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S1_data
 ```
 
-3. Preprocessing Sentinel 1 data.
+2.3. Preprocessing Sentinel 1 data.
 
 ```bash
 $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Preprocessing_S1_data
 ```
 
-4. Sentinel 1 statistical analysis.
+2.4. Sentinel 1 statistical analysis.
 
 ```bash
 $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Statistical_analysis
 ```
 
-5. And at last the floodwater classification step. At this point the result of the estimated flooded region is exported.
+2.5. And at last the floodwater classification step. At this point the result of the estimated flooded region is exported.
 
 ```bash
 $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Floodwater_classification
@@ -196,26 +195,26 @@ $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Floodwater_classific
 
 If the flood was on an agricultural region you can also run the following steps to estimate the amount of the damaged fields by performing delineation (with a methodology based on Yan & Roy, 2014 and a pretrained Unet delineation network) and active-inactive field classification based on NDVI timeseries with Sentinel 2 data. For more information check at Gounari et al. 2022 bellow.
 
-6. (Optional) Download Sentinel 2 multispectral data.
+2.6. (Optional) Download Sentinel 2 multispectral data.
 
 ```bash
 $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S2_data
 ```
 
-7. (Optional, requires 6) Run crop delineation and field classification
+2.7. (Optional, requires 6) Run crop delineation and field classification
 
 ```bash
 $python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Crop_delineation
 ```
 
 ## 3. Documentation and citation
-Algorithms implemented in the software are described in detail at our publication. If FLOMPY was useful for you, we encourage you to cite the following work.
+Algorithms implemented in the software are described in detail at our publications. If FLOMPY was useful for you, we encourage you to cite the following work.
 
-Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapping Using Sentinel-1 Intensity Time Series. Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
+- Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapping Using Sentinel-1 Intensity Time Series. Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
 
-Gounari 0., Falagas A., Karamvasis K., Tsironis V., Karathanassi V., Karantzalos K.: Floodwater Mapping & Extraction of Flood-Affected Agricultural Fields. Living Planet Symposium Bonn 23-27 May 2022. https://drive.google.com/file/d/1HiGkep3wx45gAQT6Kq34CdECMpQc8GUV/view?usp=sharing
+- Gounari 0., Falagas A., Karamvasis K., Tsironis V., Karathanassi V., Karantzalos K.: Floodwater Mapping & Extraction of Flood-Affected Agricultural Fields. Living Planet Symposium Bonn 23-27 May 2022. https://drive.google.com/file/d/1HiGkep3wx45gAQT6Kq34CdECMpQc8GUV/view?usp=sharing
 
-Zotou I., Karamvasis K., Karathanassi V., Tsihrintzis V.: Sensitivity of a coupled 1D/2D model in input parameter variation exploiting Sentinel-1-derived flood map. 7th IAHR Europe Congress. September 7-9, 2022. Page 247 at https://www.iahreuropecongress.org/PDF/IAHR2022_ABSTRACT_BOOK.pdf 
+- Zotou I., Karamvasis K., Karathanassi V., Tsihrintzis V.: Sensitivity of a coupled 1D/2D model in input parameter variation exploiting Sentinel-1-derived flood map. 7th IAHR Europe Congress. September 7-9, 2022. Page 247 at https://www.iahreuropecongress.org/PDF/IAHR2022_ABSTRACT_BOOK.pdf 
 
 ## 4. Contact us
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome! :heart:
