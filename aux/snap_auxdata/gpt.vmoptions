@@ -1,0 +1,6 @@
+# Enter one VM parameter per line
+# For example, to adjust the maximum memory usage to 512 MB, uncomment the following line:
+# -Xmx512m
+# To include another file, uncomment the following line:
+# -include-options [path to other .vmoption file]
+-Xmx21G

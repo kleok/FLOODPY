@@ -1,0 +1,34 @@
+name: flompy
+channels:
+  - conda-forge
+  - anaconda
+  - https://conda.anaconda.org/conda-forge
+dependencies:
+  - awscli==1.24.10
+  - cdsapi==0.5.1
+  - pandas==1.1.5
+  - geopandas==0.9.0
+  - numpy==1.19.5
+  - netCDF4==1.6.0
+  - tqdm==4.64.0
+  - requests==2.27.1
+  - sentinelsat==1.1.1
+  - shapely==1.8.2
+  - h5py==3.1.0
+  - scikit-image==0.17.2
+  - joblib==1.1.0
+  - matplotlib==3.3.4
+  - richdem==0.3.4
+  - pyproj==3.0.1
+  - seaborn==0.11.2
+  - rasterio==1.2.10
+  - rasterstats==0.17.0
+  - tensorflow==2.6.2
+  - pip==21.3.1 
+  - pip:
+    - keras_unet==0.1.2
+    - gdal==2.2.3
+    - scipy==1.5.4
+    - patchify==0.2.2
+    - sklearn==0.0
+
