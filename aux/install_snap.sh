@@ -1,7 +1,7 @@
 # Get and install ESA-SNAP
 # Alekos Falagas (alek.falagas@gmail.com)
 
-INSTALLATION_DIR="/home/jovyan/snap"
+INSTALLATION_DIR="$HOME/snap"
 RESPONSE_FILE="./snap_auxdata/response.varfile"
 GPT_OPTIONS="./snap_auxdata/gpt.vmoptions"
 SYM_LINKS="/usr/local/bin"
