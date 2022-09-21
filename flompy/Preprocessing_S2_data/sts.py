@@ -26,10 +26,10 @@ import os
 import fnmatch
 import zipfile
 
-from .simage import senimage
-from .exceptions import NoDataError, BBOXError, imageError
-from .clipper import Clipper
-from .ts import timeseries
+from flompy.Preprocessing_S2_data.simage import senimage
+from flompy.Preprocessing_S2_data.exceptions import NoDataError, BBOXError, imageError
+from flompy.Preprocessing_S2_data.clipper import Clipper
+from flompy.Preprocessing_S2_data.ts import timeseries
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(message)s', level = logging.INFO)

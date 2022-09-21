@@ -29,8 +29,8 @@ import fnmatch
 import rasterio
 import datetime
 from rasterio.enums import Resampling
-from .vi import vi
-from .exceptions import VegetationIndexNotInList, BandNotFound
+from flompy.Preprocessing_S2_data.vi import vi
+from flompy.Preprocessing_S2_data.exceptions import VegetationIndexNotInList, BandNotFound
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(message)s', level = logging.INFO)

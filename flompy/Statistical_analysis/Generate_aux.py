@@ -33,7 +33,7 @@ import numpy as np
 import os, glob
 import richdem as rd
 import pyproj
-from ..utils.Reproject import reproject_image_to_master
+from flompy.utils.Reproject import reproject_image_to_master
 
 def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     '''
