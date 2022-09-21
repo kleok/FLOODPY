@@ -16,22 +16,19 @@ This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS.
 
 The installation notes below are tested only on Linux. Recommended minimum setup: Python 3.6, SNAP 8.0
 
-### 1.1 Create python environment 
-FLOMPY is written in Python3 and relies on several Python modules, check the file [FLOMPY_env.yml](https://github.com/kleok/FLOMPY/blob/main/FLOMPY_env.yml) for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management. You can also check the [requirements.txt](https://github.com/kleok/FLOMPY/blob/main/requirements.txt) file for installation on a Python3 virtual enviroment.
-
-### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/previous-versions/)
+### 1.1 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/previous-versions/)
 
 For the installation of ESA SNAP you can run the automated script [aux/install_snap.sh](https://github.com/kleok/FLOMPY/blob/main/aux/install_snap.sh) for downloading and installing the official Linux installer from the official ESA repository. To install SNAP run the following commands:
 
 ```bash
-$chmod +x install_snap.sh
-$./install_snap.sh
+chmod +x install_snap.sh
+./install_snap.sh
 ```
 
-### 1.3 Account setup for downloading Sentinel-1 acquisitions
+### 1.2 Account setup for downloading Sentinel-1 acquisitions
 Sentinel-1 data download functionality require user credentials. More information [here](https://scihub.copernicus.eu/)
 
-### 1.4 Account setup for downloading global atmospheric model data
+### 1.3 Account setup for downloading global atmospheric model data
 ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS). You have to create a new account on the CDS website if you don't own a user account yet. After the creation of your profile, you will find your user id (UID) and your personal API Key. Now, a ```.cdsapirc``` file must be created under your ```HOME``` directory with the following information:
 ```
 url: https://cds.climate.copernicus.eu/api/v2
@@ -40,15 +37,35 @@ key: UID:personal API Key
 In case you dont want to create the .cdsapirc file manually, you can run [aux/install_CDS_key.sh](https://github.com/kleok/FLOMPY/blob/main/aux/install_CDS_key.sh) script as follows:
 
 ```bash
-$chmod +x install_CDS_key.sh
-$./install_CDS_key.sh
+chmod +x install_CDS_key.sh
+./install_CDS_key.sh
 ```
 More details on CDSAPI can be found [here](https://cds.climate.copernicus.eu/api-how-to).
 
-### 1.5 Download FLOMPY
+### 1.4 Download FLOMPY
+First you have to download Flompy toolbox using the following command
+```git clone https://github.com/kleok/FLOMPY.git```
 
+### 1.5 Create python environment for FLOMPY
 
-git clone https://github.com/kleok/FLOMPY.git
+FLOMPY is written in Python3 and relies on several Python modules. You can install them by using conda or pip.
+
+- Using **conda**
+Create a new conda environement with required packages using the the file [FLOMPY_env.yml](https://github.com/kleok/FLOMPY/blob/main/FLOMPY_env.yml).
+
+```
+conda env create -f ~/FLOMPY/FLOMPY_env.yml
+```
+
+- Using **pip**
+  You can install python packages using [setup.py](https://github.com/kleok/FLOMPY/blob/main/setup.py)
+  
+```
+cd ~/FLOMPY
+pip install .
+```
+
+### 1.6 Set environmental variables
 
 on GNU/Linux, append to .bashrc file:
 ```
@@ -56,6 +73,7 @@ export FLOMPY_HOME=~/FLOMPY/flompy
 export PYTHONPATH=${PYTHONPATH}:${FLOMPY_HOME}
 export PATH=${PATH}:${FLOMPY_HOME}
 ```
+
 ## 2. Running Flompy
 [FLOMPYapp.py]("https://github.com/kleok/FLOMPY/blob/main/flompy/FLOMPYapp.py")
 
@@ -163,48 +181,48 @@ scihub_password = ******
 After the setup of the configuration file you can use the default recipe script FLOMPYapp.py to run the following following individual steps that will
 automatically run for the selected AOI:
 
-2.1. Download Precipitation data from ERA5.
+### 2.1. Download Precipitation data from ERA5.
 
-```bash
-$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_Precipitation_data
+```
+FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_Precipitation_data
 ```
 
-2.2. Download Sentinel 1 data.
+### 2.2. Download Sentinel 1 data.
 
-```bash
-$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S1_data
+```
+FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S1_data
 ```
 
-2.3. Preprocessing Sentinel 1 data.
+### 2.3. Preprocessing Sentinel 1 data.
 
-```bash
-$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Preprocessing_S1_data
+```
+FLOMPYapp.py FLOMPYapp_template.cfg --dostep Preprocessing_S1_data
 ```
 
-2.4. Sentinel 1 statistical analysis.
+### 2.4. Sentinel 1 statistical analysis.
 
-```bash
-$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Statistical_analysis
+```
+FLOMPYapp.py FLOMPYapp_template.cfg --dostep Statistical_analysis
 ```
 
-2.5. And at last the floodwater classification step. At this point the result of the estimated flooded region is exported.
+### 2.5. And at last the floodwater classification step. At this point the result of the estimated flooded region is exported.
 
-```bash
-$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Floodwater_classification
+```
+FLOMPYapp.py FLOMPYapp_template.cfg --dostep Floodwater_classification
 ```
 
 If the flood was on an agricultural region you can also run the following steps to estimate the amount of the damaged fields by performing delineation (with a methodology based on Yan & Roy, 2014 and a pretrained Unet delineation network) and active-inactive field classification based on NDVI timeseries with Sentinel 2 data. For more information check at Gounari et al. 2022 bellow.
 
-2.6. (Optional) Download Sentinel 2 multispectral data.
+### 2.6. (Optional) Download Sentinel 2 multispectral data.
 
-```bash
-$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S2_data
+```
+FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S2_data
 ```
 
-2.7. (Optional, requires 6) Run crop delineation and field classification
+### 2.7. (Optional, requires 6) Run crop delineation and field classification
 
-```bash
-$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Crop_delineation
+```
+FLOMPYapp.py FLOMPYapp_template.cfg --dostep Crop_delineation
 ```
 
 ## 3. Documentation and citation
