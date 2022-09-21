@@ -17,11 +17,11 @@ This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS.
 The installation notes below are tested only on Linux. Recommended minimum setup: Python 3.6, SNAP 8.0
 
 ### 1.1 Create python environment 
-FLOMPY is written in Python3 and relies on several Python modules, check the file [FLOMPY_0.2_env.yml](https://github.com/kleok/FLOMPY/blob/main/docs/FLOMPY_0.2_env.yml) for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management. You can also check the requirements.txt file for installation on a Python3 virtual enviroment.
+FLOMPY is written in Python3 and relies on several Python modules, check the file [FLOMPY_env.yml](https://github.com/kleok/FLOMPY/blob/main/FLOMPY_env.yml) for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management. You can also check the [requirements.txt](https://github.com/kleok/FLOMPY/blob/main/requirements.txt) file for installation on a Python3 virtual enviroment.
 
 ### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/)
 
-For the installation of ESA SNAP run the automated script (aux/install_snap.sh) for downloading and installing the official Linux installer from the official ESA repository. To install SNAP run the following commands:
+For the installation of ESA SNAP run the automated script [aux/install_snap.sh]( for downloading and installing the official Linux installer from the official ESA repository. To install SNAP run the following commands:
 
 ```bash
 $chmod +x install_snap.sh
