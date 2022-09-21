@@ -85,7 +85,7 @@ We suggest you to can have a look at the plots for each Sentinel-1 image (locate
 #######################################
 
 #######################################
-# 				A. Project Definition #
+# A. Project Definition #
 #######################################
 #A1. The name of your project withough special characters.
 Projectname = Palamas
@@ -104,7 +104,7 @@ snap_dir = /home/kleanthis/.snap/auxdata/Orbits/Sentinel-1
 GPTBIN_PATH=/home/kleanthis/bin/snap8/snap/bin/gpt
 
 ##########################################
-#   B. Flood event temporal information  #
+# B. Flood event temporal information  #
 ##########################################
 #---------------------- Instructions------------------------
 # Your have to provide the datetime of your flood event. Make sure that
@@ -125,7 +125,7 @@ before_flood_days = 60
 after_flood_days = 3
 
 #########################################
-#    C. Flood event spatial information #
+# C. Flood event spatial information #
 #########################################
 #---------------------- Instructions------------------------
 # You can provide AOI VECTOR FILE or AOI BBOX. 
@@ -143,7 +143,7 @@ LONMAX=22.245
 LATMAX=39.518
 
 ###################################
-#    D. Precipitation information #
+# D. Precipitation information #
 ###################################
 #---------------------- Instructions------------------------
 #  Based on your knowledge, provide information related to the 
@@ -159,7 +159,7 @@ days_back = 5
 accumulated_precipitation_threshold = 40
 
 ########################################
-# 	  E.  Data access and processing    #
+# E.  Data access and processing    #
 ########################################
 #E1. The number of Sentinel-1 relative orbit. The default 
 #       value is Auto. Auto means that the relative orbit that has
