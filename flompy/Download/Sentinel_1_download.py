@@ -27,15 +27,9 @@ This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 """
 from sentinelsat.sentinel import SentinelAPI, read_geojson, geojson_to_wkt
 import os
-import shutil
-import subprocess, glob
-from shapely.geometry import Point, Polygon
-import geopandas as gpd
-import zipfile
-from osgeo import gdal, osr
+import glob
 import time
 import numpy as np
-import pyproj
 import pandas as pd
 
 def check_downloaded_data(S1_GRD_dir,product_df_suffle):
@@ -152,7 +146,8 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
                 relOrbit,
                 flood_datetime,
                 time_sleep=1800, # half an hour
-                max_tries=50):
+                max_tries=50,
+                download=True):
     '''
     This function is the main functionaliry for downloading Sentinel-1 GRD data.
     It support multiple scihub accounts to speed up the LTA retrieval of offline 
@@ -239,15 +234,18 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
             product_df_clean=products_df.copy()
             product_df_clean.to_csv(os.path.join(S1_GRD_dir,'S1_products.csv'))
             
-            product_df_suffle=product_df_clean.sample(frac=1)
-            
-            [product_to_be_downloaded_df,
-             download_flag] = check_downloaded_data(S1_GRD_dir,product_df_suffle)
-            
-            if download_flag:
-                download_products(product_to_be_downloaded_df, api, S1_GRD_dir)       
+            if download:
+                product_df_suffle=product_df_clean.sample(frac=1)
+
+                [product_to_be_downloaded_df,
+                 download_flag] = check_downloaded_data(S1_GRD_dir,product_df_suffle)
+
+                if download_flag:
+                    download_products(product_to_be_downloaded_df, api, S1_GRD_dir)       
+                else:
+                    break
             else:
-                break         
+                break
                                 
         download_try_count+=1
         print ("This is download try # {}.".format(download_try_count))

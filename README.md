@@ -17,20 +17,42 @@ This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS.
 The installation notes below are tested only on Linux. Recommended minimum setup: Python 3.6, SNAP 8.0
 
 ### 1.1 Create python environment 
-FLOMPY is written in Python3 and relies on several Python modules, check the file [FLOMPY_0.2_env.yml](https://github.com/kleok/FLOMPY/blob/main/docs/FLOMPY_0.2_env.yml) for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management.
+FLOMPY is written in Python3 and relies on several Python modules, check the file [FLOMPY_0.2_env.yml](https://github.com/kleok/FLOMPY/blob/main/docs/FLOMPY_0.2_env.yml) for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management. You can also check the requirements.txt file for installation on a Python3 virtual enviroment.
 
 ### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/)
+
+For the installation of ESA SNAP run the automated script (aux/install_snap.sh) for downloading and installing the official Linux installer from the official ESA repository. To install SNAP run the following commands:
+
+```bash
+$chmod +x install_snap.sh
+$./install_snap.sh
+```
 
 ### 1.3 Account setup for downloading Sentinel-1 acquisitions
 Sentinel-1 data download functionality require user credentials. More information [here](https://scihub.copernicus.eu/)
 
 ### 1.4 Account setup for downloading global atmospheric model data
-ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS), create a new account on the CDS website if you don't own a user account yet. On the profile, you will find your user id (UID) and your personal API Key. Create a file .cdsapirc under your home directory and add the following information:
+ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS), create a new account on the CDS website if you don't own a user account yet. On the profile, you will find your user id (UID) and your personal API Key. A .cdsapirc file must be created under your home directory and add the following information:
 ```
 url: https://cds.climate.copernicus.eu/api/v2
 key: UID:personal API Key
 ```
-CDS API is needed to auto-download ERA5 ECMWF data: conda install -c conda-forge cdsapi
+
+You can use `aux/install_CDS_key.sh` script to install the CDS API key.
+
+```bash
+$chmod +x install_CDS_key.sh
+$./install_CDS_key.sh
+```
+
+CDS API is needed to auto-download ERA5 ECMWF data. If you are using a conda enviroment run the following to install the cdsapi python library:
+
+```bash
+conda install -c conda-forge cdsapi
+```
+
+In other case install the requirements.txt file using pip.
+
 More details on CDSAPI can be found [here](https://cds.climate.copernicus.eu/api-how-to).
 
 ### 1.5 Download FLOMPY
@@ -45,7 +67,7 @@ export PATH=${PATH}:${FLOMPY_HOME}
 ## 2. Running Flompy
 [FLOMPYapp.py]("https://github.com/kleok/FLOMPY/blob/main/flompy/FLOMPYapp.py")
 
-FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. FLOMPYapp.py includes the functionalities for FLOMPY's routine processing for generating floodwater maps. User should provide the following information at configuration file flompy/FLOMPYapp_template.cfg
+FLOMPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. FLOMPYapp.py includes the functionalities for FLOMPY's routine processing for generating floodwater maps. User should provide the following information at configuration file FLOMPYapp_template.cfg
 We suggest you to can have a look at the plots for each Sentinel-1 image (located at projectfolder) to find out if you have a considerable decrease of backscatter in the flood image with respect to the baseline images. If you are able to identify a decrease of backscatter in the flood image (darker tones), then you can expect that FLOMPY will generate a useful floodwater map. In cases that you have similar or bigger backscatter values of flood image with respect to baseline images (due to complex backscatter mechanisms) FLOMPY`s results cannot be trusted.
 ```
 					#######################################
@@ -148,6 +170,54 @@ RAM=20G
 scihub_username = ******
 scihub_password = ******
 ```
+
+After the setup of the configuration file you can use the default recipe script FLOMPYapp.py to run the following following individual steps that will
+automatically run for the selected AOI:
+
+1. Download Precipitation data from ERA5.
+
+```bash
+$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_Precipitation_data
+```
+
+2. Download Sentinel 1 data.
+
+```bash
+$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S1_data
+```
+
+3. Preprocessing Sentinel 1 data.
+
+```bash
+$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Preprocessing_S1_data
+```
+
+4. Sentinel 1 statistical analysis.
+
+```bash
+$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Statistical_analysis
+```
+
+5. And at last the floodwater classification step. At this point the result of the estimated flooded region is exported.
+
+```bash
+$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Floodwater_classification
+```
+
+If the flood was on an agricultural region you can also run the following steps to estimate the amount of the damaged fields by performing delineation (with a methodology based on Yan & Roy, 2014 and a pretrained Unet delineation network) and active-inactive field classification based on NDVI timeseries with Sentinel 2 data. For more information check at Gounari et al. 2022 bellow.
+
+6. (Optional) Download Sentinel 2 multispectral data.
+
+```bash
+$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S2_data
+```
+
+7. (Optional, requires 6) Run crop delineation and field classification
+
+```bash
+$python flompy/FLOMPYapp.py FLOMPYapp_template.cfg --dostep Crop_delineation
+```
+
 ## 3. Documentation and citation
 Algorithms implemented in the software are described in detail at our publication. If FLOMPY was useful for you, we encourage you to cite the following work.
 

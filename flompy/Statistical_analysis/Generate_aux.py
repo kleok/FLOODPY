@@ -31,9 +31,9 @@ import h5py
 from osgeo import gdal
 import numpy as np
 import os, glob
-from utils.Reproject import reproject_image_to_master
 import richdem as rd
 import pyproj
+from ..utils.Reproject import reproject_image_to_master
 
 def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     '''
@@ -69,7 +69,6 @@ def reproject(outname, infilename, UTM_CRS_EPSG ):
     '''
     Reproject funcionality
     '''
-    
     ds = gdal.Warp(outname, infilename, dstSRS='EPSG:{}'.format(UTM_CRS_EPSG),
                    srcNodata = -32768, dstNodata = -32768)
                #outputType=gdal.GDT_Int16, xRes=0.00892857142857143, yRes=0.00892857142857143)
@@ -151,7 +150,7 @@ def get_S1_aux (Preprocessed_dir):
     
     # reproject master_tiff (sigma_VV, sigma_VH, elevation, lat, lon, localIncidenceAngle) from wgs84 to utm
     master_tiff_utm=master_tiff_wgs84[:-4]+'_utm.tif'
-    reproject(master_tiff_utm, master_tiff_wgs84,UTM_CRS_EPSG )
+    reproject(master_tiff_utm, master_tiff_wgs84, UTM_CRS_EPSG)
     
     # write dem_utm
     dem_nparray=gdal.Open(master_tiff_utm).ReadAsArray()[1,:,:] # order of writing
