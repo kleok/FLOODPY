@@ -19,9 +19,9 @@ The installation notes below are tested only on Linux. Recommended minimum setup
 ### 1.1 Create python environment 
 FLOMPY is written in Python3 and relies on several Python modules, check the file [FLOMPY_env.yml](https://github.com/kleok/FLOMPY/blob/main/FLOMPY_env.yml) for details. We recommend using conda to install the python environment and the prerequisite packages, because of the convenient management. You can also check the [requirements.txt](https://github.com/kleok/FLOMPY/blob/main/requirements.txt) file for installation on a Python3 virtual enviroment.
 
-### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/)
+### 1.2 Install snap gpt including [Sentinel-1 toolbox](https://step.esa.int/main/download/snap-download/previous-versions/)
 
-For the installation of ESA SNAP run the automated script [aux/install_snap.sh]( for downloading and installing the official Linux installer from the official ESA repository. To install SNAP run the following commands:
+For the installation of ESA SNAP you can run the automated script [aux/install_snap.sh](https://github.com/kleok/FLOMPY/blob/main/aux/install_snap.sh) for downloading and installing the official Linux installer from the official ESA repository. To install SNAP run the following commands:
 
 ```bash
 $chmod +x install_snap.sh
@@ -32,27 +32,17 @@ $./install_snap.sh
 Sentinel-1 data download functionality require user credentials. More information [here](https://scihub.copernicus.eu/)
 
 ### 1.4 Account setup for downloading global atmospheric model data
-ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS), create a new account on the CDS website if you don't own a user account yet. On the profile, you will find your user id (UID) and your personal API Key. A .cdsapirc file must be created under your home directory and add the following information:
+ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS). You have to create a new account on the CDS website if you don't own a user account yet. After the creation of your profile, you will find your user id (UID) and your personal API Key. Now, a ```.cdsapirc``` file must be created under your ```HOME``` directory with the following information:
 ```
 url: https://cds.climate.copernicus.eu/api/v2
 key: UID:personal API Key
 ```
-
-You can use `aux/install_CDS_key.sh` script to install the CDS API key.
+In case you dont want to create the .cdsapirc file manually, you can run [aux/install_CDS_key.sh](https://github.com/kleok/FLOMPY/blob/main/aux/install_CDS_key.sh) script as follows:
 
 ```bash
 $chmod +x install_CDS_key.sh
 $./install_CDS_key.sh
 ```
-
-CDS API is needed to auto-download ERA5 ECMWF data. If you are using a conda enviroment run the following to install the cdsapi python library:
-
-```bash
-conda install -c conda-forge cdsapi
-```
-
-In other case install the requirements.txt file using pip.
-
 More details on CDSAPI can be found [here](https://cds.climate.copernicus.eu/api-how-to).
 
 ### 1.5 Download FLOMPY
