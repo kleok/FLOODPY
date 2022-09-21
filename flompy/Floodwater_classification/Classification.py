@@ -41,7 +41,7 @@ from scipy.ndimage.filters import maximum_filter as maxf2D
 from joblib import Parallel, delayed
 from joblib import wrap_non_picklable_objects
 import multiprocessing
-from .Region_growing import Region_Growing
+from flompy.Floodwater_classification.Region_growing import Region_Growing
 
 # Stop GDAL printing both warnings and errors to STDERR
 gdal.PushErrorHandler('CPLQuietErrorHandler')

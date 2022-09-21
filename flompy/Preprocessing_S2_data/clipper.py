@@ -32,7 +32,7 @@ from rasterio.enums import Resampling
 from rasterio.warp import reproject, Resampling
 from rasterio.mask import mask
 import numpy as np
-from .exceptions import BandNotFound, PathError
+from flompy.Preprocessing_S2_data.exceptions import BandNotFound, PathError
 
 class Clipper():
 

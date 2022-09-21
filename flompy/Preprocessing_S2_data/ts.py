@@ -23,7 +23,7 @@ This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
 """
 import logging
 import datetime
-from .exceptions import NameNotInTimeSeriesError, MinMaxCloudBoundError, MinMaxDateError
+from flompy.Preprocessing_S2_data.exceptions import NameNotInTimeSeriesError, MinMaxCloudBoundError, MinMaxDateError
 
 class timeseries():
     """Base class of time series objects."""

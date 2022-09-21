@@ -26,24 +26,27 @@ import datetime
 import time
 import argparse
 
-from .utils.read_template_file import read_template
-from .utils.read_AOI import Coords_to_geojson, Input_vector_to_geojson
-from .Download.Sentinel_1_download import Download_S1_data
-from .Download.Download_orbits import download_orbits
-from .Download.Download_ERA5_precipitation import Get_ERA5_data
-from .Preprocessing_S1_data.Classify_S1_images import Get_images_for_baseline_stack
-from .Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
-from .Statistical_analysis.Generate_aux import get_S1_aux
-from .Statistical_analysis.calc_t_scores import Calc_t_scores
-from .Floodwater_classification.Classification import Get_flood_map
+os.chdir('/RSL03/Flompy_Sep_2022/FLOMPY/flompy/')
+
+
+from flompy.utils.read_template_file import read_template
+from flompy.utils.read_AOI import Coords_to_geojson, Input_vector_to_geojson
+from flompy.Download.Sentinel_1_download import Download_S1_data
+from flompy.Download.Download_orbits import download_orbits
+from flompy.Download.Download_ERA5_precipitation import Get_ERA5_data
+from flompy.Preprocessing_S1_data.Classify_S1_images import Get_images_for_baseline_stack
+from flompy.Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
+from flompy.Statistical_analysis.Generate_aux import get_S1_aux
+from flompy.Statistical_analysis.calc_t_scores import Calc_t_scores
+from flompy.Floodwater_classification.Classification import Get_flood_map
 # from Validation.Validation import Accuracy_metrics_calc
 # from Validation.EMS_preparation import rasterize
 
 # Agriculture fields extraction
-from .Download.Sentinel_2_download import Download_S2_data
-from .Preprocessing_S2_data.sts import sentimeseries
-from .Crop_delineation.delineate import CropDelineation
-from .Crop_delineation_unet.Pretrained_networks import Crop_delineation_Unet
+from flompy.Download.Sentinel_2_download import Download_S2_data
+from flompy.Preprocessing_S2_data.sts import sentimeseries
+from flompy.Crop_delineation.delineate import CropDelineation
+from flompy.Crop_delineation_unet.Pretrained_networks import Crop_delineation_Unet
 
 print('FLOod Mapping PYthon toolbox')
 print('Copyright (c) 2021-2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
