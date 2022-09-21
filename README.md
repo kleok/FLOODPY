@@ -213,13 +213,13 @@ FLOMPYapp.py FLOMPYapp_template.cfg --dostep Floodwater_classification
 
 If the flood was on an agricultural region you can also run the following steps to estimate the amount of the damaged fields by performing delineation (with a methodology based on Yan & Roy, 2014 and a pretrained Unet delineation network) and active-inactive field classification based on NDVI timeseries with Sentinel 2 data. For more information check at Gounari et al. 2022 bellow.
 
-### 2.6. (Optional) Download Sentinel 2 multispectral data.
+### 2.6. Download Sentinel 2 multispectral data (Optional). 
 
 ```
 FLOMPYapp.py FLOMPYapp_template.cfg --dostep Download_S2_data
 ```
 
-### 2.7. (Optional, requires 6) Run crop delineation and field classification
+### 2.7. Run crop delineation and field classification (Optional, requires 6).
 
 ```
 FLOMPYapp.py FLOMPYapp_template.cfg --dostep Crop_delineation
