@@ -4,4 +4,4 @@ Please follow the steps in order to be able to run the notebook:
 git clone -b notebook https://github.com/Olyna/FLOMPY.git
 3. Open the notebook FLOMPY_WEkEO.ipynb located in /home/your-user-name/FLOMPY/WEkEO
 
-In case you want just to have a look at the already executed notebook, click [here](https://nbviewer.org/github/kleok/FLOMPY/blob/notebook/WEkEO/FLOMPY_WEkEO.ipynb).
+In case you want just to have a look at the already executed notebook, click [here](https://nbviewer.org/github/kleok/FLOMPY/blob/main/WEkEO/FLOMPY_WEkEO.ipynb).
