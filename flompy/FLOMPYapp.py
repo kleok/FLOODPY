@@ -97,6 +97,11 @@ REFERENCE = """
      Karantzalos K.: Floodwater Mapping & Extraction of Flood-Affected 
      Agricultural Fields. Living Planet Symposium Bonn 23-27 May 2022.      
      https://drive.google.com/file/d/1HiGkep3wx45gAQT6Kq34CdECMpQc8GUV/view?usp=sharing
+
+     Zotou I., Karamvasis K., Karathanassi V., Tsihrintzis V.: Sensitivity of a coupled 1D/2D 
+     model in input parameter variation exploiting Sentinel-1-derived flood map. 
+     7th IAHR Europe Congress. September 7-9, 2022. Page 247 at 
+     https://www.iahreuropecongress.org/PDF/IAHR2022_ABSTRACT_BOOK.pdf
      
 """
 
