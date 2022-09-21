@@ -69,9 +69,9 @@ pip install .
 
 on GNU/Linux, append to .bashrc file:
 ```
-export FLOMPY_HOME=~/FLOMPY/flompy
+export FLOMPY_HOME=~/FLOMPY
 export PYTHONPATH=${PYTHONPATH}:${FLOMPY_HOME}
-export PATH=${PATH}:${FLOMPY_HOME}
+export PATH=${PATH}:${FLOMPY_HOME}/flompy
 ```
 
 ## 2. Running Flompy
