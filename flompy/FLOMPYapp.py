@@ -26,9 +26,6 @@ import datetime
 import time
 import argparse
 
-os.chdir('/RSL03/Flompy_Sep_2022/FLOMPY/flompy/')
-
-
 from flompy.utils.read_template_file import read_template
 from flompy.utils.read_AOI import Coords_to_geojson, Input_vector_to_geojson
 from flompy.Download.Sentinel_1_download import Download_S1_data
