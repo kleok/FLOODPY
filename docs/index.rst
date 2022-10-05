@@ -12,7 +12,7 @@ What is FLOMPY?
 The FLOod Mapping PYthon toolbox (FLOMPY) is a new fully automatic, free and open-source python toolbox
 for mapping of floodwater.
 
-.. image:: ../../pinieios_results_github.png
+.. image:: ../figures/pinieios_results_github.png
   :width: 800
 
 How does it work?
@@ -40,9 +40,17 @@ Any help is very welcome!
 
 .. toctree::
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
    
    quickstart
    installation
    future_directions
+   modules
+   
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
