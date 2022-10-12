@@ -3,6 +3,7 @@
 [![Release](https://img.shields.io/badge/Release-0.2.0-brightgreen)](https://github.com/kleok/FLOMPY)
 [![Facebook](https://img.shields.io/badge/Group-Flompy-yellowgreen.svg)](https://www.facebook.com/groups/876299509742954)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kleok/FLOMPY/issues)
+[![Build Status](https://flompy.readthedocs.io/en/latest/?badge=latest)](https://flompy.readthedocs.io/en/latest/?badge=latest)
 
 ## Introduction
 
