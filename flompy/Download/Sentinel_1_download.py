@@ -1,38 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Downloads Sentinel-1 imagery
 
-Copyright (C) 2021-2022 by K.Karamvasis
-Email: karamvasis_k@hotmail.com
-
-Authors: Karamvasis Kleanthis
-Last edit: 6.6.2022
-
-This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
-
-    FLOMPY is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    FLOMPY is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
-
-"""
 from sentinelsat.sentinel import SentinelAPI, read_geojson, geojson_to_wkt
 import os
 import glob
 import time
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
-def check_downloaded_data(S1_GRD_dir,product_df_suffle):
+def check_downloaded_data(S1_GRD_dir:str,product_df_suffle:pd.DataFrame)-> tuple:
     '''
     Based on already downloaded Sentinel-1 products in S1_GRD_dir we return 
     only the products that we still need to download.
@@ -40,16 +17,12 @@ def check_downloaded_data(S1_GRD_dir,product_df_suffle):
     Improvements: Check the size and the integrity of each downloaded product.
     
     Args:
-        S1_GRD_dir (string): The directory that the Sentinel-1 products will be
-                             downloaded.
-        product_df_suffle (pandas.DataFrame): The results from sentinesat 
-                                                request.
+        S1_GRD_dir (string): The directory that the Sentinel-1 products will be downloaded.
+        product_df_suffle (pandas.DataFrame): The results from sentinesat request.
 
     Returns:
-        product_df_suffle (pandas.DataFrame): The Sentinel-1 products that 
-                                              will be downloaded
+        product_df_suffle (pandas.DataFrame): The Sentinel-1 products that will be downloaded.
         download_flag (boolean): True if we have products to download.
-        
     '''
     
     download_flag=False
@@ -72,7 +45,7 @@ def check_downloaded_data(S1_GRD_dir,product_df_suffle):
     return product_df_suffle, download_flag   
 
 
-def download_products(product_to_be_downloaded_df, api, S1_GRD_dir):
+def download_products(product_to_be_downloaded_df: pd.DataFrame, api:SentinelAPI, S1_GRD_dir:str)-> None:
     '''
     Download functionality of Sentinel-1 products
     
@@ -81,7 +54,6 @@ def download_products(product_to_be_downloaded_df, api, S1_GRD_dir):
         api (sentinelsat.sentinel.SentinelAPI ): The api sentinelsat request.
         S1_GRD_dir (string): The directory that the Sentinel-1 products will be
                              downloaded.
-
     '''
     try:
         os.chdir(S1_GRD_dir)
@@ -101,7 +73,7 @@ def download_products(product_to_be_downloaded_df, api, S1_GRD_dir):
         print ("We will try again ....")
 
 
-def get_flood_image(S1_df,flood_datetime):
+def get_flood_image(S1_df:pd.DataFrame,flood_datetime:datetime)-> pd.Series:
     '''
     Finds the closest Sentinel-1 acquisition after the defined flood datetime.
 
@@ -110,7 +82,7 @@ def get_flood_image(S1_df,flood_datetime):
         flood_datetime (datetime object): the user-defined time point of the flood.
 
     Returns:
-        pandas.core.series.Series: the metadata of the considered flood image
+        pd.Series: the metadata of the considered flood image
     '''
     # Get the datime information from all S1 products
     S1_df.reset_index(inplace=True)
@@ -138,24 +110,24 @@ def get_flood_image(S1_df,flood_datetime):
     
     return S1_df.iloc[S1_flood_index]
 
-def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
-                S1_GRD_dir, # output directory
-                geojson_S1, # spatial AOI
-                Start_time,
-                End_time,
-                relOrbit,
-                flood_datetime,
-                time_sleep=1800, # half an hour
-                max_tries=50,
-                download=True):
+def Download_S1_data(scihub_accounts:dict, # accounts at scihub.copernicus.eu
+                S1_GRD_dir:str, # output directory
+                geojson_S1:str, # spatial AOI
+                Start_time:str,
+                End_time:str,
+                relOrbit:str,
+                flood_datetime:datetime,
+                time_sleep:int=1800, # half an hour
+                max_tries:int=50,
+                download:bool=True)->None:
     '''
     This function is the main functionaliry for downloading Sentinel-1 GRD data.
     It support multiple scihub accounts to speed up the LTA retrieval of offline 
     products. It has been tested for products released after May 2017
 
-    Improvements:Ensure that slicenumber of slcs products is the same. In some
-                 cases different slicenumber messes up the geocoding procedure.
-    
+    TODO:
+        * Ensure that slicenumber of slcs products is the same. In some cases different slicenumber messes up the geocoding procedure.
+        
     Args:
         scihub_accounts (dict): dict keys (scihub_username) and items (scihub_passwords).
         S1_GRD_dir (string): directory that Sentinel-1 are stored.
@@ -166,9 +138,6 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
         flood_datetime (datetime object):the user-defined time point of the flood.
         time_sleep (integer, optional): time span for each request (in seconds). Defaults to 1800.
         max_tries (integer, optional): the number of the requests. Defaults to 50.
-
-    Returns:
-        int: zero is downloading is successful.
 
     '''
 
@@ -251,5 +220,3 @@ def Download_S1_data(scihub_accounts, # accounts at scihub.copernicus.eu
         print ("This is download try # {}.".format(download_try_count))
         print (" We will try to download the requested products in {:02.0f} minutes.".format(time_sleep/60))
         time.sleep(time_sleep)
-
-    return 0

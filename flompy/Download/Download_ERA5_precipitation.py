@@ -1,36 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Downloads ERA-5 variables
-
-  re-analysis_dataset         coverage   temporal_resolution  spatial_resolution      latency     analysis
-  --------------------------------------------------------------------------------------------------------
-  ERA-5    (ECMWF)             Global      Hourly              0.25 deg (~31 km)       3-month      4D-var
-
-
-
-Copyright (C) 2021-2022 by K.Karamvasis
-Email: karamvasis_k@hotmail.com
-
-Authors: Karamvasis Kleanthis
-Last edit: 7.6.2022
-
-This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
-
-    FLOMPY is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    FLOMPY is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
-"""
-###############################################################################
 
 import os
 import cdsapi
@@ -53,6 +22,9 @@ def cftime_to_datetime(cfdatetime):
 
 def retrieve_ERA5_data(ERA5_variables, year_str, month_str, days_list, time_list, bbox_cdsapi, export_filename): 
     '''
+    re-analysis_dataset         coverage   temporal_resolution  spatial_resolution      latency     analysis\n
+    --------------------------------------------------------------------------------------------------------\n
+    ERA-5    (ECMWF)             Global      Hourly              0.25 deg (~31 km)       3-month      4D-var\n
 
     Args:
         ERA5_variables (list of string): List of ERA5 variables.
@@ -83,21 +55,17 @@ def retrieve_ERA5_data(ERA5_variables, year_str, month_str, days_list, time_list
         export_filename)
         
     return export_filename
-
+ 
 def Get_ERA5_data(ERA5_variables, start_datetime, end_datetime, bbox, ERA5_dir):
-    '''
-    Downloads ERA5 datasets between two given dates.
+    """Downloads ERA5 datasets between two given dates.
+
     Args:
-        ERA5_variables (list): list of ERA variable e.g. ['total_precipitation',]
-        start_datetime (datetime object): Starting Datetime e.g.  datetime.datetime(2021, 12, 2, 0, 0)
-        end_datetime (datetime object): Starting Datetime e.g.  datetime.datetime(2022, 2, 8, 0, 0)
+        ERA5_variables (list): list of ERA5 variables e.g. ['total_precipitation',]
+        start_datetime (datetime.datetime): Starting Datetime e.g.  datetime.datetime(2021, 12, 2, 0, 0)
+        end_datetime (datetime.datetime): Ending Datetime e.g.  datetime.datetime(2022, 2, 8, 0, 0)
         bbox (list): List of latitude/longitude [LONMIN, LATMIN,  LONMAX, LATMAX]
         ERA5_dir (string): Path that ERA5 data will be saved.
-
-    Returns:
-        int. Zero for successful run
-
-    '''
+    """
     LONMIN, LATMIN,  LONMAX, LATMAX = bbox
     bbox_cdsapi = [LATMAX, LONMIN, LATMIN, LONMAX, ]
 

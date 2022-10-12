@@ -1,26 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-The routine application for floodwater detection using Sentinel-1 GRD products
-
-Copyright (C) 2021-2022 by K.Karamvasis
-Email: karamvasis_k@hotmail.com
-Last edit: 7.6.2022
-
-This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
-    FLOMPY is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    FLOMPY is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    You should have received a copy of the GNU General Public License
-    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
-
-"""
-
 import os
 import datetime
 import time
@@ -198,9 +177,9 @@ class FloodwaterEstimation:
 
     def startup(self):
         """The starting point of the workflow. It runs everytime. 
-        It 1) get and read template(s) options
-           2) create geojson file
-           3) creates directory structure
+        - get and read template(s) options
+        - create geojson file
+        - creates directory structure
         
         """
     
@@ -386,8 +365,8 @@ class FloodwaterEstimation:
 
     def run_crop_delineation(self, step_name):
         """
-        #TODO: Use a functionallity to find zip and unzipped data -> Done in #5
-        #TODO: remove orbits if pixels with nan values are above a certain 
+        TODO: Use a functionallity to find zip and unzipped data -> Done in #5
+        TODO: remove orbits if pixels with nan values are above a certain 
         threshold -> Done in #5
         """
         
