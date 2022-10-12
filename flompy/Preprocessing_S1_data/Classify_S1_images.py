@@ -1,35 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-- Define a baseline dataset based on ERA-5 precipitation
-- Plots the dates of the SAR images and the Rain time series
-- Write a csv file with SAR acquisitions that are going to be used
-for baseline stack creation
-
-Copyright (C) 2021-2022 by K.Karamvasis
-Email: karamvasis_k@hotmail.com
-
-Authors: Karamvasis Kleanthis
-Last edit: 19.6.2022
-
-This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
-
-    FLOMPY is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    FLOMPY is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
-"""
-###############################################################################
-
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

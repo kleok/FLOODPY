@@ -1,26 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Copyright (C) 2021-2022 by K.Karamvasis
-Email: karamvasis_k@hotmail.com
-
-Authors: Karamvasis Kleanthis, Alekos Falagas
-
-This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
-
-    FLOMPY is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    FLOMPY is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
-"""
 import numpy as np
 # Ignoring all runtime, divided by zero numpy warnings
 np.seterr(all='ignore')
@@ -88,7 +67,7 @@ class vi():
             .. math:: 2.5 * NIR - RED * (NIR + 6 * RED - 7.5 * BLUE) + 1
         
         Sentinel 2:
-            .. math:: 2.5 * B08 - B04 *(B08 + 6 * B04 -7.5 * B02) + 1
+            .. math:: 2.5 * B08 - B04 * (B08 + 6 * B04 -7.5 * B02) + 1
 
         Args:
             nir (ndarray): NIR numpy array
@@ -231,10 +210,10 @@ class vi():
         r""" Chlorophyll Red-Edge  (abbrv. Chl. red-edge)
         
         General formula:
-            .. math:: ([760:800] / [690:720]) ^ (-1)
+            .. math:: ([760:800] / [690:720]) ^ {-1}
         
         Sentinel 2:
-            .. math:: (B07 / B05) ^ (-1.0)
+            .. math:: (B07 / B05) ^ {-1}
 
         Args:
             red_edge_2 (ndarray): Red edge [760:800 nm] numpy array

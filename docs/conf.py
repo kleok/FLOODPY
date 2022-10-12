@@ -10,19 +10,21 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+import sphinx_rtd_theme
+
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'FLOMPY'
-copyright = '2022, Kleanthis Karamvasis'
-author = 'Kleanthis Karamvasis'
+project = 'flompy'
+copyright = '2022, Kleanthis Karamvasis, Alekos Falagas'
+author = 'Kleanthis Karamvasis, Alekos Falagas'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.0'
+release = '0.2.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -35,6 +37,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+	'sphinx.ext.todo',
     'myst_parser',
 ]
 
@@ -53,7 +56,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo = '../../Flompy_logo.png'
+html_logo = '../figures/Flompy_logo.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

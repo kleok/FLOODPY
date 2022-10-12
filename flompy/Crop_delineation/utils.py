@@ -1,26 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Copyright (C) 2021-2022 by K.Karamvasis
-Email: karamvasis_k@hotmail.com
-
-Authors: Olympia Gounari, Alekos Falagas, Kleanthis Karamvasis
-
-This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
-
-    FLOMPY is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    FLOMPY is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
-"""
 import os
 import math
 import numpy as np
@@ -44,11 +23,9 @@ def equation_3(fpaths:list, kernel_N_weight:pd.DataFrame)->list:
     before convolution.
     Args:
         fpaths (list): List of fullpaths for bands b03, b04, b08, b11, b12.
-        kernel_N_weight (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels
-            and their weights. 
+        kernel_N_weight (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels and their weights. 
     Returns:
-        list: List containing 2D arrays, one for each kernel. Result for one week (or date),
-        for one pixel (orientation of convolution).
+        list: List containing 2D arrays, one for each kernel. Result for one week (or date), for one pixel (orientation of convolution).
     """
     res = []
     for im_path in fpaths:
@@ -72,8 +49,7 @@ def equation_4(ndvi:np.array, kernel_N_weight:pd.DataFrame)->list:
     """Convolution only for NDVI image.
     Args:
         ndvi (np.array): Image as 2D array.
-        kernel_N_weight (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels
-            and their weights. 
+        kernel_N_weight (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels and their weights. 
     Returns:
         list: List containg 2D arrays, one for each kernel.
     """
@@ -91,8 +67,7 @@ def equation_5(ndvi:np.array, dweeks:list, dndvi:list, kernels_N_weights:pd.Data
         ndvi (np.array): NDVI image as 2D array.
         dweeks (list): Result of equation_3. List containing 2D arrays, one for each kernel.
         dndvi (list): Result of equation_4. List containg 2D arrays, one for each kernel.
-        kernels_N_weights (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels
-            and their weights.
+        kernels_N_weights (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels and their weights.
     Returns:
         np.array: Edge estimation image as 2D array.
     """
@@ -136,13 +111,10 @@ def wkernels()->pd.DataFrame:
 def cube_by_paths(listOfPaths:list, outfname:str=None, **kwargs)->list:
     """Concatenate images as cube.
     Args:
-        listOfPaths (list): List containg fullpaths of images to concatenate on
-            time-axis.
-        outfname (str, optional): Absolute filename for the resulted geotif file.
-            Defaults to None. When given, the 3D cube array will be saved.
+        listOfPaths (list): List containg fullpaths of images to concatenate on time-axis.
+        outfname (str, optional): Absolute filename for the resulted geotif file. Defaults to None. When given, the 3D cube array will be saved.
     Returns:
-        list: Cube as 3D np.array, cube's metadata as dict, list of strings containing
-            bandnames used to produce the cube.
+        list: Cube as 3D np.array, cube's metadata as dict, list of strings containing bandnames used to produce the cube.
     """
     # read random image's metadata
     with rio.open(listOfPaths[0], 'r') as src:
