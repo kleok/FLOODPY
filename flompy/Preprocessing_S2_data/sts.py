@@ -1,31 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Copyright (C) 2021-2022 by K.Karamvasis
-Email: karamvasis_k@hotmail.com
-
-Authors: Karamvasis Kleanthis, Alekos Falagas
-
-This file is part of FLOMPY - FLOod Mapping PYthon toolbox.
-
-    FLOMPY is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    FLOMPY is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLOMPY. If not, see <https://www.gnu.org/licenses/>.
-"""
 import logging
 import os
 import fnmatch
 import zipfile
-
 from flompy.Preprocessing_S2_data.simage import senimage
 from flompy.Preprocessing_S2_data.exceptions import NoDataError, BBOXError, imageError
 from flompy.Preprocessing_S2_data.clipper import Clipper
@@ -42,12 +20,12 @@ class sentimeseries(timeseries):
         self.tiles = []
 
     def find_zip(self, path, level = "L2A", force_uncompress = False):
-        """Find and extract automatically Sentinel-2 data from *.zip.
+        """Find and extract automatically Sentinel-2 data from \*.zip.
 
         Args:
             path (str): Path to stored data
             level (str, optional): Sentinel 2 product level. Defaults to "L2A"
-            force_uncompress (bool, optional): Force to re-uncompress in case an *.SAFE file already exists. Defaults to False
+            force_uncompress (bool, optional): Force to re-uncompress in case an \*.SAFE file already exists. Defaults to False
         """
         image = None
         logging.info("---------------------------------------------------------------------------------------------")

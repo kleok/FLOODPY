@@ -77,10 +77,12 @@ class CropDelineation():
         else:
             raise TypeError("Only sentimeseries objects are supported!")
 
-    def estimate(self):
+    def estimate(self)->None:
+        """Computes and saves to disk a propability map of edges for each date 
+        """
         wk = utils.wkernels()
         self.estim_paths = []
-
+        # change to a specified number of CPUs (from template file)
         pool = mp.Pool(mp.cpu_count() - 2)
         for ms_im in self.eodt.data:
             outfname = os.path.join(ms_im.datapath_10, f"T{ms_im.tile_id}_{ms_im.str_datetime}_edge.tif")
