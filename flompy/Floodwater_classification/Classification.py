@@ -578,7 +578,7 @@ def Adaptive_local_thresholdin_parallel(t_score_dataset_temp,
     
     return probability_map
 
-def morphological_postprocessing(Flood_map, minimum_mapping_unit_area_m2=1000):
+def morphological_postprocessing(Flood_map, minimum_mapping_unit_area_m2=1000, pixel_size_m = 10):
     '''
     Morphological processing based on provided minimum mapping unit. Procedure
     consists of steps (a) remove_small_holes (b) diameter_opening 
@@ -587,7 +587,7 @@ def morphological_postprocessing(Flood_map, minimum_mapping_unit_area_m2=1000):
     
     # Remove small objects based on given minimum mapping unit area
     #Flood_local_map_RG_closing = morphology.closing(Flood_local_map_RG, morphology.square(3))
-    minimum_mapping_unit_area_pixels=minimum_mapping_unit_area_m2/10
+    minimum_mapping_unit_area_pixels=minimum_mapping_unit_area_m2/pixel_size_m
     
     Flood_map_temp1=morphology.remove_small_holes(Flood_map,
                                                   area_threshold=minimum_mapping_unit_area_pixels)

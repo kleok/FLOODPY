@@ -23,6 +23,7 @@ def Get_images_for_baseline_stack(projectfolder,
     '''
     ERA5_data_filename = glob.glob(os.path.join(ERA5_dir,'*{}*{}*.csv'.format(Start_time, End_time)))
     assert len(ERA5_data_filename)==1
+
     Precipitation_data= pd.read_csv(ERA5_data_filename[0])
     Precipitation_data.index = Precipitation_data['Datetime']
     Precipitation_data.drop(columns = ['Datetime'], inplace=True)
