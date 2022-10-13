@@ -91,7 +91,9 @@ def Calc_t_scores(projectfolder,
     
     # calculate mean and std of baseline images
     #SAR_stack_datetimes = [element.decode("utf-8") for element in SAR_stack['Datetime_SAR'][:]]
-    SAR_stack_datetimes = [element for element in SAR_stack['Datetime_SAR'][:]]
+    SAR_stack_datetimes = [element.decode('utf-8') for element in SAR_stack['Datetime_SAR'][:]]
+
+    print(SAR_stack_datetimes)
     
 
     baseline_common_dates= set(baseline_dates).intersection(SAR_stack_datetimes)
