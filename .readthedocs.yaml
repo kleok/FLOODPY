@@ -7,8 +7,9 @@ build:
 
 build:
    apt_packages:
-      - libgdal20
+      - libpq-dev
       - libgdal-dev
+      - gdal-bin
 
 sphinx:
   configuration: docs/conf.py
