@@ -4,4 +4,4 @@ build:
     - build-essential
     - libopenblas-dev
 conda:
-  environment: FLOMPY_env.yml
+  environment: FLOMPY_docs_env.yml
