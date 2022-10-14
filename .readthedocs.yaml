@@ -6,8 +6,6 @@ build:
     - libgdal-dev
     - libpq-dev
     - gdal-bin
-    - libpq5=12.2-4
-    - libgdal-dev
 
   tools:
     python: "3.9"
