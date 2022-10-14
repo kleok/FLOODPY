@@ -26,6 +26,7 @@ dependencies:
   - scikit-learn = 1.0.2
   - pip==22.0.4 
   - gdal==3.4.2
+  - libgdal==3.4.2 
   - scipy==1.8.0
   - keras-unet==0.1.2
   - pip:
