@@ -1,5 +1,6 @@
 version: 2
 build:
+  os: "ubuntu-20.04"
   apt_packages:
     - build-essential
     - libopenblas-dev

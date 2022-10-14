@@ -28,10 +28,10 @@ dependencies:
   - scikit-learn = 1.0.2
   - pip==22.0.4 
   - gdal==3.4.2
+  - glib==2.72.1
   - scipy==1.8.0
   - keras-unet==0.1.2
   - sphinx==5.1.1
-  - glib==2.74.0
   - sphinxcontrib-napoleon==0.7
   - sphinx_rtd_theme==1.0.0
   - sphinxcontrib-apidoc==0.3.0
