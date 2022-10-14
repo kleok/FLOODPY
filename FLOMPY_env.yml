@@ -29,5 +29,16 @@ dependencies:
   - libgdal==3.4.2 
   - scipy==1.8.0
   - keras-unet==0.1.2
+  - sphinx==5.1.1
+  - glib==2.74.0
+  - sphinxcontrib-napoleon==0.7
+  - sphinx_rtd_theme==1.0.0
+  - sphinxcontrib-apidoc==0.3.0
+  - sphinxcontrib-applehelp==1.0.2
+  - sphinxcontrib-devhelp==1.0.2
+  - sphinxcontrib-htmlhelp==2.0.0
+  - sphinxcontrib-jsmath==1.0.1
+  - sphinxcontrib-qthelp==1.0.3 
+  - sphinxcontrib-serializinghtml==1.1.5
   - pip:
     - patchify==0.2.2
