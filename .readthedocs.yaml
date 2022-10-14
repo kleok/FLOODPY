@@ -2,15 +2,10 @@ version: 2
 
 build:
   os: "ubuntu-20.04"
+  apt_packages:
+    - libgdal-dev
   tools:
     python: "3.9"
-
-build:
-   apt_packages:
-      - libpq-dev
-      - libgdal20
-      - libgdal-dev
-      - gdal-bin
 
 sphinx:
   configuration: docs/conf.py
