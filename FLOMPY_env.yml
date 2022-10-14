@@ -17,6 +17,7 @@ dependencies:
   - h5py==3.6.0
   - scikit-image==0.17.2
   - joblib==1.1.0
+  - libopenblas==0.3.21
   - matplotlib==3.5.2
   - richdem==2.3.0
   - pyproj==3.3.1
