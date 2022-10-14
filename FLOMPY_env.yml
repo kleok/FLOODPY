@@ -1,7 +1,8 @@
 name: flompy
+channel_priority: strict
 channels:
   - conda-forge
-  - https://conda.anaconda.org/conda-forge
+  - defaults
 dependencies:
   - awscli==1.24.10
   - cdsapi==0.5.1
@@ -26,7 +27,6 @@ dependencies:
   - scikit-learn = 1.0.2
   - pip==22.0.4 
   - gdal==3.4.2
-  - libgdal==3.4.2 
   - scipy==1.8.0
   - keras-unet==0.1.2
   - sphinx==5.1.1
