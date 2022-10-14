@@ -8,6 +8,7 @@ build:
 build:
    apt_packages:
       - libpq-dev
+      - libgdal20
       - libgdal-dev
       - gdal-bin
 
