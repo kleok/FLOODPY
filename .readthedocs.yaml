@@ -1,4 +1,6 @@
 version: 2
-
+build:
+  apt_packages:
+    - glibc-source
 conda:
   environment: FLOMPY_env.yml
