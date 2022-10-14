@@ -42,5 +42,5 @@ dependencies:
   - sphinxcontrib-qthelp==1.0.3 
   - sphinxcontrib-serializinghtml==1.1.5
   - myst-parser==0.18.1
-- pip:
-  - patchify==0.2.2
+  - pip:
+    - patchify==0.2.2
