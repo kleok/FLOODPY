@@ -1,18 +1,4 @@
 version: 2
 
-build:
-  os: "ubuntu-20.04"
-  apt_packages:
-    - libgdal-dev
-    - libpq-dev
-    - gdal-bin
-
-  tools:
-    python: "3.9"
-
-sphinx:
-  configuration: docs/conf.py
-
-python:
-  install:
-    - requirements: docs/requirements-dev.txt
+conda:
+  environment: FLOMPY_env.yml
