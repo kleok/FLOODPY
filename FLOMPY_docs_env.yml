@@ -2,35 +2,46 @@ name: flompy
 channel_priority: strict
 channels:
   - conda-forge
+  - defaults
 dependencies:
-  - python
+  - python>=3.6
   - awscli
   - cdsapi
-  - pandas
   - geopandas
-  - numpy
+  - pip
+  - cartopy
+  - cvxopt
+  - dask>=1.0
+  - dask-jobqueue>=0.3
+  - defusedxml
+  - h5py
+  - joblib
+  - lxml
   - netCDF4
+  - matplotlib
+  - numpy
   - tqdm
+  - pyaps3>=0.3
+  - pykml>=0.2
+  - pyproj
+  - pyresample
+  - pysolid
+  - rich
+  - scikit-image
+  - scipy
+  - gdal>=3
   - requests
   - sentinelsat
   - shapely
   - h5py
-  - scikit-image
   - joblib
   - libopenblas
   - matplotlib
-  - richdem
   - pyproj
   - seaborn
   - rasterio
   - rasterstats
-  - tensorflow
   - scikit-learn
-  - pip
-  - gdal
-  - glib
-  - scipy
-  - keras-unet
   - sphinx
   - sphinxcontrib-napoleon
   - sphinx_rtd_theme
