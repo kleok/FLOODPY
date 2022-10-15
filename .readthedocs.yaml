@@ -5,7 +5,7 @@ build:
   tools:
     python: "3.8"
   apt-packages:
-  - libgdal-dev
+    - libgdal-dev
 
 sphinx:
   configuration: docs/conf.py
