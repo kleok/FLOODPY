@@ -2,6 +2,7 @@ name: flompy
 channel_priority: strict
 channels:
   - conda-forge
+  - defaults
 dependencies:
   - python=3.9.12
   - awscli==1.24.10
