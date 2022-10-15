@@ -10,7 +10,7 @@ build:
     - build-essential
     - g++
     - libpq-dev 
-    - gdal-bin
+    - python3-gdal
 
 sphinx:
   configuration: docs/conf.py
