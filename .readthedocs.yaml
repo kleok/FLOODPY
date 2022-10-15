@@ -1,14 +1,16 @@
 version: 2
 
 build:
-  os: "ubuntu-22.04"
+  os: "ubuntu-20.04"
   tools:
-    python: "3.8"
+    python: "3.7"
   apt_packages:
     - libgdal-dev
     - python3-dev
     - build-essential
     - g++
+    - libpq-dev 
+    - gdal-bin
 
 sphinx:
   configuration: docs/conf.py
