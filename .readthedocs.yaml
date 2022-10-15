@@ -5,7 +5,7 @@ build:
   tools:
     python: miniconda3-4.7
   apt_packages:
-    libopenblas-dev
+    - libopenblas-dev
 
 conda:
   environment: FLOMPY_docs_env.yml
