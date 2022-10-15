@@ -4,6 +4,8 @@ build:
   os: ubuntu-20.04
   tools:
     python: miniconda3-4.7
+  apt_packages:
+    libopenblas-dev
 
 conda:
   environment: FLOMPY_docs_env.yml
