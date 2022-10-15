@@ -7,6 +7,7 @@ build:
   apt_packages:
     - libgdal-dev
     - python3-dev
+    - build-essential
 
 sphinx:
   configuration: docs/conf.py
