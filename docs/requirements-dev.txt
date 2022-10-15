@@ -11,7 +11,7 @@ scipy
 sklearn
 shapely
 h5py
-gdal
+gdal==3.2.1
 scikit-image
 joblib
 matplotlib
