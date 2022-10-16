@@ -9,17 +9,15 @@ build:
     - python3-gdal
     - libgdal-dev
     - python3-dev
-
+  jobs:
+      post_install:
+       - pip install wheel
+       - pip install numpy
 sphinx:
   configuration: docs/conf.py
 
 python:
   install:
-    - method: pip
-      path: wheel
-    - method: pip
-      path: numpy
-
     - requirements: docs/requirements-dev.txt
     - method: pip
       path: .
