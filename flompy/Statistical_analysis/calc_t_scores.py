@@ -41,9 +41,6 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
         nparray (np.array): information we want to save to geotiff.
         reference_gdal_dataset (string): path of the reference geotiff file.
         target_gdal_dataset (string): path of the output geotiff file.
-
-    Returns:
-        None.
     '''
     # open the reference gdal layer and get its relevant properties
     raster_ds = gdal.Open(reference_gdal_dataset, gdal.GA_ReadOnly)   

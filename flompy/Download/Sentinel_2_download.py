@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import shapely
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 import geopandas as gpd
 import pandas as pd
 import os
 
-def S2_AOI_coverage(aoi_geometry, products_df):
+def S2_AOI_coverage(aoi_geometry:shapely.geometry, products_df:gpd.GeoDataFrame)->gpd.GeoDataFrame:
     """Generates the coverage between the satellite images and the AOI.
 
     Args:
@@ -24,8 +24,9 @@ def S2_AOI_coverage(aoi_geometry, products_df):
     return products_df
     
 
-def Download_S2_data(AOI, user, passwd, Start_time, End_time, write_dir, product = 'S2MSI2A', download = False, cloudcoverage = 100, cov_thres = 0.5, to_file = True):
+def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str, write_dir:str, product:str = 'S2MSI2A', download:bool = False, cloudcoverage:float = 100, cov_thres:float = 0.5, to_file:bool = True)->None:
     """Download Sentinel 2 imagery.
+
     Args:
         AOI (str): Path to AOI file
         user (str): APIHUB username

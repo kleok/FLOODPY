@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 def closest_value(input_value):
+
     input_list=[0,6,12,18]
     arr = np.asarray(input_list)
     i = (np.abs(arr - input_value)).argmin()
