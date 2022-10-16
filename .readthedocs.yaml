@@ -10,7 +10,7 @@ build:
     - libgdal-dev
     - python3-dev
   jobs:
-      post_install:
+      post_create_environment:
        - pip install --upgrade pip
        - pip install wheel
        - pip install numpy
