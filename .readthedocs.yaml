@@ -9,6 +9,8 @@ build:
     - python3-gdal
     - libgdal-dev
     - python3-dev
+    - libpq-dev
+    - build-essential
   jobs:
       post_create_environment:
        - pip install --upgrade pip
