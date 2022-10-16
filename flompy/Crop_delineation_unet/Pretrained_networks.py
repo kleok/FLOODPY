@@ -152,11 +152,13 @@ def build_fcndk(x: int, y: int, bands: int, labels: int, layers=4,) -> tf.keras.
 
 def build_fcndk5(x:int, y:int, bands:int, labels:int)->tf.keras.Model:
     """Wrapper function to build an FCNDK with 5 layers."""
+
     return build_fcndk(x, y, bands, labels, layers=5)
 
 
 def build_fcndk6(x:int, y:int, bands:int, labels:int)->tf.keras.Model:
     """Wrapper function to build an FCNDK with 6 layers."""
+
     return build_fcndk(x, y, bands, labels, layers=6)
 
 def build_unet(x:int, y:int, bands:int, labels:int, layers:int = 2)->tf.keras.Model:
@@ -184,6 +186,7 @@ def build_unet(x:int, y:int, bands:int, labels:int, layers:int = 2)->tf.keras.Mo
 
 def build_unet3(x:int, y:int, bands:int, labels:int)->tf.keras.Model:
     """Wrapper function to build an UNet with 3 layers."""
+    
     return build_unet(x, y, bands, labels, layers=3)
 
 def build_network(name: str) -> typing.Callable:

@@ -7,19 +7,18 @@ import pandas as pd
 import requests
 from tqdm import tqdm
 
-def _get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, orbit_type='AUX_POEORB'):
-    '''
-    Gets orbit filenames
+def _get_orbit_filenames(start_datetime:datetime.datetime, end_datetime:datetime.datetime, temp_export_dir:str, orbit_type:str = 'AUX_POEORB')->str:
+    """Gets orbit filenames,
+
     Args:
-        start_datetime (datetime object): starting date.
-        end_datetime (datetime object): ending date.
-        temp_export_dir (string): temporary directory.
-        orbit_type (string, optional): Type of orbit. Defaults to 'AUX_POEORB'.
+        start_datetime (datetime.datetime): Starting date
+        end_datetime (datetime.datetime): Ending date
+        temp_export_dir (str): Temporary directory
+        orbit_type (str, optional): Type of orbit. Defaults to 'AUX_POEORB'
 
     Returns:
-        TYPE: DESCRIPTION.
-
-    '''
+        str: Path to orbit file
+    """
 
     username = "gnssguest"
     password = "gnssguest"
@@ -44,11 +43,9 @@ def _get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, orbit_ty
     return os.path.join(temp_export_dir,"query_results.json")
 
 
-def download_single_orbit(single_orbit_dictionary, snap_orbit_dir, S1_datetime, username, password, orbit_type ):
-    '''
-    Downloads and saves single orbit filename
+def download_single_orbit(single_orbit_dictionary, snap_orbit_dir, S1_datetime, username, password, orbit_type):
+    """Downloads and saves single orbit filename."""
 
-    '''
     if orbit_type=='AUX_POEORB':
         export_name=single_orbit_dictionary['title'].split('.')[0]+'.EOF'
     else:
@@ -83,10 +80,8 @@ def download_single_orbit(single_orbit_dictionary, snap_orbit_dir, S1_datetime, 
     
 
 def downloads_orbit_filename(orbit_dictionary, snap_orbit_dir,S1_filename, S1_datetime, username, password, orbit_type):    
-    '''
-    Downloads single orbit filename
-
-    '''
+    """Downloads single orbit filename."""
+    
     if isinstance(orbit_dictionary, dict):
         Orbit_filename=orbit_dictionary['str'][6]['content']
         if Orbit_filename.startswith(S1_filename[0:3]):
@@ -99,18 +94,16 @@ def downloads_orbit_filename(orbit_dictionary, snap_orbit_dir,S1_filename, S1_da
             
     
  
-def download_orbits(snap_dir, temp_export_dir, S1_GRD_dir):
-    '''
+def download_orbits(snap_dir:str, temp_export_dir:str, S1_GRD_dir:str)->None:
+    """
     Download Sentinel-1 orbits
+
     Args:
-        snap_dir (string): directory that snap stores Sentinel-1 orbits files.
-        temp_export_dir (string): temporary directory.
-        S1_GRD_dir (string): directory the Sentinel-1 images are stored.
-
-    Returns:
-        None.
-
-    '''
+        snap_dir (str): Directory that snap stores Sentinel-1 orbits files.
+        temp_export_dir (str): Temporary directory.
+        S1_GRD_dir (str): Directory the Sentinel-1 images are stored.
+    """
+    
     S1_products = os.path.join(S1_GRD_dir,'S1_products.csv')
     assert os.path.exists(S1_products)
     S1_filenames=pd.read_csv(S1_products)
