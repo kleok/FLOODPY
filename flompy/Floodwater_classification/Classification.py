@@ -35,7 +35,7 @@ def Kittler(data):
     Original Matlab code: https://www.mathworks.com/matlabcentral/fileexchange/45685-kittler-illingworth-thresholding
     Paper: Kittler, J. & Illingworth, J. Minimum error thresholding. Pattern Recognit. 19, 41–47 (1986).
     """
-    np.seterr(divide='ignore', invalid='ignore')
+    np.seterr(divide = 'ignore', invalid = 'ignore')
     min_value=int(np.percentile(data, 0.1))
     max_value=int(np.percentile(data, 99.9))
     num_values=len(range(min_value,max_value+1))*10
@@ -58,10 +58,9 @@ def Kittler(data):
     thres = g[idx]
     return thres
 
-def Create_Regions(data, window_size=200):
-    '''
-    Creates blocks of a certain size from a given numpy array
-    '''
+def Create_Regions(data, window_size = 200):
+    """Creates blocks of a certain size from a given numpy array."""
+    
     shape1, shape2 = data.shape
     new_shape1=int(np.ceil(shape1/window_size)*window_size)
     new_shape2=int(np.ceil(shape2/window_size)*window_size)
@@ -72,20 +71,15 @@ def Create_Regions(data, window_size=200):
     
     return Blocks
 
-def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
-    '''
-    Functionality that saves information numpy array to geotiff given a reference
-    geotiff.
+def nparray_to_tiff(nparray:np.array, reference_gdal_dataset:str, target_gdal_dataset:str)->None:
+    """
+    Functionality that saves information numpy array to geotiff given a reference geotiff.
 
     Args:
-        nparray (np.array): information we want to save to geotiff.
-        reference_gdal_dataset (string): path of the reference geotiff file.
-        target_gdal_dataset (string): path of the output geotiff file.
-
-    Returns:
-        None.
-
-    '''
+        nparray (np.array): Information we want to save to geotiff
+        reference_gdal_dataset (str): Path of the reference geotiff file
+        target_gdal_dataset (str): Path of the output geotiff file
+    """
     # open the reference gdal layer and get its relevant properties
     raster_ds = gdal.Open(reference_gdal_dataset, gdal.GA_ReadOnly)   
     xSize = raster_ds.RasterXSize
@@ -102,16 +96,15 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     
     target_ds = None
     
-def Bimodality_test(region, smoothing=True):
-    
-    '''
+def Bimodality_test(region, smoothing = True):
+    r"""
     A more robust split selection methodology has been developed by means of the 
     application of the bimodality coefficient (BC) [1]. The BC is based on a 
     straightforward (and therefore suitable for a rapid computation) empirical 
     relationship between bimodality and the third and fourth statistical moments
     of a distribution (skewness s and kurtosis k, respectively) [2]
     
-    BC = (s2 + 1)/(k + 3(N−1)^2/(N−2)(N−3))
+    .. math:: BC = (s2 + 1) / (k + 3 * (N − 1)^2 / ((N−2) * (N−3)))
     
     where N represents the sample size. The rationale the BC is that a bimodal 
     distribution has very low kurtosis, and/or is asymmetric; these conditions 
@@ -126,7 +119,7 @@ def Bimodality_test(region, smoothing=True):
     2013.
     [2] T. R. Knapp, “Bimodality revisited,” J. Mod. Appl. Statist. Methods,
     vol. 6, pp. 8–20, 2007.
-    '''
+    """
     
     if np.all(np.isnan(region)):
         BC=np.nan
@@ -168,10 +161,6 @@ def Calculation_bimodality_mask(t_score_dataset,
         step_window_size (int, optional): step_window_size. Defaults to 50.
         bimodality_thres (int, optional): bimodality_thres. Defaults to 0.555.
         segmentation_thres (int, optional): segmentation_thres. Defaults to 0.5.
-
-    Returns:
-        None.
-
     '''
 
     data_mask=~np.isnan(t_score_dataset)
@@ -213,10 +202,9 @@ def Calculation_bimodality_mask(t_score_dataset,
     
     return bimodality_mask.astype(np.bool_)
 
-def Is_similar_non_parametric(cand_values, ref_values, p_value=0.05, norm_flag=False):
-    '''
-    Similarity check using non-parametric test (Kolmogorov-Smirnov) 
-    '''
+def Is_similar_non_parametric(cand_values, ref_values, p_value = 0.05, norm_flag=False):
+    """Similarity check using non-parametric test (Kolmogorov-Smirnov)."""
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         fxnUw()
@@ -244,10 +232,8 @@ def Is_similar_non_parametric(cand_values, ref_values, p_value=0.05, norm_flag=F
         
 
 def Is_distr_water(values, water_mean_float, std_water_float, threshold):
-    '''
-    Similarity check using Jensen–Shannon divergence metric
-    '''
-    
+    """Similarity check using Jensen–Shannon divergence metric."""
+
     try:
         water_mean=water_mean_float
         water_std=std_water_float
@@ -270,10 +256,9 @@ def Is_distr_water(values, water_mean_float, std_water_float, threshold):
     return result
 
 def Is_darkest_than(values, water_mean_float, std_water_float):
-    '''
-    Checking if provided values are significatly lower that water distribution
-    using False discovery rate.
-    '''
+    """Checking if provided values are significatly lower that water distribution
+    using False discovery rate."""
+
     water_mean=water_mean_float
     water_std=std_water_float 
         
@@ -582,7 +567,7 @@ def morphological_postprocessing(Flood_map, minimum_mapping_unit_area_m2=1000, p
     '''
     Morphological processing based on provided minimum mapping unit. Procedure
     consists of steps (a) remove_small_holes (b) diameter_opening 
-    and (c) remove_small_objects
+    and (c) remove_small_objects.
     '''
     
     # Remove small objects based on given minimum mapping unit area
@@ -606,7 +591,7 @@ def morphological_postprocessing(Flood_map, minimum_mapping_unit_area_m2=1000, p
 
 def RG_processing(t_score_dataset, Flood_map, RG_weight, search_window_size ):
     '''
-    Region growing processing functionality
+    Region growing processing functionality.
     '''
     # get updated information of floodwater based on local adaptive thresholding
     floodwater_pixels=t_score_dataset[Flood_map]
