@@ -16,6 +16,7 @@ build:
        - pip install --upgrade pip
        - pip install wheel
        - pip install numpy
+       - pip install setuptools==57.5.0
 
 sphinx:
   configuration: docs/conf.py
