@@ -104,7 +104,7 @@ def Bimodality_test(region, smoothing = True):
     relationship between bimodality and the third and fourth statistical moments
     of a distribution (skewness s and kurtosis k, respectively) [2]
     
-    .. math:: BC = (s2 + 1) / (k + 3 * (N − 1)^2 / ((N−2) * (N−3)))
+    .. math:: BC = (s2 + 1) / (k + 3 * (N − 1) ^ {2} / ((N − 2) * (N − 3)))
     
     where N represents the sample size. The rationale the BC is that a bimodal 
     distribution has very low kurtosis, and/or is asymmetric; these conditions 
