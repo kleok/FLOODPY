@@ -17,6 +17,7 @@ build:
        - pip install wheel
        - pip install numpy
        - pip install setuptools==57.5.0
+       - pip install gdal==3.0.4
 
 sphinx:
   configuration: docs/conf.py
