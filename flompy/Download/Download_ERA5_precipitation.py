@@ -7,11 +7,17 @@ import datetime
 import pandas as pd
 import numpy as np
 import netCDF4
-    
-def cftime_to_datetime(cfdatetime):
-    '''
-    Time convertion functionality
-    '''
+
+def cftime_to_datetime(cfdatetime:datetime.datetime)->datetime.datetime:
+    """Time convertion functionality.
+
+    Args:
+        cfdatetime (datetime.datetime): Datetime object to be converted
+
+    Returns:
+        datetime.datetim: Converted datetime object
+    """
+
     year=cfdatetime.year
     month=cfdatetime.month
     day=cfdatetime.day
@@ -20,25 +26,24 @@ def cftime_to_datetime(cfdatetime):
     second=cfdatetime.second
     return datetime.datetime(year,month,day,hour,minute,second)
 
-def retrieve_ERA5_data(ERA5_variables, year_str, month_str, days_list, time_list, bbox_cdsapi, export_filename): 
-    '''
-    re-analysis_dataset         coverage   temporal_resolution  spatial_resolution      latency     analysis\n
-    --------------------------------------------------------------------------------------------------------\n
-    ERA-5    (ECMWF)             Global      Hourly              0.25 deg (~31 km)       3-month      4D-var\n
+def retrieve_ERA5_data(ERA5_variables:list, year_str:str, month_str:str, days_list:list, time_list:list, bbox_cdsapi:list, export_filename:str)->str: 
+    """
+    Gets data from ERA-5 (ECMWF) re-analysis dataset with daily global geographical with 0.25 deg (~31 km) spatial resolution. Note that data availability
+    has a ~3-month latency
 
     Args:
-        ERA5_variables (list of string): List of ERA5 variables.
-        year_str (string): Year.
-        month_str (string): Month.
-        days_list (list of strings): days.
-        time_list (list of strings): times (UTC).
-        bbox_cdsapi (list of floats): geographical borders.
-        export_filename (string): full path of dataset.
+        ERA5_variables (list): List of ERA5 variables
+        year_str (str): Year
+        month_str (str): Month
+        days_list (list): days
+        time_list (list): times (UTC)
+        bbox_cdsapi (list): geographical borders
+        export_filename (str): full path of dataset
 
     Returns:
-        export_filename (string): full path of dataset.
+        export_filename (string): Full path of dataset
+    """
 
-    '''
     c = cdsapi.Client()
     c.retrieve(
         'reanalysis-era5-single-levels',
@@ -56,7 +61,7 @@ def retrieve_ERA5_data(ERA5_variables, year_str, month_str, days_list, time_list
         
     return export_filename
  
-def Get_ERA5_data(ERA5_variables, start_datetime, end_datetime, bbox, ERA5_dir):
+def Get_ERA5_data(ERA5_variables:list, start_datetime:datetime.datetime, end_datetime:datetime.datetime, bbox:list, ERA5_dir:str)->None:
     """Downloads ERA5 datasets between two given dates.
 
     Args:
@@ -64,8 +69,9 @@ def Get_ERA5_data(ERA5_variables, start_datetime, end_datetime, bbox, ERA5_dir):
         start_datetime (datetime.datetime): Starting Datetime e.g.  datetime.datetime(2021, 12, 2, 0, 0)
         end_datetime (datetime.datetime): Ending Datetime e.g.  datetime.datetime(2022, 2, 8, 0, 0)
         bbox (list): List of latitude/longitude [LONMIN, LATMIN,  LONMAX, LATMAX]
-        ERA5_dir (string): Path that ERA5 data will be saved.
+        ERA5_dir (str): Path that ERA5 data will be saved.
     """
+    
     LONMIN, LATMIN,  LONMAX, LATMAX = bbox
     bbox_cdsapi = [LATMAX, LONMIN, LATMIN, LONMAX, ]
 

@@ -10,7 +10,7 @@ import pandas as pd
 from datetime import datetime
 
 def check_downloaded_data(S1_GRD_dir:str,product_df_suffle:pd.DataFrame)-> tuple:
-    '''
+    """
     Based on already downloaded Sentinel-1 products in S1_GRD_dir we return 
     only the products that we still need to download.
     
@@ -23,7 +23,7 @@ def check_downloaded_data(S1_GRD_dir:str,product_df_suffle:pd.DataFrame)-> tuple
     Returns:
         product_df_suffle (pandas.DataFrame): The Sentinel-1 products that will be downloaded.
         download_flag (boolean): True if we have products to download.
-    '''
+    """
     
     download_flag=False
     
@@ -46,7 +46,7 @@ def check_downloaded_data(S1_GRD_dir:str,product_df_suffle:pd.DataFrame)-> tuple
 
 
 def download_products(product_to_be_downloaded_df: pd.DataFrame, api:SentinelAPI, S1_GRD_dir:str)-> None:
-    '''
+    """
     Download functionality of Sentinel-1 products
     
     Args:
@@ -54,7 +54,7 @@ def download_products(product_to_be_downloaded_df: pd.DataFrame, api:SentinelAPI
         api (sentinelsat.sentinel.SentinelAPI ): The api sentinelsat request.
         S1_GRD_dir (string): The directory that the Sentinel-1 products will be
                              downloaded.
-    '''
+    """
     try:
         os.chdir(S1_GRD_dir)
         if 'index' in product_to_be_downloaded_df:
@@ -74,7 +74,7 @@ def download_products(product_to_be_downloaded_df: pd.DataFrame, api:SentinelAPI
 
 
 def get_flood_image(S1_df:pd.DataFrame,flood_datetime:datetime)-> pd.Series:
-    '''
+    """
     Finds the closest Sentinel-1 acquisition after the defined flood datetime.
 
     Args:
@@ -83,7 +83,8 @@ def get_flood_image(S1_df:pd.DataFrame,flood_datetime:datetime)-> pd.Series:
 
     Returns:
         pd.Series: the metadata of the considered flood image
-    '''
+    """
+
     # Get the datime information from all S1 products
     S1_df.reset_index(inplace=True)
     S1_temp=S1_df.copy()
@@ -120,7 +121,7 @@ def Download_S1_data(scihub_accounts:dict, # accounts at scihub.copernicus.eu
                 time_sleep:int=1800, # half an hour
                 max_tries:int=50,
                 download:bool=True)->None:
-    '''
+    """
     This function is the main functionaliry for downloading Sentinel-1 GRD data.
     It support multiple scihub accounts to speed up the LTA retrieval of offline 
     products. It has been tested for products released after May 2017
@@ -139,7 +140,7 @@ def Download_S1_data(scihub_accounts:dict, # accounts at scihub.copernicus.eu
         time_sleep (integer, optional): time span for each request (in seconds). Defaults to 1800.
         max_tries (integer, optional): the number of the requests. Defaults to 50.
 
-    '''
+    """
 
     download_try_count=0
     download_flag=True

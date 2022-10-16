@@ -330,6 +330,7 @@ class CropDelineation():
     def crop_probab_map(self, cube:np.ndarray, cbmeta:dict, write:bool=False)->None:
         """Interpolate timeseries, where pixels have np.nan value or nodata value
         as defined by cube metadata.
+
         Args:
             cube (np.ndarray): Timeseries as 3D cube (count:bands, height:rows, width:columns).
             cbmeta (dict): Containing all cube metadata, as returned by rasterio.
