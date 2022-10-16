@@ -24,5 +24,5 @@ sphinx:
 
 python:
   install:
-    - requirements: docs/requirements-dev.txt.
+    - requirements: docs/requirements-dev.txt
   system_packages: true  
