@@ -10,9 +10,10 @@ build:
     - libgdal-dev
     - python3-dev
   commands:
+    - pip install --upgrade pip
     - pip install wheel
     - pip install numpy
-    
+
 sphinx:
   configuration: docs/conf.py
 
