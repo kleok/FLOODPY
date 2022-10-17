@@ -21,6 +21,7 @@ def equation_3(fpaths:list, kernel_N_weight:pd.DataFrame)->list:
     ignored to fearther computations.
     For all bands in an fpaths, for one kernel and corresponding weight. All kernels are flipped
     before convolution.
+    
     Args:
         fpaths (list): List of fullpaths for bands b03, b04, b08, b11, b12.
         kernel_N_weight (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels and their weights. 
@@ -47,6 +48,7 @@ def equation_3(fpaths:list, kernel_N_weight:pd.DataFrame)->list:
 
 def equation_4(ndvi:np.array, kernel_N_weight:pd.DataFrame)->list:
     """Convolution only for NDVI image.
+    
     Args:
         ndvi (np.array): Image as 2D array.
         kernel_N_weight (pd.DataFrame): Row of iterable dataframe with 2 columns with kernels and their weights. 
@@ -63,6 +65,7 @@ def equation_4(ndvi:np.array, kernel_N_weight:pd.DataFrame)->list:
 
 def equation_5(ndvi:np.array, dweeks:list, dndvi:list, kernels_N_weights:pd.DataFrame)->np.array:
     """Compute edge estimation for one date.
+    
     Args:
         ndvi (np.array): NDVI image as 2D array.
         dweeks (list): Result of equation_3. List containing 2D arrays, one for each kernel.
@@ -87,6 +90,7 @@ def equation_5(ndvi:np.array, dweeks:list, dndvi:list, kernels_N_weights:pd.Data
 
 def wkernels()->pd.DataFrame:
     """Prepare kernels.
+    
     Returns:
         pd.DataFrame: Kernels as dataframe
     """
@@ -110,6 +114,7 @@ def wkernels()->pd.DataFrame:
 
 def cube_by_paths(listOfPaths:list, outfname:str=None, **kwargs)->list:
     """Concatenate images as cube.
+    
     Args:
         listOfPaths (list): List containg fullpaths of images to concatenate on time-axis.
         outfname (str, optional): Absolute filename for the resulted geotif file. Defaults to None. When given, the 3D cube array will be saved.
@@ -154,6 +159,7 @@ def cube_by_paths(listOfPaths:list, outfname:str=None, **kwargs)->list:
 
 def cbdf2cbarr(cbdf:pd.DataFrame, cbmeta:dict)->np.ndarray:
     """Convert dataframe of cube to corresponding 3D cube array.
+    
     Args:
         cbdf (pd.DataFrame): Indexed as (rows:bands, row wise read, columns:individual pixels)
         cbmeta (dict): Containing all cube metadata, as returned by rasterio.
@@ -171,6 +177,7 @@ def cbdf2cbarr(cbdf:pd.DataFrame, cbmeta:dict)->np.ndarray:
 
 def cbarr2cbdf(cbarr:np.ndarray, cbmeta:dict)->pd.DataFrame:
     """Convert 3D cube array to corresponding dataframe of the cube.
+    
     Args:
         cbarr (np.ndarray): Indexed as tensor (count:bands, height:rows, width:columns)
         cbmeta (dict): Containing all cube metadata, as returned by rasterio.
@@ -186,6 +193,14 @@ def cbarr2cbdf(cbarr:np.ndarray, cbmeta:dict)->pd.DataFrame:
 
 
 def filter_corine(shppath:str)->gpd.GeoDataFrame:
+    """FIlters corine to keep only agricultural areas.
+
+    Args:
+        shppath (str): Path to CLC shapefile
+
+    Returns:
+        gpd.GeoDataFrame: Only agricultural areas
+    """
     corine_data = gpd.read_file(shppath)
 
     keep = {
@@ -221,6 +236,7 @@ def filter_corine(shppath:str)->gpd.GeoDataFrame:
 
 def _wkt2esri(wkt:str)->str:
     """Converts WKT geometries to arcGIS geometry strings.
+    
     Args:
         wkt (str): WKT geometry string
     Returns:
@@ -246,6 +262,7 @@ def _wkt2esri(wkt:str)->str:
 
 def corine(aoi:str, to_file:bool = False, fname:str = "corine_2018.shp")->tuple:
     """Downloads Corine Land Cover 2018 data from Copernicus REST API.
+    
     Args:
         aoi (str): Path to file with the region of interest
         to_file (bool, optional): Save result to file. Defaults to False
@@ -315,6 +332,7 @@ def worldcover(aoi:str, savepath:str)->gpd.GeoDataFrame:
 
 def reproj_match(image:str, base:str, outfile:str, resampling:rasterio.warp.Resampling = Resampling.nearest) -> None:
     """Reprojects/Resamples an image to a base image.
+    
     Args:
         image (str): Path to input file to reproject/resample
         base (str): Path to raster with desired shape and projection 
