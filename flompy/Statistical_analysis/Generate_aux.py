@@ -51,15 +51,12 @@ def reproject(outname, infilename, UTM_CRS_EPSG ):
     
 def generate_slope_aspect(dem_file, slope_outname, aspect_outname):
     '''
-    Calculates aspect and slope of given DEM 
+    Calculates aspect and slope of given DEM.
+    
     Args:
         dem_file (string): path to DEM geotiff file .
         slope_outname (string): path to DEM-slope generated geotiff file.
         aspect_outname (string): path to DEM-aspect generated geotiff file.
-
-    Returns:
-        None.
-
     '''
     dem_temp = rd.LoadGDAL(dem_file, no_data=-32768)
     slope = rd.TerrainAttribute(dem_temp, attrib='slope_degrees')
@@ -70,6 +67,7 @@ def generate_slope_aspect(dem_file, slope_outname, aspect_outname):
 def WGS84_to_UTM(lon_list, lat_list):
     '''
     Finds the best WGS84 UTM projection given a list of lats/lons
+    
     Args:
         lon_list (list): list of longitudes.
         lat_list (list): list of latitudes.
