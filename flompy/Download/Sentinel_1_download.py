@@ -9,15 +9,15 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-def check_downloaded_data(S1_GRD_dir:str,product_df_suffle:pd.DataFrame)-> tuple:
+def check_downloaded_data(S1_dir:str,product_df_suffle:pd.DataFrame)-> tuple:
     """
-    Based on already downloaded Sentinel-1 products in S1_GRD_dir we return 
+    Based on already downloaded Sentinel-1 products in S1_dir we return 
     only the products that we still need to download.
     
     Improvements: Check the size and the integrity of each downloaded product.
     
     Args:
-        S1_GRD_dir (string): The directory that the Sentinel-1 products will be downloaded.
+        S1_dir (string): The directory that the Sentinel-1 products will be downloaded.
         product_df_suffle (pandas.DataFrame): The results from sentinesat request.
 
     Returns:
@@ -28,7 +28,7 @@ def check_downloaded_data(S1_GRD_dir:str,product_df_suffle:pd.DataFrame)-> tuple
     download_flag=False
     
     # checking if all the products are already downloaded!
-    already_downloaded_data=glob.glob(os.path.join(S1_GRD_dir,'S1*.zip'))
+    already_downloaded_data=glob.glob(os.path.join(S1_dir,'S1*.zip'))
     
     products_to_be_download=sorted([product.split('.')[0] for product in product_df_suffle['filename'].tolist()])
     products_already_download=sorted([os.path.basename(product).split('.')[0] for product in already_downloaded_data])
@@ -45,18 +45,18 @@ def check_downloaded_data(S1_GRD_dir:str,product_df_suffle:pd.DataFrame)-> tuple
     return product_df_suffle, download_flag   
 
 
-def download_products(product_to_be_downloaded_df: pd.DataFrame, api:SentinelAPI, S1_GRD_dir:str)-> None:
+def download_products(product_to_be_downloaded_df: pd.DataFrame, api:SentinelAPI, S1_dir:str)-> None:
     """
     Download functionality of Sentinel-1 products
     
     Args:
         product_to_be_downloaded_df (pandas.DataFrame): DESCRIPTION.
         api (sentinelsat.sentinel.SentinelAPI ): The api sentinelsat request.
-        S1_GRD_dir (string): The directory that the Sentinel-1 products will be
+        S1_dir (string): The directory that the Sentinel-1 products will be
                              downloaded.
     """
     try:
-        os.chdir(S1_GRD_dir)
+        os.chdir(S1_dir)
         if 'index' in product_to_be_downloaded_df:
             product_to_be_downloaded_df.index=product_to_be_downloaded_df['index']
         for product_id in product_to_be_downloaded_df.index:
@@ -112,13 +112,14 @@ def get_flood_image(S1_df:pd.DataFrame,flood_datetime:datetime)-> pd.Series:
     return S1_df.iloc[S1_flood_index]
 
 def Download_S1_data(scihub_accounts:dict, # accounts at scihub.copernicus.eu
-                S1_GRD_dir:str, # output directory
+                S1_dir:str, # output directory
                 geojson_S1:str, # spatial AOI
+                S1_type:str,
                 Start_time:str,
                 End_time:str,
                 relOrbit:str,
                 flood_datetime:datetime,
-                time_sleep:int=1800, # half an hour
+                time_sleep:int=180, # half an hour
                 max_tries:int=50,
                 download:bool=True)->None:
     """
@@ -128,11 +129,13 @@ def Download_S1_data(scihub_accounts:dict, # accounts at scihub.copernicus.eu
 
     TODO:
         * Ensure that slicenumber of slcs products is the same. In some cases different slicenumber messes up the geocoding procedure.
+        * Add ASF download functionality
         
     Args:
         scihub_accounts (dict): dict keys (scihub_username) and items (scihub_passwords).
-        S1_GRD_dir (string): directory that Sentinel-1 are stored.
+        S1_dir (string): directory that Sentinel-1 are stored.
         geojson_S1 (string): geojson vector file of the AOI.
+        S1_type (string): type of S1 product can be GRD or SLC
         Start_time (string): Starting Date (YYYYMMDD) e.g.  20200924
         End_time (string): Starting Date (YYYYMMDD) e.g.  20201225
         relOrbit (string): number of relative orbit of Sentinel-1 data.
@@ -184,7 +187,7 @@ def Download_S1_data(scihub_accounts:dict, # accounts at scihub.copernicus.eu
             
             # get information of S1 image that will be used a flood image
             flood_S1_image = get_flood_image(products_df,flood_datetime)
-            flood_S1_image.to_csv(os.path.join(S1_GRD_dir,'flood_S1_filename.csv'))
+            flood_S1_image.to_csv(os.path.join(S1_dir,'flood_S1_filename.csv'))
             
             # select only the images that share the same relative orbit with
             # selected flood image
@@ -202,16 +205,16 @@ def Download_S1_data(scihub_accounts:dict, # accounts at scihub.copernicus.eu
              
             # save to csv for future use
             product_df_clean=products_df.copy()
-            product_df_clean.to_csv(os.path.join(S1_GRD_dir,'S1_products.csv'))
+            product_df_clean.to_csv(os.path.join(S1_dir,'S1_products.csv'))
             
             if download:
                 product_df_suffle=product_df_clean.sample(frac=1)
 
                 [product_to_be_downloaded_df,
-                 download_flag] = check_downloaded_data(S1_GRD_dir,product_df_suffle)
+                 download_flag] = check_downloaded_data(S1_dir,product_df_suffle)
 
                 if download_flag:
-                    download_products(product_to_be_downloaded_df, api, S1_GRD_dir)       
+                    download_products(product_to_be_downloaded_df, api, S1_dir)       
                 else:
                     break
             else:
