@@ -1,21 +1,21 @@
-flompy.Crop\_delineation package
+floodpy.Crop\_delineation package
 ================================
 
 Submodules
 ----------
 
-flompy.Crop\_delineation.delineate module
+floodpy.Crop\_delineation.delineate module
 -----------------------------------------
 
-.. automodule:: flompy.Crop_delineation.delineate
+.. automodule:: floodpy.Crop_delineation.delineate
    :members:
    :undoc-members:
    :show-inheritance:
 
-flompy.Crop\_delineation.utils module
+floodpy.Crop\_delineation.utils module
 -------------------------------------
 
-.. automodule:: flompy.Crop_delineation.utils
+.. automodule:: floodpy.Crop_delineation.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ flompy.Crop\_delineation.utils module
 Module contents
 ---------------
 
-.. automodule:: flompy.Crop_delineation
+.. automodule:: floodpy.Crop_delineation
    :members:
    :undoc-members:
    :show-inheritance:

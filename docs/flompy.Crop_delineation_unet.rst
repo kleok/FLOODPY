@@ -1,13 +1,13 @@
-flompy.Crop\_delineation\_unet package
+floodpy.Crop\_delineation\_unet package
 ======================================
 
 Submodules
 ----------
 
-flompy.Crop\_delineation\_unet.Pretrained\_networks module
+floodpy.Crop\_delineation\_unet.Pretrained\_networks module
 ----------------------------------------------------------
 
-.. automodule:: flompy.Crop_delineation_unet.Pretrained_networks
+.. automodule:: floodpy.Crop_delineation_unet.Pretrained_networks
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ flompy.Crop\_delineation\_unet.Pretrained\_networks module
 Module contents
 ---------------
 
-.. automodule:: flompy.Crop_delineation_unet
+.. automodule:: floodpy.Crop_delineation_unet
    :members:
    :undoc-members:
    :show-inheritance:

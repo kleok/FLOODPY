@@ -19,12 +19,12 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'flompy'
+project = 'floodpy'
 copyright = '2022, Kleanthis Karamvasis, Alekos Falagas'
 author = 'Kleanthis Karamvasis, Alekos Falagas'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.2'
+release = '0.4.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -56,7 +56,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo = '../figures/Flompy_logo.png'
+html_logo = '../figures/Floodpy_logo.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
