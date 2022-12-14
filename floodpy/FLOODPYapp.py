@@ -53,13 +53,13 @@ through the step immediately preceding the starting step of the current run.
 
 ##########################################################################
 EXAMPLE = """example:
-  FLOMPYapp.py FLOMPYapp.cfg            #run with FLOMPYapp.cfg template
-  FLOMPYapp.py -h / --help             #help
-  FLOMPYapp.py -H                      #print    default template options
+  FLOODPYapp.py FLOODPYapp.cfg            #run with FLOODPYapp.cfg template
+  FLOODPYapp.py -h / --help             #help
+  FLOODPYapp.py -H                      #print    default template options
 
   # Run with --start/stop/dostep options
-  FLOMPYapp.py LPS2022.cfg --dostep Download_Precipitation_data  #run at step 'Download_Precipitation_data' only
-  FLOMPYapp.py LPS2022.cfg --end download_S2_data    #end after step 'download_S2_data'
+  FLOODPYapp.py LPS2022.cfg --dostep Download_Precipitation_data  #run at step 'Download_Precipitation_data' only
+  FLOODPYapp.py LPS2022.cfg --end download_S2_data    #end after step 'download_S2_data'
 """
 ##########################################################################
 REFERENCE = """
@@ -82,7 +82,7 @@ REFERENCE = """
 """
 
 def create_parser():
-    parser = argparse.ArgumentParser(description='FLOod Mapping PYthon toolbox (FLOMPY)',
+    parser = argparse.ArgumentParser(description='FLOOD PYthon toolbox (FLOODPY)',
                                      formatter_class=argparse.RawTextHelpFormatter,
                                      epilog=REFERENCE+'\n'+EXAMPLE)
 
@@ -111,7 +111,7 @@ def cmd_line_parse(iargs=None):
 
     # print default template
     if inps.print_template:
-        default_template_file = os.path.join(os.path.dirname(__file__), 'FLOMPYapp.cfg')
+        default_template_file = os.path.join(os.path.dirname(__file__), 'FLOODPYapp.cfg')
         raise SystemExit(open(default_template_file, 'r').read())
 
     if (not inps.customTemplateFile):
@@ -470,7 +470,7 @@ class FloodwaterEstimation:
 
         # message
         msg = '\n################################################'
-        msg += '\n   Normal end of FLOMPY processing!'
+        msg += '\n   Normal end of FLOODPY processing!'
         msg += '\n################################################'
         print(msg)
         return
