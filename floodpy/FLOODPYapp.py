@@ -21,8 +21,6 @@ from floodpy.Floodwater_classification.Classification import Get_flood_map
 # Agriculture fields extraction
 from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
-from floodpy.Crop_delineation.delineate import CropDelineation
-from floodpy.Crop_delineation_unet.Pretrained_networks import Crop_delineation_Unet
 
 print('FLOod Mapping PYthon toolbox')
 print('Copyright (c) 2021-2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
@@ -38,8 +36,7 @@ STEP_LIST = [
     'Preprocessing_S1_data',
     'Statistical_analysis',
     'Floodwater_classification',
-    'Download_S2_data',
-    'Crop_delineation',]
+    'Download_S2_data',]
 
 ##########################################################################
 STEP_HELP = """Command line options for steps processing with \n names are chosen from the following list:
@@ -221,7 +218,6 @@ class FloodwaterEstimation:
         self.temp_export_dir = os.path.join(self.S1_GRD_dir,"S1_orbits")
         self.S2_dir = os.path.join(self.projectfolder,'Sentinel_2_imagery')
         self.Land_Cover = os.path.join(self.projectfolder, "Land_Cover")
-        self.Results_crop_delineation =  os.path.join(self.projectfolder, "Results_crop_delineation")
         self.directories = [self.projectfolder,
                             self.ERA5_dir,
                             self.S1_GRD_dir,
@@ -229,8 +225,7 @@ class FloodwaterEstimation:
                             self.Results_dir,
                             self.temp_export_dir,
                             self.S2_dir,
-                            self.Land_Cover,
-                            self.Results_crop_delineation]
+                            self.Land_Cover,]
         
         [os.mkdir(directory) for directory in self.directories if not os.path.exists(directory)]
 
@@ -363,77 +358,6 @@ class FloodwaterEstimation:
         
         return 0
 
-    def run_crop_delineation(self, step_name):
-        """
-        TODO: Use a functionallity to find zip and unzipped data -> Done in #5
-        TODO: remove orbits if pixels with nan values are above a certain 
-        threshold -> Done in #5
-        """
-        
-        # Get data
-        eodata = sentimeseries("S2-timeseries")
-        
-        eodata.find(self.S2_dir)
-        eodata.sort_images(date=True)
-        
-        # Get VIs
-        eodata.getVI("NDVI")
-        
-        # Clip data
-        eodata.clipbyMask(self.geojson_S1, band = 'B02', resize = True, new ="masked")
-        eodata.clipbyMask(self.geojson_S1, band = 'B03', resize = True, new ="masked")
-        eodata.clipbyMask(self.geojson_S1, band = 'B04', resize = True, new ="masked")
-        eodata.clipbyMask(self.geojson_S1, band = 'B08', resize = True, new ="masked")
-        eodata.clipbyMask(self.geojson_S1, band = 'B11', resize = True, new ="masked")
-        eodata.clipbyMask(self.geojson_S1, band = 'B12', resize = True, new ="masked")
-        eodata.clipbyMask(self.geojson_S1, band = 'SCL', resize = True, new ="masked")
-        eodata.clipbyMask(self.geojson_S1, band = "NDVI", new ="masked")
-        
-        self.S2timeseries = eodata
-        
-
-        # create obj
-        parcels = CropDelineation(eodata = self.S2timeseries,
-                                  dst_path = self.Results_crop_delineation,
-                                  lc_path = self.Land_Cover)
-        
-
-        # corine and scl masks
-        parcels.lc_mask(aoi = self.geojson_S1, write=True)
-        parcels.cloud_mask(write=True)
-
-        # edge intensity (0-100) map
-        parcels.edge_probab_map(write=True)
-
-        # create ndvi series and apply any created mask (clouds, towns)
-        parcels.create_series(write=False)
-
-        # fill values removed by cloud mask
-        parcels.crop_probab_map(
-            cube = parcels.ndviseries,
-            cbmeta = parcels.ndviseries_meta,
-            write=True,
-            )
-
-        # edges, active and inactive fields Map
-        parcels.active_fields()
-
-        # Pretrained 
-        Crop_delineation_Unet(model_name = 'UNet3',
-                            model_dir = self.scriptsfolder,
-                            BASE_DIR = self.S2_dir,
-                            results_pretrained = self.Results_crop_delineation,
-                            force_cpu = True)
-
-        # Delineate fields: Combine EPM and UNet
-        parcels.delineation(self.geojson_S1, os.path.join(self.Results_crop_delineation,
-        'UNet3_crop_delineation.tif'))
-
-        # Characterize Cultivated and Not-Cultivated fields
-        parcels.flooded_fields(os.path.join(self.Results_dir,'Flood_map_{}.tif'.format(self.projectname)))
-
-        return 0
-
     def run(self, steps=STEP_LIST, plot=True):
         # run the chosen steps
         for sname in steps:
@@ -456,9 +380,6 @@ class FloodwaterEstimation:
             
             elif sname == 'Download_S2_data':
                 self.run_download_S2_data(sname)
-                
-            elif sname == 'Crop_delineation':
-                self.run_crop_delineation(sname)
         
         # plot result (show aux visualization message more multiple steps processing)
         print_aux = len(steps) > 1
