@@ -19,10 +19,7 @@ pyproj
 seaborn
 rasterio
 rasterstats
-tensorflow==2.6.2
-keras_unet
 awscli
-patchify
 sphinx
 sphinxcontrib-apidoc
 sphinxcontrib-napoleon
