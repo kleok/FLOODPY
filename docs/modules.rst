@@ -1,7 +1,7 @@
-flompy
-======
+floodpy
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   flompy
+   floodpy

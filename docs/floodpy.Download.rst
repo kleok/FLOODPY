@@ -1,11 +1,11 @@
 floodpy.Download package
-=======================
+========================
 
 Submodules
 ----------
 
 floodpy.Download.Download\_ERA5\_precipitation module
-----------------------------------------------------
+-----------------------------------------------------
 
 .. automodule:: floodpy.Download.Download_ERA5_precipitation
    :members:
@@ -13,7 +13,7 @@ floodpy.Download.Download\_ERA5\_precipitation module
    :show-inheritance:
 
 floodpy.Download.Download\_GFS module
-------------------------------------
+-------------------------------------
 
 .. automodule:: floodpy.Download.Download_GFS
    :members:
@@ -21,7 +21,7 @@ floodpy.Download.Download\_GFS module
    :show-inheritance:
 
 floodpy.Download.Download\_orbits module
----------------------------------------
+----------------------------------------
 
 .. automodule:: floodpy.Download.Download_orbits
    :members:
@@ -29,7 +29,7 @@ floodpy.Download.Download\_orbits module
    :show-inheritance:
 
 floodpy.Download.Sentinel\_1\_download module
---------------------------------------------
+---------------------------------------------
 
 .. automodule:: floodpy.Download.Sentinel_1_download
    :members:
@@ -37,7 +37,7 @@ floodpy.Download.Sentinel\_1\_download module
    :show-inheritance:
 
 floodpy.Download.Sentinel\_2\_download module
---------------------------------------------
+---------------------------------------------
 
 .. automodule:: floodpy.Download.Sentinel_2_download
    :members:
