@@ -23,7 +23,7 @@ from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
 
 print('FLOod Mapping PYthon toolbox')
-print('Copyright (c) 2021-2022 Kleanthis Karamvasis, karamvasis_k@hotmail.com')
+print('Copyright (c) 2021-2022 Kleanthis Karamvasis, Alekos Falagas')
 print('Remote Sensing Laboratory of National Technical University of Athens')
 print('-----------------------------------------------------------------')
 print('License: GNU GPL v3+')
@@ -167,10 +167,11 @@ class FloodwaterEstimation:
     remote sensing data.
     """
 
-    def __init__(self, customTemplateFile=None, workDir=None):
+    def __init__(self, customTemplateFile=None, workDir=None, parmsdict=None):
         """customTemplateFile and scihub account is required.""" 
         self.customTemplateFile = customTemplateFile
         self.cwd = os.path.abspath(os.getcwd())
+        self.parmsdict = parmsdict
 
     def startup(self):
         """The starting point of the workflow. It runs everytime. 
@@ -179,12 +180,17 @@ class FloodwaterEstimation:
         - creates directory structure
         
         """
-    
+
         #-- Reading configuration parameters
-        template_file = os.path.join(self.cwd, self.customTemplateFile)
-        self.template_dict=read_template(template_file)
-        [print(key,':',value) for key, value in self.template_dict.items()]
-        
+        if self.customTemplateFile is not None:
+            template_file = os.path.join(self.cwd, self.customTemplateFile)
+            self.template_dict=read_template(template_file)
+            #[print(key,':',value) for key, value in self.template_dict.items()]
+        elif self.parmsdict is not None:
+            self.template_dict = self.parmsdict
+        else:
+            raise("Please provide a template file or a dictionary with configuration parameters")
+            
         # Project Definition
         self.projectname    = self.template_dict['Projectname']
         self.projectfolder  = self.template_dict['projectfolder']
