@@ -29,6 +29,10 @@ chmod +x install_snap.sh
 ### 1.2 Account setup for downloading Sentinel-1 acquisitions
 Sentinel-1 data download functionality require user credentials. More information [here](https://scihub.copernicus.eu/)
 
+Please create an account
+Install aria using thw following command:
+```sudo apt-get install aria2```
+
 ### 1.3 Account setup for downloading global atmospheric model data
 ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS). You have to create a new account on the CDS website if you don't own a user account yet. After the creation of your profile, you will find your user id (UID) and your personal API Key. Now, a ```.cdsapirc``` file must be created under your ```HOME``` directory with the following information:
 ```
