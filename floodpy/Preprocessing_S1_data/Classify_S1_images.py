@@ -9,7 +9,7 @@ import os
 
 def Get_images_for_baseline_stack(projectfolder,
                                   ERA5_dir,
-                                  S1_GRD_dir,
+                                  S1_dir,
                                   Start_time,
                                   End_time,
                                   flood_datetime,
@@ -38,7 +38,7 @@ def Get_images_for_baseline_stack(projectfolder,
 
     
     # get the S1_dates
-    S1_products=glob.glob(S1_GRD_dir+'/*.zip')
+    S1_products=glob.glob(S1_dir+'/*.zip')
     S1_dates=[pd.Timestamp(os.path.basename(S1_product)[17:32]) for S1_product in S1_products ]
     S1_df=pd.DataFrame(index=S1_dates, columns=['S1_GRD'], data=S1_products)
     S1_df.sort_index(inplace=True)
@@ -71,7 +71,7 @@ def Get_images_for_baseline_stack(projectfolder,
     
     # make sure the Image corresponds to flood state is not selected for
     # baseline stack creation
-    flood_S1_image_filename = os.path.join(S1_GRD_dir,'flood_S1_filename.csv')
+    flood_S1_image_filename = os.path.join(S1_dir,'flood_S1_filename.csv')
     assert os.path.exists(flood_S1_image_filename)
     flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).loc['title'].values[0]
     flood_S1_datetime = pd.Timestamp(flood_S1_image[17:32])
@@ -81,7 +81,7 @@ def Get_images_for_baseline_stack(projectfolder,
     
     Good_images_for_baseline['S1_GRD']=S1_df['S1_GRD']
     Good_images_for_baseline['Datetime'] =  pd.to_datetime(S1_df.index)
-    Good_images_for_baseline.to_csv(os.path.join(S1_GRD_dir,'baseline_images.csv'), index=False)
+    Good_images_for_baseline.to_csv(os.path.join(S1_dir,'baseline_images.csv'), index=False)
     
     return 0
     

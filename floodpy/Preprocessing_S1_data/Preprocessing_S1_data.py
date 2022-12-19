@@ -373,7 +373,7 @@ def _normalize_raster(numpy_array_3d):
 def Run_Preprocessing(projectfolder,
                       gpt_exe,
                       graph_dir,
-                      S1_GRD_dir,
+                      S1_dir,
                       geojson_S1,
                       Preprocessing_dir):
     '''
@@ -381,18 +381,18 @@ def Run_Preprocessing(projectfolder,
     '''
     
     # check that we have S1 products to work with
-    S1_products = os.path.join(S1_GRD_dir,'S1_products.csv')
+    S1_products = os.path.join(S1_dir,'S1_products.csv')
     assert os.path.exists(S1_products)
     
     # check that primary/flood image is downloaded
-    flood_S1_image_filename = os.path.join(S1_GRD_dir,'flood_S1_filename.csv')
+    flood_S1_image_filename = os.path.join(S1_dir,'flood_S1_filename.csv')
     assert os.path.exists(flood_S1_image_filename)
     
     flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).loc['title'].values[0]
     
     if not flood_S1_image.endswith('zip'):
         flood_S1_image = flood_S1_image.split('.')[0]+'.zip'
-    Flood_image=os.path.join(S1_GRD_dir, flood_S1_image)
+    Flood_image=os.path.join(S1_dir, flood_S1_image)
     assert (os.path.exists(Flood_image))
     
     # SNAP graphs that will be used for preprocessing
@@ -406,7 +406,7 @@ def Run_Preprocessing(projectfolder,
     assembly_grd_xml_tiff_file = os.path.join(graph_dir,'preprocessing_assembly_GRD_tiff.xml')
     assembly_baseline_grd_xml_file = os.path.join(graph_dir,'preprocessing_assembly_GRD_pair.xml')
 
-    S1_images_df = pd.read_csv(os.path.join(S1_GRD_dir,'baseline_images.csv'))   
+    S1_images_df = pd.read_csv(os.path.join(S1_dir,'baseline_images.csv'))   
 
     # Flood image is selected as Primary/master image
     Flood_image_filename = Flood_image

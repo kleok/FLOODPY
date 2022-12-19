@@ -60,7 +60,7 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
 
 def Calc_t_scores(projectfolder, 
                   Results_dir,
-                  S1_GRD_dir,
+                  S1_dir,
                   Preprocessing_dir,
                   band='VV_VH_db'):
     '''
@@ -74,13 +74,13 @@ def Calc_t_scores(projectfolder,
     SAR_stack=h5py.File(SAR_stack_file,'r')
     
     # get baseline_dates
-    images=os.path.join(S1_GRD_dir,'baseline_images.csv')
+    images=os.path.join(S1_dir,'baseline_images.csv')
     images_df=pd.read_csv(images)
     baseline_images=images_df[images_df['baseline']==True]
     baseline_dates=[os.path.basename(image)[17:32] for image in baseline_images['S1_GRD'].tolist()]
 
     # get flood_date
-    flood_S1_image_filename = os.path.join(S1_GRD_dir,'flood_S1_filename.csv')
+    flood_S1_image_filename = os.path.join(S1_dir,'flood_S1_filename.csv')
     assert os.path.exists(flood_S1_image_filename)
     flood_S1_image = pd.read_csv(flood_S1_image_filename, index_col=0).loc['title'].values[0]
     flood_date = flood_S1_image[17:32]
