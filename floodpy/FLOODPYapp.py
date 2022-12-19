@@ -217,16 +217,17 @@ class FloodwaterEstimation:
         assert os.path.exists(self.graph_dir)
         assert os.path.exists(self.gptcommand)
 
-        self.S1_GRD_dir = os.path.join(self.projectfolder,'Sentinel_1_GRD_imagery')
+        self.S1_dir = os.path.join(self.projectfolder,'Sentinel_1_imagery')
+        self.S1_type = self.template_dict['S1_type']
         self.ERA5_dir = os.path.join(self.projectfolder,'ERA5')
         self.Preprocessing_dir = os.path.join(self.projectfolder, 'Preprocessed')
         self.Results_dir = os.path.join(self.projectfolder, 'Results')
-        self.temp_export_dir = os.path.join(self.S1_GRD_dir,"S1_orbits")
+        self.temp_export_dir = os.path.join(self.S1_dir,"S1_orbits")
         self.S2_dir = os.path.join(self.projectfolder,'Sentinel_2_imagery')
         self.Land_Cover = os.path.join(self.projectfolder, "Land_Cover")
         self.directories = [self.projectfolder,
                             self.ERA5_dir,
-                            self.S1_GRD_dir,
+                            self.S1_dir,
                             self.Preprocessing_dir,
                             self.Results_dir,
                             self.temp_export_dir,
@@ -259,8 +260,10 @@ class FloodwaterEstimation:
         self.min_map_area   = float(self.template_dict['minimum_mapping_unit_area_m2'])
         self.CPU            = int(self.template_dict['CPU'])
         self.RAM            = self.template_dict['RAM']
-        self.credentials    = {self.template_dict['scihub_username']:self.template_dict['scihub_password']}
-        
+        self.scihub_username = self.template_dict['scihub_username']
+        self.scihub_password = self.template_dict['scihub_password']
+        self.aria_username = self.template_dict['aria_username']
+        self.aria_password = self.template_dict['aria_password']
         
         # Define start and end time of analysis
         self.start_datetime = self.flood_datetime-datetime.timedelta(days=self.baseline_days)
@@ -283,19 +286,24 @@ class FloodwaterEstimation:
     
     def run_download_S1_data(self, step_name):
         
-        Download_S1_data(scihub_accounts = self.credentials,
-                          S1_GRD_dir = self.S1_GRD_dir,
+        Download_S1_data( scihub_username = self.scihub_username,
+                          scihub_password = self.scihub_password,
+                          aria_username = self.aria_username,
+                          aria_password = self.aria_password,
+                          S1_dir = self.S1_dir,
                           geojson_S1 = self.geojson_S1,
+                          S1_type = self.S1_type,
                           Start_time = self.Start_time,
                           End_time = self.End_time,
                           relOrbit = self.relOrbit,
                           flood_datetime = self.flood_datetime,
                           time_sleep=60, # 1 minute
-                          max_tries=100)
-        
+                          max_tries=100,
+                          download=True)
+
         download_orbits(snap_dir = self.snap_dir,
                 temp_export_dir = self.temp_export_dir,
-                S1_GRD_dir = self.S1_GRD_dir)
+                S1_dir = self.S1_dir)
         
         print("Sentinel-1 data and orbit information have been successfully downloaded")
         
@@ -305,7 +313,7 @@ class FloodwaterEstimation:
         
         Get_images_for_baseline_stack(projectfolder = self.projectfolder,
                                       ERA5_dir = self.ERA5_dir,
-                                      S1_GRD_dir = self.S1_GRD_dir,
+                                      S1_dir = self.S1_dir,
                                       Start_time = self.Start_time,
                                       End_time = self.End_time,
                                       flood_datetime = self.flood_datetime,
@@ -315,7 +323,7 @@ class FloodwaterEstimation:
         Run_Preprocessing(projectfolder = self.projectfolder,
                           gpt_exe = self.gptcommand,
                           graph_dir = self.graph_dir,
-                          S1_GRD_dir = self.S1_GRD_dir,
+                          S1_dir = self.S1_dir,
                           geojson_S1 = self.geojson_S1,
                           Preprocessing_dir = self.Preprocessing_dir) 
         
@@ -328,7 +336,7 @@ class FloodwaterEstimation:
         
         Calc_t_scores(projectfolder = self.projectfolder,
                       Results_dir = self.Results_dir,
-                      S1_GRD_dir = self.S1_GRD_dir,
+                      S1_dir = self.S1_dir,
                       Preprocessing_dir = self.Preprocessing_dir)
         
         return 0  
