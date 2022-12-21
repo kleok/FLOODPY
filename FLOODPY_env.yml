@@ -30,4 +30,3 @@ dependencies:
   - gdal==3.4.2
   - glib==2.72.1
   - scipy==1.8.0
-  - keras-unet==0.1.2
