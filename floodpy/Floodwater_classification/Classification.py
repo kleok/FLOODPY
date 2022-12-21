@@ -791,7 +791,6 @@ def Get_flood_map(Preprocessing_dir,
     print('Floodwater map can be found at {}'.format(output_filename))
 
     
-    
     nparray_to_tiff(multimodality_mask,
                     t_score_filename,
                     output_filename.split('.')[0]+'_multimodality_mask.tif')
