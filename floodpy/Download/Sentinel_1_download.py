@@ -206,7 +206,7 @@ def query_S1_data(scihub_username,
         
         # get information of S1 image that will be used a flood image
         flood_S1_image = get_flood_image(products_df,flood_datetime)
-        flood_S1_image.to_csv(os.path.join(S1_dir,'flood_S1_filename.csv'))
+        flood_S1_image.to_csv(os.path.join(S1_dir,'flood_S1_filename.csv'), index=False)
         
         # select only the images that share the same relative orbit with
         # selected flood image
