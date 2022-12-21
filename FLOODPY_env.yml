@@ -25,7 +25,6 @@ dependencies:
   - seaborn==0.11.2
   - rasterio==1.2.10
   - rasterstats==0.17.0
-  - tensorflow==2.7.0
   - scikit-learn = 1.0.2
   - pip==22.0.4 
   - gdal==3.4.2
