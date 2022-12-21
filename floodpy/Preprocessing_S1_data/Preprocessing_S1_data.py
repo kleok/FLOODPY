@@ -286,7 +286,7 @@ def _perform_assembly_pair_preprocessing(gptcommand, master1, master2, slave1, s
     else:
         pass
 
-def _Plot_SAR_Stack(hdf5_stack_file,Plot_dir):
+def Plot_SAR_Stack(hdf5_stack_file,Plot_dir):
     '''
     Plotting functionality of SAR stack
     '''
@@ -541,7 +541,7 @@ def Run_Preprocessing(projectfolder,
                                            Preprocessing_dir)
     
     print ('All information from SAR imagery are stored at {}'.format(hdf5_stack_file))
-    _Plot_SAR_Stack(hdf5_stack_file,projectfolder)
+    Plot_SAR_Stack(hdf5_stack_file,projectfolder)
     #_delete_intermediate_files(Output_dir)
     
     return hdf5_stack_file
