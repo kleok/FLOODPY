@@ -371,6 +371,10 @@ class FloodwaterEstimation:
         print("Sentinel-2 data have been successfully downloaded")
         
         return 0
+    
+    def run_download_landcover(self, step_name):
+        pass
+
 
     def run(self, steps=STEP_LIST, plot=True):
         # run the chosen steps
@@ -394,6 +398,9 @@ class FloodwaterEstimation:
             
             elif sname == 'Download_S2_data':
                 self.run_download_S2_data(sname)
+            
+            elif sname == 'Download_Landcover':
+                self.run_download_landcover(sname)
         
         # plot result (show aux visualization message more multiple steps processing)
         print_aux = len(steps) > 1
