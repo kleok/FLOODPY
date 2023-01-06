@@ -14,7 +14,7 @@ from floodpy.Preprocessing_S1_data.Classify_S1_images import Get_images_for_base
 from floodpy.Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
 from floodpy.Statistical_analysis.Generate_aux import get_S1_aux
 from floodpy.Statistical_analysis.calc_t_scores import Calc_t_scores
-from floodpy.Floodwater_classification.Classification import Get_flood_map
+from floodpy.Floodwater_classification.Classification import Calc_flood_map
 # from Validation.Validation import Accuracy_metrics_calc
 # from Validation.EMS_preparation import rasterize
 
@@ -22,7 +22,7 @@ from floodpy.Floodwater_classification.Classification import Get_flood_map
 from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
 
-print('FLOod Mapping PYthon toolbox')
+print('FLOODPY - FLOOd PYthon toolbox')
 print('Copyright (c) 2021-2022 Kleanthis Karamvasis, Alekos Falagas')
 print('Remote Sensing Laboratory of National Technical University of Athens')
 print('-----------------------------------------------------------------')
@@ -236,7 +236,6 @@ class FloodwaterEstimation:
         
         [os.mkdir(directory) for directory in self.directories if not os.path.exists(directory)]
 
-        
         if self.AOI_File.upper() == "NONE":
             self.bbox           = [self.LONMIN,
                                    self.LATMIN,
@@ -328,27 +327,25 @@ class FloodwaterEstimation:
                           Preprocessing_dir = self.Preprocessing_dir) 
         
         return 0 
-
     
     def run_multitemporal_statistics(self, step_name):
         
         get_S1_aux (self.Preprocessing_dir)
         
-        Calc_t_scores(projectfolder = self.projectfolder,
-                      Results_dir = self.Results_dir,
-                      S1_dir = self.S1_dir,
-                      Preprocessing_dir = self.Preprocessing_dir)
+        self.t_scores = Calc_t_scores(Results_dir = self.Results_dir,
+                                      S1_dir = self.S1_dir,
+                                      Preprocessing_dir = self.Preprocessing_dir)
         
-        return 0  
-    
+        return 0          
+
     def run_get_flood_map(self, step_name):
         
-        Get_flood_map(Preprocessing_dir = self.Preprocessing_dir,
-                      Results_dir = self.Results_dir,
-                      Projectname = self.projectname,
-                      num_cores = self.CPU,
-                      fast_flag = True,
-                      minimum_mapping_unit_area_m2=self.min_map_area)
+        self.BC_mask, self.global_flood_mask = Calc_flood_map(Preprocessing_dir = self.Preprocessing_dir,
+                                                              Results_dir = self.Results_dir,
+                                                              Projectname = self.projectname,
+                                                              num_cores = self.CPU,
+                                                              fast_flag = True,
+                                                              minimum_mapping_unit_area_m2=self.min_map_area)
         return 0
     
     def plot_results(self, print_aux, plot):

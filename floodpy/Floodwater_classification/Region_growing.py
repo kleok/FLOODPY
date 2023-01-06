@@ -2,169 +2,131 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from skimage.util.shape import view_as_blocks
-from scipy.stats import kurtosis, skew
-from scipy.ndimage import gaussian_filter
-   
-def Bimodality_test(region):
-    r'''
-    A more robust split selection methodology has been developed by means of the 
-    application of the bimodality coefficient (BC) [1]. The BC is based on a 
-    straightforward (and therefore suitable for a rapid computation) empirical 
-    relationship between bimodality and the third and fourth statistical moments
-    of a distribution (skewness s and kurtosis k, respectively) [2]
-    
-    .. math:: BC = (s2 + 1) / (k + 3 * (N − 1) ^ {2} / ((N − 2) * (N − 3)))
-    
-    where N represents the sample size. The rationale the BC is that a bimodal 
-    distribution has very low kurtosis, and/or is asymmetric; these conditions 
-    imply an increase of BC, which ranges from 0 to 1. The value of BC for the 
-    uniform distribution is 5/9 (∼0.555), while values greater than 5/9 may 
-    indicate a bimodal (or multimodal) distribution [1]–[2]. The maximum value
-    (BC = 1) is reached only by a Bernoulli distribution with only two distinct 
-    values, or the sum of two different Dirac functions.
-    
-    [1] J. B. Freeman and R. Dale, “Assessing bimodality to detect the presence
-    of a dual cognitive process,” Behav. Res. Methods, vol. 45, pp. 83–97,
-    2013.
-    [2] T. R. Knapp, “Bimodality revisited,” J. Mod. Appl. Statist. Methods,
-    vol. 6, pp. 8–20, 2007.
-    '''
-    
-    if np.all(np.isnan(region)):
-        BC=np.nan
-    else:
-        # smoothing
-        data = gaussian_filter(region, sigma=5)
-        # flattening
-        data=data.flatten()
-        data=data[~np.isnan(data)]
-        n=data.shape[0]
-        if n<100:
-            BC=np.nan
-        else:
-            s = skew(data) 
-            k = kurtosis(data)
-            denom2=np.divide(3*(n-1)**2,(n-2)*(n-3))
-            BC=np.divide(s*s+1,k+denom2)    
-            
-    return BC
-    
 
-def Create_Regions(data, window_size=200):
-    '''
-    Creates blocks of a certain size from a given numpy array
-    '''
-    shape1, shape2 = data.shape
-    new_shape1=int(np.ceil(shape1/window_size)*window_size)
-    new_shape2=int(np.ceil(shape2/window_size)*window_size)
-    new_t_score_dataset=np.empty((new_shape1,new_shape2))
-    new_t_score_dataset[:] = np.nan
-    new_t_score_dataset[:shape1,:shape2]=data
-    Blocks = view_as_blocks(new_t_score_dataset, (window_size,window_size))
-    
-    return Blocks
+def RG_window(window_data: np.array, window_current_result: np.array, RG_thres:  np.float) -> np.array:
+    """Regions growing in a single block/window
 
-def RG(window_data,window_current_result,RG_thres):
-    '''
-    Regions growing functionality in a single block/window
-    '''
-    
-    # find center pixel
-    x0=int(np.ceil(window_data.shape[0]/2)-1)
-    y0=int(np.ceil(window_data.shape[1]/2)-1)
+    Args:
+        window_data (np.array): Input values of window to be processed
+        window_current_result (np.array): Boolean mask of the window. True represent floodwater.
+        RG_thres (np.float): Positive threshold value.
+
+    Returns:
+        np.array: Boolean mask of window (True represents floodwater) after region growing operation.
+    """
+
+    # find the mean value of t-scores based on current result
+    mean_value = np.nanmean(window_data[window_current_result])
+
     # calculate differences 
-    diff=window_data-window_data[x0,y0]
-    # select only negative differences
-    negative_mask=diff<=0
-    # return mask that corresponds to negative differences ||---||
-    diff_mask=np.abs(diff)<RG_thres
-    # combine masks
-    RG_result=np.logical_or(window_current_result,diff_mask,negative_mask)
-    return RG_result
+    diffs=window_data-mean_value
 
-    
-def adapt_RG_threshold(RG_thres,window_data, water_mean_float,std_water_float ):
-    '''
-    Adapts threshold for regions growing functionality
-    '''
-    low_value=water_mean_float
-    high_value=water_mean_float+2*std_water_float
+    # select only negative differences
+    negative_diffs=diffs<0
+
+    # return mask that corresponds to negative differences
+    RG_mask=np.abs(negative_diffs)>RG_thres
+
+    # combine masks
+    RG_result=np.logical_or(window_current_result,RG_mask)
+
+    return RG_result
+  
+def adapt_RG_factor(window_data: np.array, water_mean_float: float,std_water_float: float) -> float:
+    """Calculates the adapting factor that will be used to tune RG threshold value.
+    Adapting factor takes values from 0 to 1. 
+    For low factor values we have lower threshold (more strict).
+    For high factor values we have higher threshold (less strict).
+
+    Args:
+        window_data (np.array): Input values of window to be processed
+        water_mean_float (float): The global mean of floodwater distribution
+        std_water_float (float): The global standard deviation of floodwater distribution
+
+    Returns:
+        float: adapting factor (ranges from 0 to 1)
+    """
+
+    low_water_value=water_mean_float
+    high_water_value=water_mean_float+2*std_water_float
     
     values=window_data[~np.isnan(window_data)]
     values_median=np.median(values)
-    
-    factor=np.abs((values_median-high_value))/np.abs((low_value-high_value))
-    # factor usually takes values between [0-1]
-    # for low factor values we have lower threshold (more strict)
-    # for high factor values we have higher threshold (less strict)
 
-    if values_median>=high_value:
-        factor=0
-        
-    if values_median<low_value:
-        factor=1
- 
-    result= factor*RG_thres
+    if values_median>=high_water_value:
+        factor=0.0
+    elif values_median<low_water_value:
+        factor=1.0
+    else:
+        factor=np.abs((values_median-high_water_value))/np.abs((low_water_value-high_water_value))
     
-    return result   
+    return factor   
 
-def Region_Growing(t_score_dataset_temp,
-                   seeds,
-                   RG_thres,
-                   water_mean_float,
-                   std_water_float,
-                   max_num_iter=1000,
-                   search_window_size=1):
-    '''
+def Region_Growing(t_score_dataset: np.array,
+                   Flood_map: np.array,
+                   RG_thres: float,
+                   max_num_iter: int = 1000,
+                   search_window_size: int = 1) -> np.array:
+    """
     Adaptive region growing functionality
-    '''
+
+    Args:
+        t_score_dataset (np.array): 2D array with t-score values
+        Flood_map (np.array): Boolean 2D array (initial floodwater mask)
+        RG_thres (float): Nominal region growing threshold value
+        max_num_iter (int, optional): Maximum number of iterations of the iterative region growing process. Defaults to 1000.
+        search_window_size (int, optional): Size of window that will be used for region growing. Defaults to 1.
+
+    Returns:
+        np.array: Boolean mask (True represents floodwater) after region growing operation.
+    """
+
+    # get updated information of floodwater based on local adaptive thresholding
+    floodwater_pixels=t_score_dataset[Flood_map]
+    # discard pixel with nan values
+    floodwater_pixels = floodwater_pixels[~np.isnan(floodwater_pixels)]
+    # recalculating mean and standard deviation for floodwater population
+    water_mean_float=np.mean(floodwater_pixels)
+    std_water_float=np.std(floodwater_pixels)
 
     # Assert that the shapes of image and seed mask agree
-    assert (t_score_dataset_temp.shape==seeds.shape)
-    seeds=seeds.astype(np.bool)
-    rows=t_score_dataset_temp.shape[0]
-    columns=t_score_dataset_temp.shape[1]
+    assert (t_score_dataset.shape==Flood_map.shape)
+    seeds=Flood_map.astype(np.bool)
+    rows=t_score_dataset.shape[0]
+    columns=t_score_dataset.shape[1]
     RG_result=np.copy(seeds)
     num_iter = 1
     
     while (num_iter<max_num_iter and np.sum(seeds)!=0) :
-        
-        
-        #print( 'Iteration : {}'.format(num_iter) )
+
         seeds_indices=np.nonzero(seeds)
         RG_result_updated=np.copy(RG_result)
         
-        
         for seed_index in range(len(seeds_indices[0])):  
-            
-            if seed_index%100000==1:
-                pass
-                #print ('{}/{}'.format(seed_index,len(seeds_indices[0])))
                 
             row = seeds_indices[0][seed_index]
-            column = seeds_indices[1][seed_index]
+            col = seeds_indices[1][seed_index]
             
             row_min = row-search_window_size
             if row_min<0: row_min=0
             row_max = row+search_window_size+1
             if row_max>rows: row_min=rows
-            column_min = column-search_window_size
-            if column_min<0: column_min=0
-            column_max = column+search_window_size+1
-            if column_max>columns: column_max=columns
+            col_min = col-search_window_size
+            if col_min<0: col_min=0
+            col_max = col+search_window_size+1
+            if col_max>columns: col_max=columns
                      
-            window_data=t_score_dataset_temp[row_min:row_max,column_min:column_max]
-            window_current_result=RG_result[row_min:row_max,column_min:column_max]
+            window_data=t_score_dataset[row_min:row_max,col_min:col_max]
+            window_current_result=RG_result[row_min:row_max,col_min:col_max]
             
             if window_current_result.shape[0]>1 and window_current_result.shape[1]>1: # checks if window is not in the corner of the image
                 if ~np.all(window_current_result==True):
-                    RG_thres_modified=adapt_RG_threshold(RG_thres,window_data, water_mean_float, std_water_float )
-                    window_updated_result=RG(window_data,window_current_result,RG_thres_modified) 
-                    RG_result_updated[row_min:row_max,column_min:column_max]=window_updated_result 
+                    adapt_factor = adapt_RG_factor(window_data, water_mean_float, std_water_float )
+                    RG_thres_modified = adapt_factor * RG_thres
+                    window_updated_result=RG_window(window_data,window_current_result,RG_thres_modified) 
+                    RG_result_updated[row_min:row_max,col_min:col_max]=window_updated_result 
                 
-        
-        # update RG_result seeds and iteration counter      
+        # update RG_result, seeds and iteration counter      
         seeds=np.logical_and(~RG_result,RG_result_updated)
         num_iter+=1
         RG_result=RG_result_updated
