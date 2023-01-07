@@ -7,7 +7,7 @@ from joblib import Parallel, delayed, wrap_non_picklable_objects
 
 from floodpy.Floodwater_classification.BC_masking import Bimodality_test
 from floodpy.Floodwater_classification.Thresholding_methods import threshold_Kittler, threshold_Otsu
-from floodpy.Floodwater_classification.Comparison_tools import Is_similar_non_parametric, Is_distr_water, Is_darkest_than, Is_brighter_than
+from floodpy.Floodwater_classification.Comparison_tools import Is_similar_non_parametric, Is_distr_water, Is_darker_than, Is_brighter_than
 
 @wrap_non_picklable_objects
 def thresholding_pixel(row,
@@ -138,7 +138,7 @@ def thresholding_pixel(row,
                                                            ref_values = window_data[window_mask],
                                                            p_value = p_value)
             
-            darker_than_water_flag = Is_darkest_than(cand_water_values, water_mean_float, std_water_float)
+            darker_than_water_flag = Is_darker_than(cand_water_values, water_mean_float, std_water_float)
 
             # check candidate water pixels if they are similar with water or darker
             if similar_water_flag or darker_than_water_flag:
@@ -201,7 +201,7 @@ def thresholding_pixel(row,
             #     flood_occurences = window_mask 
             #     visits = np.ones(window_mask.shape)
             # # check if the values are darkest that water       
-            # elif Is_darkest_than_water(values, water_mean_float, std_water_float):
+            # elif Is_darker_than_water(values, water_mean_float, std_water_float):
             #     flood_occurences = window_mask
             #     visits = np.ones(window_mask.shape)
             # # if values are brigther that typical water do nothing 
