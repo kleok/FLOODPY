@@ -171,10 +171,12 @@ def Calc_flood_map(Preprocessing_dir: str,
     ## Writing final Flood map to disk
     ##########################################################################
     print("Saving final flood map to disk ...")
-    print('Floodwater map can be found at {}'.format(output_filename))
-
+    
     output_filename = os.path.join(Results_dir,
                                    'Flood_map_{}.tif'.format(Projectname))
+                                   
+    print('Floodwater map can be found at {}'.format(output_filename))
+
     nparray_to_tiff(Flood_local_map_RG_morph,
                     t_score_filename,
                     output_filename)
