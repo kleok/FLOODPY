@@ -23,7 +23,7 @@ from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
 
 print('FLOODPY - FLOOd PYthon toolbox')
-print('Copyright (c) 2021-2022 Kleanthis Karamvasis, Alekos Falagas')
+print('Copyright (c) 2021-2023 Kleanthis Karamvasis, Alekos Falagas')
 print('Remote Sensing Laboratory of National Technical University of Athens')
 print('-----------------------------------------------------------------')
 print('License: GNU GPL v3+')
@@ -257,6 +257,7 @@ class FloodwaterEstimation:
         # Data access and processing
         self.relOrbit       = self.template_dict['relOrbit']
         self.min_map_area   = float(self.template_dict['minimum_mapping_unit_area_m2'])
+        self.pixel_m2       = 100.0
         self.CPU            = int(self.template_dict['CPU'])
         self.RAM            = self.template_dict['RAM']
         self.scihub_username = self.template_dict['scihub_username']
@@ -340,12 +341,18 @@ class FloodwaterEstimation:
 
     def run_get_flood_map(self, step_name):
         
-        self.BC_mask, self.global_flood_mask = Calc_flood_map(Preprocessing_dir = self.Preprocessing_dir,
-                                                              Results_dir = self.Results_dir,
-                                                              Projectname = self.projectname,
-                                                              num_cores = self.CPU,
-                                                              fast_flag = True,
-                                                              minimum_mapping_unit_area_m2=self.min_map_area)
+        [self.processing_parms,
+        self.multimodality_mask,
+        self.Flood_global_binary,
+        self.Flood_local_map,
+        self.Flood_local_map_RG,
+        self.Flood_local_map_RG_morph,] = Calc_flood_map(Preprocessing_dir = self.Preprocessing_dir,
+                                                        Results_dir = self.Results_dir,
+                                                        Projectname = self.projectname,
+                                                        num_cores = self.CPU,
+                                                        min_map_unit_m2=self.min_map_area,
+                                                        pixel_m2 = self.pixel_m2)
+
         return 0
     
     def plot_results(self, print_aux, plot):
