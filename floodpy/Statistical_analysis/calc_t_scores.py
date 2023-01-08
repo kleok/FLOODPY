@@ -7,7 +7,6 @@ import pandas as pd
 import numpy as np
 from osgeo import gdal
 import itertools
-import scipy.stats as stats
 
 # Stop GDAL printing both warnings and errors to STDERR
 gdal.PushErrorHandler('CPLQuietErrorHandler')
@@ -58,8 +57,7 @@ def nparray_to_tiff(nparray, reference_gdal_dataset, target_gdal_dataset):
     
     target_ds = None
 
-def Calc_t_scores(projectfolder, 
-                  Results_dir,
+def Calc_t_scores(Results_dir,
                   S1_dir,
                   Preprocessing_dir,
                   band='VV_VH_db'):
@@ -116,4 +114,4 @@ def Calc_t_scores(projectfolder,
     
     print("T-score changes due to flood can be found at {}".format(export_filename))
     
-    return 0
+    return t_scores
