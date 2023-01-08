@@ -1,4 +1,4 @@
-# <img src="https://github.com/kleok/FLOODPY/blob/main/figures/FLOODPY_logo.png" width="58"> FLOODPY - FLOOD PYthon toolbox 
+# <img src="https://github.com/kleok/FLOODPY/blob/main/figures/Floodpy_logo.png" width="58"> FLOODPY - FLOOD PYthon toolbox 
 [![GitHub license](https://img.shields.io/badge/License-GNU3-green.svg)](https://github.com/kleok/FLOODPY)
 [![Release](https://img.shields.io/badge/Release-0.2.0-brightgreen)](https://github.com/kleok/FLOODPY)
 [![Facebook](https://img.shields.io/badge/Group-Flompy-yellowgreen.svg)](https://www.facebook.com/groups/876299509742954)
