@@ -35,8 +35,7 @@ STEP_LIST = [
     'Download_S1_data',
     'Preprocessing_S1_data',
     'Statistical_analysis',
-    'Floodwater_classification',
-    'Download_S2_data',]
+    'Floodwater_classification',]
 
 ##########################################################################
 STEP_HELP = """Command line options for steps processing with \n names are chosen from the following list:
@@ -56,7 +55,7 @@ EXAMPLE = """example:
 
   # Run with --start/stop/dostep options
   FLOODPYapp.py LPS2022.cfg --dostep Download_Precipitation_data  #run at step 'Download_Precipitation_data' only
-  FLOODPYapp.py LPS2022.cfg --end download_S2_data    #end after step 'download_S2_data'
+  FLOODPYapp.py LPS2022.cfg --end Floodwater_classification    #end after step 'Floodwater_classification'
 """
 ##########################################################################
 REFERENCE = """
@@ -362,8 +361,8 @@ class FloodwaterEstimation:
 
         Download_S2_data(
                         AOI = self.geojson_S1,
-                        user = list(self.credentials.keys())[0],
-                        passwd = list(self.credentials.values())[0],
+                        user = self.scihub_username,
+                        passwd = self.scihub_password,
                         Start_time = self.Start_time,
                         End_time = self.End_time,
                         write_dir = self.S2_dir,
@@ -395,9 +394,6 @@ class FloodwaterEstimation:
 
             elif sname == 'Floodwater_classification':
                 self.run_get_flood_map(sname)
-            
-            elif sname == 'Download_S2_data':
-                self.run_download_S2_data(sname)
         
         # plot result (show aux visualization message more multiple steps processing)
         print_aux = len(steps) > 1
@@ -432,6 +428,5 @@ def main(iargs=None):
 
 ###########################################################################################
 if __name__ == '__main__':
-    print("fvaf")
     main()
     
