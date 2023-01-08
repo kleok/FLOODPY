@@ -374,6 +374,10 @@ class FloodwaterEstimation:
         print("Sentinel-2 data have been successfully downloaded")
         
         return 0
+    
+    def run_download_landcover(self, step_name):
+        pass
+
 
     def run(self, steps=STEP_LIST, plot=True):
         # run the chosen steps
