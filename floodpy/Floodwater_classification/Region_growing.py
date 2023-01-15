@@ -3,7 +3,7 @@
 
 import numpy as np
 
-def RG_window(window_data: np.array, window_current_result: np.array, RG_thres:  np.float) -> np.array:
+def RG_window(window_data: np.array, window_current_result: np.array, RG_thres: float) -> np.array:
     """Regions growing in a single block/window
 
     Args:
