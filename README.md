@@ -134,7 +134,7 @@ pip install .
 conda env create -f path_to_FLOODPY/FLOODPY_win_env.yml
 ```
 
-### 1.6 Set environmental variables
+### 1.7 Set environmental variables
 
 <b>[For linux users]</b>
 
