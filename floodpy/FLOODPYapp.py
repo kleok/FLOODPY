@@ -10,6 +10,7 @@ from floodpy.utils.read_AOI import Coords_to_geojson, Input_vector_to_geojson
 from floodpy.Download.Sentinel_1_download import Download_S1_data
 from floodpy.Download.Download_orbits import download_orbits
 from floodpy.Download.Download_ERA5_precipitation import Get_ERA5_data
+from floodpy.Download.Download_LandCover import worldcover
 from floodpy.Preprocessing_S1_data.Classify_S1_images import Get_images_for_baseline_stack
 from floodpy.Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
 from floodpy.Statistical_analysis.Generate_aux import get_S1_aux
@@ -342,6 +343,7 @@ class FloodwaterEstimation:
         
         [self.processing_parms,
         self.multimodality_mask,
+        self.glob_thresh,
         self.Flood_global_binary,
         self.Flood_local_map,
         self.Flood_local_map_RG,
@@ -376,7 +378,8 @@ class FloodwaterEstimation:
         return 0
     
     def run_download_landcover(self, step_name):
-        pass
+        self.LC_worldcover = worldcover(self.geojson_S1,
+                                        self.Land_Cover)
 
 
     def run(self, steps=STEP_LIST, plot=True):

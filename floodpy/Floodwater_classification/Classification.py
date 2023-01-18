@@ -25,7 +25,7 @@ def Calc_flood_map(Preprocessing_dir: str,
                 Projectname: str,
                 num_cores: int,
                 min_map_unit_m2: float = 3000,
-                pixel_m2: float = 100) -> Tuple[dict, np.array, np.array, np.array, np.array, np.array]:
+                pixel_m2: float = 100) -> Tuple[dict, np.array, float, np.array, np.array, np.array, np.array]:
 
 
     """
@@ -48,8 +48,8 @@ def Calc_flood_map(Preprocessing_dir: str,
         pixel_m2 (float, optional): The area (in m2) of pixel of the initial flood map. Defaults to 100.
 
     Returns:
-        Tuple[dict, np.array, np.array, np.array, np.array, np.array]: processing_parms,
-            multimodality_mask, Flood_global_binary, Flood_local_map,
+        Tuple[dict, np.array, float, np.array, np.array, np.array, np.array]: processing_parms,
+            multimodality_mask, Flood_global_binary, glob_thresh, Flood_local_map,
             Flood_local_map_RG, Flood_local_map_RG_morph
 
     ..References:
@@ -181,4 +181,4 @@ def Calc_flood_map(Preprocessing_dir: str,
                     t_score_filename,
                     output_filename)
     
-    return processing_parms, multimodality_mask, Flood_global_binary, Flood_local_map, Flood_local_map_RG, Flood_local_map_RG_morph
+    return processing_parms, multimodality_mask, glob_thresh, Flood_global_binary, Flood_local_map, Flood_local_map_RG, Flood_local_map_RG_morph
