@@ -5,15 +5,16 @@ from tqdm import tqdm
 import rasterio as rio
 from rasterio.merge import merge
 
-def worldcover(aoi:str, savepath:str)->gpd.GeoDataFrame:
+def worldcover(aoi: str, savepath: str) -> str:
     """Downloads landcover maps from worldcover project
-
+    TODO: Clipping raster to AOI, Metadata dictionary from LC classes,
+            Visualize on notebook
     Args:
         aoi (str): Path to AOI file to dowload data
         savepath (str): Path to store data
 
     Returns:
-        gpd.GeoDataFrame: Downloaded tiles 
+        str: the full filename of the downloaded LC map 
     """
     # works for one polygon/multipolygon
     aoi = gpd.read_file(aoi).iloc[0].explode().geometry
@@ -56,7 +57,4 @@ def worldcover(aoi:str, savepath:str)->gpd.GeoDataFrame:
         else:
             lc_data = f"ESA_WorldCover_10m_2021_v200.tif"
             os.rename(os.path.join(savepath, out_fn), os.path.join(savepath, lc_data))
-    
-    #TODO Clipping raster to AOI
-    #TODO Metadata dictionary from LC classes 
-    #TODO Visualize on notebook
+    return os.path.join(savepath, lc_data)
