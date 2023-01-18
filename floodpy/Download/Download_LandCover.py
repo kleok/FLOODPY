@@ -5,7 +5,7 @@ from tqdm import tqdm
 import rasterio as rio
 from rasterio.merge import merge
 
-def worldcover(aoi: str, savepath: str) -> str:
+def worldcover(aoi: str, savepath: str) -> tuple:
     """Downloads landcover maps from worldcover project
     TODO: Clipping raster to AOI, Metadata dictionary from LC classes,
             Visualize on notebook
@@ -14,7 +14,7 @@ def worldcover(aoi: str, savepath: str) -> str:
         savepath (str): Path to store data
 
     Returns:
-        str: the full filename of the downloaded LC map 
+        tuple: the full filename of the downloaded LC map, a dictionary with the fullnames for categories and a dictionary with the RGBA colors  
     """
     # works for one polygon/multipolygon
     aoi = gpd.read_file(aoi).iloc[0].explode().geometry
@@ -57,4 +57,33 @@ def worldcover(aoi: str, savepath: str) -> str:
         else:
             lc_data = f"ESA_WorldCover_10m_2021_v200.tif"
             os.rename(os.path.join(savepath, out_fn), os.path.join(savepath, lc_data))
-    return os.path.join(savepath, lc_data)
+    
+    # Adding LandCover categories dict
+    # As key is the DN number and as value the fullname category 
+    LC_CATEGORIES = {10: "Tree cover",
+                    20: "Shrubland",
+                    30: "Grassland",
+                    40: "Cropland",
+                    50: "Built-up",
+                    60: "Bare/sparse vegetation",
+                    70: "Snow and Ice",
+                    80: "Permanent water bodies",
+                    90: "Herbaceous wetland",
+                    95: "Mangroves",
+                    100: "Moss and lichen"}
+    
+    # Adding LandCover colorbar dict
+    # Again as DN is the key and value the respective color as RGBA tuple
+    LC_COLORBAR = {10: (0, 100, 0, 1),
+                    20: (255, 187, 34, 1),
+                    30: (255, 255, 76, 1),
+                    40: (240, 150, 255, 1),
+                    50: (250, 0, 0, 1),
+                    60: (180, 180, 180, 1),
+                    70: (240, 240, 240, 1),
+                    80: (0, 100, 20, 1),
+                    90: (0, 150, 160, 1),
+                    95: (0, 207, 117, 1),
+                    100: (250, 230, 160, 1)}
+
+    return os.path.join(savepath, lc_data), LC_CATEGORIES, LC_COLORBAR

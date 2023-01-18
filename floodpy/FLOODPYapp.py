@@ -378,7 +378,7 @@ class FloodwaterEstimation:
         return 0
     
     def run_download_landcover(self, step_name):
-        self.LC_worldcover = worldcover(self.geojson_S1,
+        self.LC_worldcover, self.LC_worldcover_categories, self.LC_worldcover_colors = worldcover(self.geojson_S1,
                                         self.Land_Cover)
 
 
