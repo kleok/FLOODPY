@@ -36,7 +36,8 @@ STEP_LIST = [
     'Download_S1_data',
     'Preprocessing_S1_data',
     'Statistical_analysis',
-    'Floodwater_classification',]
+    'Floodwater_classification',
+    'Download_worldcover_LC']
 
 ##########################################################################
 STEP_HELP = """Command line options for steps processing with \n names are chosen from the following list:
@@ -378,8 +379,11 @@ class FloodwaterEstimation:
         return 0
     
     def run_download_landcover(self, step_name):
-        self.LC_worldcover, self.LC_worldcover_categories, self.LC_worldcover_colors = worldcover(self.geojson_S1,
-                                        self.Land_Cover)
+
+        [self.LC_worldcover,
+        self.LC_worldcover_categories,
+        self.LC_worldcover_colors] = worldcover(self.geojson_S1,
+                                                self.Land_Cover)
 
 
     def run(self, steps=STEP_LIST, plot=True):
@@ -401,6 +405,10 @@ class FloodwaterEstimation:
 
             elif sname == 'Floodwater_classification':
                 self.run_get_flood_map(sname)
+
+            elif sname == 'Download_worldcover_LC':
+                self.run_download_landcover(sname)           
+            
         
         # plot result (show aux visualization message more multiple steps processing)
         print_aux = len(steps) > 1
