@@ -36,7 +36,8 @@ STEP_LIST = [
     'Download_S1_data',
     'Preprocessing_S1_data',
     'Statistical_analysis',
-    'Floodwater_classification',]
+    'Floodwater_classification',
+    'Download_worldcover_LC']
 
 ##########################################################################
 STEP_HELP = """Command line options for steps processing with \n names are chosen from the following list:
@@ -275,11 +276,11 @@ class FloodwaterEstimation:
     
     def run_download_Precipitation_data(self, step_name):
 
-        Get_ERA5_data(ERA5_variables = ['total_precipitation',],
-                      start_datetime = self.start_datetime,
-                      end_datetime = self.end_datetime,
-                      bbox = self.bbox,
-                      ERA5_dir = self.ERA5_dir )
+        self.precipitation_df = Get_ERA5_data(ERA5_variables = ['total_precipitation',],
+                                            start_datetime = self.start_datetime,
+                                            end_datetime = self.end_datetime,
+                                            bbox = self.bbox,
+                                            ERA5_dir = self.ERA5_dir )
 
         print("Precipitation data can be found at {}".format(self.ERA5_dir))
         return 0    
@@ -378,8 +379,11 @@ class FloodwaterEstimation:
         return 0
     
     def run_download_landcover(self, step_name):
-        self.LC_worldcover = worldcover(self.geojson_S1,
-                                        self.Land_Cover)
+
+        [self.LC_worldcover,
+        self.LC_worldcover_categories,
+        self.LC_worldcover_colors] = worldcover(self.geojson_S1,
+                                                self.Land_Cover)
 
 
     def run(self, steps=STEP_LIST, plot=True):
@@ -401,6 +405,10 @@ class FloodwaterEstimation:
 
             elif sname == 'Floodwater_classification':
                 self.run_get_flood_map(sname)
+
+            elif sname == 'Download_worldcover_LC':
+                self.run_download_landcover(sname)           
+            
         
         # plot result (show aux visualization message more multiple steps processing)
         print_aux = len(steps) > 1
