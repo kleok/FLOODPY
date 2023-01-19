@@ -60,7 +60,8 @@ def worldcover(aoi: str, savepath: str) -> tuple:
     
     # Adding LandCover categories dict
     # As key is the DN number and as value the fullname category 
-    LC_CATEGORIES = {10: "Tree cover",
+    LC_CATEGORIES = {0: "No data",
+                    10: "Tree cover",
                     20: "Shrubland",
                     30: "Grassland",
                     40: "Cropland",
@@ -74,7 +75,8 @@ def worldcover(aoi: str, savepath: str) -> tuple:
     
     # Adding LandCover colorbar dict
     # Again as DN is the key and value the respective color as RGBA tuple
-    LC_COLORBAR = {10: (0, 100, 0, 1),
+    LC_COLORBAR = { 0: (0, 0, 0, 0),
+                    10: (0, 100, 0, 1),
                     20: (255, 187, 34, 1),
                     30: (255, 255, 76, 1),
                     40: (240, 150, 255, 1),
