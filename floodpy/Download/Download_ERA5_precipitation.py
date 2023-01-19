@@ -178,4 +178,8 @@ def Get_ERA5_data(ERA5_variables:list, start_datetime:datetime.datetime, end_dat
             
         Precipitation_data = Precipitation_data.fillna(0).sum(axis=1).to_frame(name='ERA5_tp_mm')
         Precipitation_data['Datetime'] = Precipitation_data.index
+        # in some cases ERA5 precipitation return negative values (issue #36)
+        Precipitation_data['ERA5_tp_mm'].clip(lower=0, inplace=True)
         Precipitation_data.to_csv(precipitation_filename_df, index=False)
+
+        return Precipitation_data
