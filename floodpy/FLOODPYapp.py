@@ -276,11 +276,11 @@ class FloodwaterEstimation:
     
     def run_download_Precipitation_data(self, step_name):
 
-        Get_ERA5_data(ERA5_variables = ['total_precipitation',],
-                      start_datetime = self.start_datetime,
-                      end_datetime = self.end_datetime,
-                      bbox = self.bbox,
-                      ERA5_dir = self.ERA5_dir )
+        self.precipitation_df = Get_ERA5_data(ERA5_variables = ['total_precipitation',],
+                                            start_datetime = self.start_datetime,
+                                            end_datetime = self.end_datetime,
+                                            bbox = self.bbox,
+                                            ERA5_dir = self.ERA5_dir )
 
         print("Precipitation data can be found at {}".format(self.ERA5_dir))
         return 0    
