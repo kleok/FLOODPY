@@ -313,10 +313,8 @@ class FloodwaterEstimation:
     def run_preprocessing_S1_data(self, step_name):
         
         Get_images_for_baseline_stack(projectfolder = self.projectfolder,
-                                      ERA5_dir = self.ERA5_dir,
                                       S1_dir = self.S1_dir,
-                                      Start_time = self.Start_time,
-                                      End_time = self.End_time,
+                                      Precipitation_data = self.precipitation_df,
                                       flood_datetime = self.flood_datetime,
                                       days_back = self.days_back,
                                       rain_thres=self.rain_thres)

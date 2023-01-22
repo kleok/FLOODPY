@@ -75,6 +75,10 @@ def Get_ERA5_data(ERA5_variables:list, start_datetime:datetime.datetime, end_dat
     LONMIN, LATMIN,  LONMAX, LATMAX = bbox
     bbox_cdsapi = [LATMAX, LONMIN, LATMIN, LONMAX, ]
 
+    # change end_datetime in case ERA5 are not yet available
+    if datetime.datetime.now()-end_datetime < datetime.timedelta(days=5):
+        end_datetime = datetime.datetime.now() - datetime.timedelta(days=5)
+
     precipitation_filename_df = os.path.join(ERA5_dir,'ERA5_{Start_time}_{End_time}_{bbox_cdsapi}.csv'.format(Start_time=start_datetime.strftime("%Y%m%dT%H%M%S"),
                                                                                             End_time=end_datetime.strftime("%Y%m%dT%H%M%S"),
                                                                                             bbox_cdsapi='_'.join(str(round(e,5)) for e in bbox_cdsapi)))
@@ -103,7 +107,8 @@ def Get_ERA5_data(ERA5_variables:list, start_datetime:datetime.datetime, end_dat
         last_day_df = df.sort_values(by = 'Datetime').iloc[-1]
         last_day_times = np.arange(last_day_df.hour+1)
         last_day_times_str = ['{:02d}'.format(last_day_time) for last_day_time in last_day_times]
-        print("Downloading precipitation for the flood date: {}".format(last_day_df.Datetime.strftime("%Y-%m-%d")))
+        #print("Downloading precipitation for the flood date: {}".format(last_day_df.Datetime.strftime("%Y-%m-%d")))
+
         last_day_dataset = retrieve_ERA5_data(ERA5_variables = ERA5_variables,
                                               year_str = last_day_df.year_str,
                                               month_str = last_day_df.month_str,
