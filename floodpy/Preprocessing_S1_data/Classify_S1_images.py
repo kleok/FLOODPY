@@ -8,10 +8,8 @@ import glob
 import os
 
 def Get_images_for_baseline_stack(projectfolder,
-                                  ERA5_dir,
                                   S1_dir,
-                                  Start_time,
-                                  End_time,
+                                  Precipitation_data,
                                   flood_datetime,
                                   days_back=5,
                                   rain_thres=20):
@@ -21,30 +19,21 @@ def Get_images_for_baseline_stack(projectfolder,
     can be used for calculation of baseline stack
 
     '''
-    ERA5_data_filename = glob.glob(os.path.join(ERA5_dir,'*{}*{}*.csv'.format(Start_time, End_time)))
-    assert len(ERA5_data_filename)==1
-
-    Precipitation_data= pd.read_csv(ERA5_data_filename[0])
     Precipitation_data.index = Precipitation_data['Datetime']
     Precipitation_data.drop(columns = ['Datetime'], inplace=True)
 
-    # calculate cumulative rain over the last 5 days for each date
-
+    # calculate cumulative rain over the past days (given) for each date
     df2 = (Precipitation_data.shift().rolling(window=24*days_back, min_periods=1).sum()
            .reset_index())
     
     df2.index=pd.to_datetime(Precipitation_data.index)
     df2.drop(columns=['Datetime'], inplace=True)
 
-    
     # get the S1_dates
     S1_products=glob.glob(S1_dir+'/*.zip')
     S1_dates=[pd.Timestamp(os.path.basename(S1_product)[17:32]) for S1_product in S1_products ]
     S1_df=pd.DataFrame(index=S1_dates, columns=['S1_GRD'], data=S1_products)
     S1_df.sort_index(inplace=True)
-    
-    # TODO 
-    # Maybe it is better to get S1_dates from S1_products.csv
     
     # plot
     ax = df2[['ERA5_tp_mm']].plot()
