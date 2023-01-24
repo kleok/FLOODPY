@@ -12,7 +12,7 @@ import numpy as np
 from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
 
-def S2_background(aoi:str, username:str, password:str, start_time:str, end_time:str, save_path:str)->str:
+def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_time:str, save_path:str)->str:
     """Searching and downloads the clearest Sentinel-2 images for the AOI and generates an background image.
     If the AOI is in more than one images (tiles) then finds the best combination to cover it and creates a single
     background image.

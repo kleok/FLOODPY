@@ -22,7 +22,7 @@ from floodpy.Floodwater_classification.Classification import Calc_flood_map
 # Agriculture fields extraction
 from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
-from floodpy.utils.S2_background import S2_background
+from floodpy.utils.S2_background import get_S2_background
 
 print('FLOODPY - FLOOd PYthon toolbox')
 print('Copyright (c) 2021-2023 Kleanthis Karamvasis, Alekos Falagas')
@@ -364,7 +364,7 @@ class FloodwaterEstimation:
 
     def run_download_S2_background(self, step_name):
        
-        self.RGB_Background = S2_background(self.geojson_S1,
+        self.S2_RGB_background = get_S2_background(self.geojson_S1,
                                         self.scihub_username, 
                                         self.scihub_password, 
                                         self.Start_time,
