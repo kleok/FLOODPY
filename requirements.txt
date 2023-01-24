@@ -12,6 +12,7 @@ shapely
 h5py
 gdal
 scikit-image
+scikit-learn
 joblib
 matplotlib
 richdem
