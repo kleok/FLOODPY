@@ -1,14 +1,13 @@
 wheel
 cdsapi
-pandas==1.1.5
-geopandas==0.9.0
+pandas
+geopandas
 numpy
 netCDF4
 tqdm
 requests
 sentinelsat
 scipy
-sklearn
 shapely
 h5py
 gdal
@@ -20,7 +19,5 @@ pyproj
 seaborn
 rasterio
 rasterstats
-tensorflow==2.6.2
-keras_unet
 awscli
-patchify
+folium

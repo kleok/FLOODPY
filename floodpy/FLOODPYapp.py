@@ -22,6 +22,7 @@ from floodpy.Floodwater_classification.Classification import Calc_flood_map
 # Agriculture fields extraction
 from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
+from floodpy.utils.S2_background import get_S2_background
 
 print('FLOODPY - FLOOd PYthon toolbox')
 print('Copyright (c) 2021-2023 Kleanthis Karamvasis, Alekos Falagas')
@@ -37,7 +38,8 @@ STEP_LIST = [
     'Preprocessing_S1_data',
     'Statistical_analysis',
     'Floodwater_classification',
-    'Download_worldcover_LC']
+    'Download_worldcover_LC',
+    'Download_S2_background']
 
 ##########################################################################
 STEP_HELP = """Command line options for steps processing with \n names are chosen from the following list:
@@ -358,22 +360,15 @@ class FloodwaterEstimation:
     def plot_results(self, print_aux, plot):
         pass
 
-    def run_download_S2_data(self, step_name):
+    def run_download_S2_background(self, step_name):
+       
+        self.S2_RGB_background = get_S2_background(self.geojson_S1,
+                                        self.scihub_username, 
+                                        self.scihub_password, 
+                                        self.Start_time,
+                                        self.End_time,
+                                        self.S2_dir)
 
-        Download_S2_data(
-                        AOI = self.geojson_S1,
-                        user = self.scihub_username,
-                        passwd = self.scihub_password,
-                        Start_time = self.Start_time,
-                        End_time = self.End_time,
-                        write_dir = self.S2_dir,
-                        product = 'S2MSI2A',
-                        download = False,
-                        cloudcoverage = 100,
-                        to_file = True)
-
-        print("Sentinel-2 data have been successfully downloaded")
-        
         return 0
     
     def run_download_landcover(self, step_name):
@@ -407,6 +402,8 @@ class FloodwaterEstimation:
             elif sname == 'Download_worldcover_LC':
                 self.run_download_landcover(sname)           
             
+            elif sname == "Download_S2_background":
+                self.run_download_S2_background(sname)
         
         # plot result (show aux visualization message more multiple steps processing)
         print_aux = len(steps) > 1
