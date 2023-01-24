@@ -24,7 +24,7 @@ def S2_AOI_coverage(aoi_geometry:shapely.geometry, products_df:gpd.GeoDataFrame)
     return products_df
     
 
-def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str, write_dir:str, product:str = 'S2MSI2A', download:bool = False, cloudcoverage:float = 100, cov_thres:float = 0.5, to_file:bool = True)->None:
+def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str, write_dir:str, product:str = 'S2MSI2A', download:bool = False, cloudcoverage:float = 100, cov_thres:float = 0.5, to_file:bool = True, filename = None)->None:
     """Download Sentinel 2 imagery.
 
     Args:
@@ -44,12 +44,17 @@ def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str
     api = SentinelAPI(user, passwd, api_url='https://apihub.copernicus.eu/apihub', show_progressbars=True, timeout=None)
     footprint = geojson_to_wkt(read_geojson(AOI))
     aoi_geometry = gpd.read_file(AOI).iloc[0].geometry
+    
+    if filename is not None:
+        query_kwargs = {'platformname': 'Sentinel-2',
+            'filename': filename}
+    else:
+        query_kwargs = {'area':footprint,
+            'platformname': 'Sentinel-2',
+            'producttype': product,
+            'cloudcoverpercentage': (0, cloudcoverage),
+            'date': (Start_time, End_time)}
 
-    query_kwargs = {'area':footprint,
-        'platformname': 'Sentinel-2',
-        'producttype': product,
-        'cloudcoverpercentage': (0, cloudcoverage),
-        'date': (Start_time, End_time)}
     pp = api.query(**query_kwargs)
 
     products_df = api.to_geodataframe(pp)
@@ -57,6 +62,8 @@ def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str
     products_df = S2_AOI_coverage(aoi_geometry, products_df)
     
     products_df = products_df[products_df['coverages']> cov_thres] 
+
+    products_df["tile"] = products_df.apply(lambda tile: tile["filename"].split("_")[5], axis = 1)
     
     if to_file:
         df = pd.DataFrame(products_df.drop(columns='geometry'))
@@ -65,6 +72,6 @@ def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str
     if download == True:
         # When trying to download an offline product with download_all(), the method will instead attempt to trigger its retrieval from the LTA.
         api.download_all(products_df.index , directory_path = write_dir)
-    else:
-        print ("No download option is enabled. Printing the query results...")
-        print (products_df['title'])
+    
+    return products_df
+
