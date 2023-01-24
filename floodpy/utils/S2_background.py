@@ -107,8 +107,8 @@ def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_t
         merge_images.append(rasterio.open(eodata.data[0].TCI["10"]["raw"]))
         for image in eodata.data[1:]:
             src = rasterio.open(image.TCI["10"]["raw"])
+            metadata = src.meta.copy()
             if src.crs != default_crs:
-                metadata = src.meta.copy()
                 reproj, reproj_trans = reproject(source = src.read(),
                         destination = np.empty(shape=src.read().shape),
                         src_transform = src.transform,
