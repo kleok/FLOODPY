@@ -30,14 +30,27 @@ class sentimeseries(timeseries):
         image = None
         logging.info("---------------------------------------------------------------------------------------------")
         logging.info("Searching for Sentinel 2 Satellite data...")
-        for (dirpath, _, _) in os.walk(path):
-            for file in os.listdir(dirpath):
-                # Find data
-                if fnmatch.fnmatch(str(file), '*{}*.zip'.format(level)):
-                    logging.info("Raw data found (*.zip file): {}".format(str(file)))
-                    name = os.path.splitext(os.path.split(file)[-1])[0] + ".SAFE"  
-                    if (os.path.exists(os.path.join(dirpath, name))) and (force_uncompress is False):
-                        logging.info("File {} exists! No need to uncompress".format(name))
+        if path.endswith(".zip"):
+            if os.path.exists(path):
+                dirpath, file = os.path.split(path)
+                logging.info("Raw data found (*.zip file): {}".format(str(file)))
+                name = os.path.splitext(os.path.split(file)[-1])[0] + ".SAFE"  
+                if (os.path.exists(os.path.join(dirpath, name))) and (force_uncompress is False):
+                    logging.info("File {} exists! No need to uncompress".format(name))
+                    image = senimage(dirpath, name)
+                    image.getmetadata()
+                    image.getBands()
+                    self.data.append(image)
+                    self.names.append(image.name)
+                    self.dates.append(image.datetime)
+                    self.cloud_cover.append(image.cloud_cover)
+                    self.tiles.append(image.tile_id)
+                else:
+                    dirpath, file = os.path.split(path)
+                    if zipfile.is_zipfile(os.path.join(dirpath, file)):
+                        with zipfile.ZipFile(os.path.join(dirpath, file), 'r') as src:
+                            src.extractall(dirpath)
+                        
                         image = senimage(dirpath, name)
                         image.getmetadata()
                         image.getBands()
@@ -47,10 +60,16 @@ class sentimeseries(timeseries):
                         self.cloud_cover.append(image.cloud_cover)
                         self.tiles.append(image.tile_id)
                     else:
-                        if zipfile.is_zipfile(os.path.join(dirpath, file)):
-                            with zipfile.ZipFile(os.path.join(dirpath, file), 'r') as src:
-                                src.extractall(dirpath)
-                            
+                        raise imageError("File {} seems corrupted!".format(file))
+        else:
+            for (dirpath, _, _) in os.walk(path):
+                for file in os.listdir(dirpath):
+                    # Find data
+                    if fnmatch.fnmatch(str(file), '*{}*.zip'.format(level)):
+                        logging.info("Raw data found (*.zip file): {}".format(str(file)))
+                        name = os.path.splitext(os.path.split(file)[-1])[0] + ".SAFE"  
+                        if (os.path.exists(os.path.join(dirpath, name))) and (force_uncompress is False):
+                            logging.info("File {} exists! No need to uncompress".format(name))
                             image = senimage(dirpath, name)
                             image.getmetadata()
                             image.getBands()
@@ -60,8 +79,21 @@ class sentimeseries(timeseries):
                             self.cloud_cover.append(image.cloud_cover)
                             self.tiles.append(image.tile_id)
                         else:
-                            raise imageError("File {} seems corrupted!".format(file))
-        
+                            if zipfile.is_zipfile(os.path.join(dirpath, file)):
+                                with zipfile.ZipFile(os.path.join(dirpath, file), 'r') as src:
+                                    src.extractall(dirpath)
+                                
+                                image = senimage(dirpath, name)
+                                image.getmetadata()
+                                image.getBands()
+                                self.data.append(image)
+                                self.names.append(image.name)
+                                self.dates.append(image.datetime)
+                                self.cloud_cover.append(image.cloud_cover)
+                                self.tiles.append(image.tile_id)
+                            else:
+                                raise imageError("File {} seems corrupted!".format(file))
+            
         if len(self.data) == 0:
             raise NoDataError("0 Sentinel 2 raw data found in the selected path.")
         else:
@@ -111,86 +143,48 @@ class sentimeseries(timeseries):
 
         logging.info("---------------------------------------------------------------------------------------------")
 
-    def getVI(self, index, image = None):
+    def getVI(self, index:str, store:str = None, image:senimage = None, subregion = None):
         """Calculates a vegetation index for an image if the user provides an image or
         for all the time series.
-
-        Args:
-            index (str): Vegetation index. Currently works only for NDVI, EVI and MCARI image (senimage, optional): An complete S2image object that if the user provides the method calculates the selected vegetation index. Defaults to None
-            image (senimage): If an senimage object is provided calculates VI for this image only
-        """
         
-        # User can provide either the image name or the object.
-        if image is None:
-            logging.info("Calculating {} for all time series...".format(index))
-            
-            for im in self.data:
-                im.calcVI(index)
-        else:
-            if isinstance(image, senimage):
-                image.calcVI(index)
+        Args:
+            index (str): Vegetation index. Currently works only for NDVI, NDWI, NDBI
+            image (sentinel2): If an sentinel2 object is provided calculates VI for this image only
+        """
+        if store is None:
+            # User can provide either the image name or the object.
+            if image is None:
+                logging.info("Calculating {} for all time series...".format(index))
+                
+                for im in self.data:
+                    im.calcVI(index, subregion = subregion)
             else:
-                raise TypeError("Only senimage objects are supported as image!")
-        
-
-
-    def createbbox(self, minx, maxx, miny, maxy, srid):
-        """Creating a bounding box to mask the image.
-
-        Args:
-            minx (int): Minimum x coordinate of the bounding box
-            maxx (int): Maximum x coordinate of the bounding box
-            miny (int): Minimum y coordinate of the bounding box
-            maxy (int): Maximum y coordinate of the bounding box
-            srid (int): SRID code
-        """
-        bbox = Clipper.boundingBox(minx, maxx, miny, maxy, srid)
-        
-        setattr(self, 'bbox', bbox)
-
-    def clip(self, bbox = None, image = None, band = None):
-        """Masks an image or a time series
-
-        Args:
-            bbox (GeoDataFrame, optional): Bounding box to mask the time series. Currently works only with a bounding box created by .createbox(). Defaults to None
-            image (senimage, optional): An complete S2image object that if the user
-            provides the method masks the selected image. Defaults to None
-            band (str, optional): If the user provides a band the method masks only the specific band. Defaults to None
-        """
-        
-        bands = ['B02', 'B03', 'B04', 'B08', 'B05', 'B06', 'B07', 'B8A', 'B11', 'B12']
-
-        if bbox is None:
-            logging.info("Checking if a bounding box is setted for the time series...")
-            if hasattr(self, 'bbox'):
-                if image is None:
-                    if band is None:
-                        logging.info("Clipping all time series...")
-
-                        for im in self.data:
-                            for b in bands:
-                                Clipper.clip(im, self.bbox, band = b)
-                    else:
-                        logging.info("Clipping band {} for all time series...".format(band))
-                        for im in self.data:
-                            Clipper.clip(im, self.bbox, band = band)
-
+                if isinstance(image, senimage):
+                    image.calcVI(index, subregion = subregion)
                 else:
-                    if band is None:
-                        logging.info("Clipping all bands of image {}...".format(image.name))
-                        for b in bands:
-                            Clipper.clip(image, self.bbox, band = b)
-                    else:
-                        logging.info("Clipping band {} of image {}...".format(band, image.name))
-                        Clipper.clip(image, self.bbox, band = band)
+                    raise TypeError("Only sentinel2 objects are supported as image!")
+        else:     
+            if image is None:
+                logging.info("Calculating {} for all time series...".format(index))
+                for im in self.data:
+                    generated_path = self._path_generator(im)
+                    savepath = os.path.join(store, generated_path, im.name)
+                    if not os.path.exists(savepath):
+                        os.makedirs(savepath)
+                    im.calcVI(index, store = savepath, subregion = subregion)
             else:
-                raise BBOXError("No bounding box is provided. Provide a BBOX or either use .createbbox() method to create one.")
-        else:
-            raise BBOXError("Currently works only with .createbbox() method.")
+                generated_path = self._path_generator(image)
+                savepath = os.path.join(store, generated_path, image.name)
+                if not os.path.exists(savepath):
+                    os.makedirs(savepath)
+                if isinstance(image, senimage):
+                    image.calcVI(index, store = savepath, subregion = subregion)
+                else:
+                    raise TypeError("Only sentinel2 objects are supported as image!")
 
-    def clipbyMask(self, shapefile, image = None, band = None, resize = False, method = None, new = None):
+    def clipbyMask(self, shapefile, image = None, band = None, resize = False, method = None, new = None, store = None):
         """Masks an image or the complete time series with a shapefile.
-
+        
         Args:
             shapefile (path-like, str): Path to shapefile mask
             image (senimage, optional): Masks a specific image. Defaults to None
@@ -203,25 +197,57 @@ class sentimeseries(timeseries):
         if image is None:
             if band is None:
                 logging.info("Masking all time series with {}...".format(shapefile))
-                for im in self.data:
-                    for b in bands:
-                        Clipper.clipByMask(im, shapefile, band = b, resize = resize, method = method, new = new)
+                if store is None:
+                    for im in self.data:
+                        for b in bands:
+                            Clipper.clipByMask(im, shapefile, band = b, resize = resize, method = method, new = new)
+                else:
+                    for im in self.data:
+                        generated_path = self._path_generator(im)
+                        savepath = os.path.join(store, generated_path, im.name)
+                        if not os.path.exists(savepath):
+                            os.makedirs(savepath)
+                        for b in bands:
+                            Clipper.clipByMask(im, shapefile, store = savepath, band = b, resize = resize, method = method, new = new)
             else:
                 logging.info("Masking band {} for all time series with {}...".format(band, shapefile))
-                for im in self.data:
-                    Clipper.clipByMask(im, shapefile, band = band, resize = resize, method = method, new = new)
+                if store is None:
+                    for im in self.data:
+                        Clipper.clipByMask(im, shapefile, band = band, resize = resize, method = method, new = new)
+                else:
+                    for im in self.data:
+                        generated_path = self._path_generator(im)
+                        savepath = os.path.join(store, generated_path, im.name)
+                        if not os.path.exists(savepath):
+                            os.makedirs(savepath)
+                        Clipper.clipByMask(im, shapefile, store = savepath, band = band, resize = resize, method = method, new = new)
         else:
             if band is None:
                 logging.info("Masking {} with {}...".format(image, shapefile))
-                for b in bands:
-                    Clipper.clipByMask(image, shapefile, band = b, resize = resize, method = method, new = new)
+                if store is None:
+                    for b in bands:
+                        Clipper.clipByMask(image, shapefile, band = b, resize = resize, method = method, new = new)
+                else:
+                    generated_path = self._path_generator(image)
+                    savepath = os.path.join(store, generated_path, image.name)
+                    if not os.path.exists(savepath):
+                        os.makedirs(savepath)
+                    for b in bands:
+                        Clipper.clipByMask(image, shapefile, store = savepath, band = b, resize = resize, method = method, new = new)
             else:
                 logging.info("Masking band {} of image {} with {}...".format(band, image, shapefile))
-                Clipper.clipByMask(image, shapefile, band = band, resize = resize, method = method, new = new)
-        
+                if store is None:
+                    Clipper.clipByMask(image, shapefile, band = band, resize = resize, method = method, new = new)
+                else:
+                    generated_path = self._path_generator(image)
+                    savepath = os.path.join(store, generated_path, image.name)
+                    if not os.path.exists(savepath):
+                        os.makedirs(savepath) 
+                    Clipper.clipByMask(image, shapefile, store = savepath, band = band, resize = resize, method = method, new = new)
+
     def remove_orbit(self, orbit):
         """Remove images with specific orbit.
-
+        
         Args:
             orbit (str): Number of orbit
         """
@@ -245,4 +271,59 @@ class sentimeseries(timeseries):
         self.total = len(self.data)
         del new
         logging.info("New number of data after removing orbit {} is: {}".format(orbit, len(self.data)))
+    
+    def upsample(self, image = None, band = None, resize = False, method = None, new = None, store = None, subregion = None):
+        bands = ['B05', 'B06', 'B07', 'B8A', 'B11', 'B12', "SCL"]
+
+        if image is None:
+            if band is None:
+                logging.info("Upsampling all time series with...")
+                if store is None:
+                    for im in self.data:
+                        for b in bands:
+                            im.upsample(band = b, store = store, method = method, new = new, subregion = subregion)
+                else:
+                    for im in self.data:
+                        generated_path = self._path_generator(im)
+                        savepath = os.path.join(store, generated_path, im.name)
+                        if not os.path.exists(savepath):
+                            os.makedirs(savepath)
+                        for b in bands:
+                            im.upsample(band = b, store = savepath, method = method, new = new, subregion = subregion)
+            else:
+                logging.info("Upsampling band {} for all time series...".format(band))
+                if store is None:
+                    for im in self.data:
+                            im.upsample(band = b, store = store, method = method, new = new, subregion = subregion)
+                else:
+                    for im in self.data:
+                        generated_path = self._path_generator(im)
+                        savepath = os.path.join(store, generated_path, im.name)
+                        if not os.path.exists(savepath):
+                            os.makedirs(savepath)
+                        im.upsample(band = band, store = savepath, method = method, new = new, subregion = subregion)
+        else:
+            if band is None:
+                logging.info("Upsampling image {}...".format(image))
+                if store is None:
+                    for b in bands:
+                            image.upsample(band = b, store = store, method = method, new = new, subregion = subregion)
+                else:
+                    generated_path = self._path_generator(image)
+                    savepath = os.path.join(store, generated_path, image.name)
+                    if not os.path.exists(savepath):
+                        os.makedirs(savepath)
+                    for b in bands:
+                        image.upsample(band = b, store = savepath, method = method, new = new, subregion = subregion)
+            else:
+                logging.info("Upsampling band {} of image {}...".format(band, image))
+                if store is None:
+                    image.upsample(band = band, store = store, method = method, new = new, subregion = subregion)
+                else:
+                    generated_path = self._path_generator(image)
+                    savepath = os.path.join(store, generated_path, image.name)
+                    if not os.path.exists(savepath):
+                        os.makedirs(savepath) 
+                    image.upsample(band = band, store = savepath, method = method, new = new, subregion = subregion)
+
 

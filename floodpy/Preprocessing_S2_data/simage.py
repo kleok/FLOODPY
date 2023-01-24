@@ -7,9 +7,12 @@ import xml.etree.ElementTree as Etree
 import fnmatch
 import rasterio
 import datetime
+import pyproj
 from rasterio.enums import Resampling
+from rasterio.warp import reproject
+import numpy as np
 from floodpy.Preprocessing_S2_data.vi import vi
-from floodpy.Preprocessing_S2_data.exceptions import VegetationIndexNotInList, BandNotFound
+from floodpy.Preprocessing_S2_data.exceptions import VegetationIndexNotInList, BandNotFound, PathError
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format = '%(message)s', level = logging.INFO)
@@ -22,7 +25,6 @@ class senimage():
     
     def __init__(self, path, name):
         """ A Sentinel 2 image.
-
         Args:
             path (str, path-like): Path to image
             name (str): Name of the file
@@ -30,6 +32,7 @@ class senimage():
         self.path = path
         self.name = name
         self.md_file = None
+        self.tile_md_file = None
         self.satellite = None
         self.datetime = None
         self.date = None
@@ -39,27 +42,45 @@ class senimage():
         self.cloud_cover = None
         self.processing_level = None
         self.tile_id = None
+        self.crs = None
         self.orbit = None
-        
+
     def getmetadata(self):
         """Searching for metadata (XML) files.
         """
-        for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.path, self.name)):
+        for (dirpath, _, filenames) in os.walk(os.path.join(self.path, self.name)):
             for file in filenames:
                 if file.startswith("MTD_MSI"):
                     self.md_file = file
-                    self._parseXML(dirpath, file)
+                    XML = self._readXML(dirpath, file)
+                    self._parseGeneralMetadata(XML)
+                elif file.startswith("MTD_TL"):
+                    self.tile_md_file = file
+                    XML = self._readXML(dirpath, file)
+                    self._parseTileMetadata(XML)
 
-    def _parseXML(self, path, file):
-        """Parsing XML metadata file.
+    def _readXML(self, path:str, file:str):
+        """Reads XML file.
 
         Args:
-            path (str, path-like): Path to file
-            file (str): Name of the file
+            path (str): Path to file
+            file (str): Name of the file plus extention
+
+        Returns:
+            Etree.Element: XML opened file
         """
-        #logging.info("  - Reading {}".format(os.path.join(self.path, self.name, file)))
-        tree = Etree.parse(os.path.join(self.path, self.name, file))
+        tree = Etree.parse(os.path.join(path, file))
         root = tree.getroot()
+
+        return root
+
+    def _parseGeneralMetadata(self, root):
+        """Parsing general S2 metadata from eTree.Element type object.
+
+        Args:
+            root (eTree.Element): S2 metadata from eTree.Element type object
+        """
+        logging.info("Parsing Image Metadata file...")
         self.satellite = root.findall(".//SPACECRAFT_NAME")[0].text
         self.str_datetime = self.name[11:26]
         self.datetime = convert(root.findall(".//DATATAKE_SENSING_START")[0].text)
@@ -70,16 +91,26 @@ class senimage():
         self.cloud_cover = "{:.3f}".format(float(root.findall(".//Cloud_Coverage_Assessment")[0].text))
         self.processing_level = root.findall(".//PROCESSING_LEVEL")[0].text
         self.tile_id = self.name[39:44]
-        self.orbit = root.findall(".//SENSING_ORBIT_NUMBER")[0].text
-        #logging.info("  - Done!")
+        self.orbit = root.findall(".//SENSING_ORBIT_NUMBER")[0].text       
+        logging.info("Done!")
+
+    def _parseTileMetadata(self, root):
+        """Parsing general S2 tile metadata from eTree.Element type object.
+
+        Args:
+            root (eTree.Element): S2 tile metadata from eTree.Element type object
+        """
+
+        logging.info("Parsing Tile Metadata file...")
+        epsg = root[1][0][1].text
+        self.crs = pyproj.crs.CRS(epsg)
+        logging.info("Done!")
 
     @staticmethod
     def setResolution(band):
         """ Getting band resolution for Sentinel 2.
-
         Args:
             band (str): Band short name as string
-
         Returns:
             str: Band resolution
         """
@@ -98,10 +129,10 @@ class senimage():
             "B11": "20",
             "B12": "20",
             "SCL": "20",
+            "TCI": "10",
             "NDVI": "10",
-            "NDMI": "20",
-            "EVI": "10",
-            "MCARI": "10"
+            "NDBI": "20",
+            "NDWI": "10",
         }
         return resolutions.get(band)
 
@@ -109,12 +140,12 @@ class senimage():
         """Finds all the available bands of an image and sets new attributes for each band.
         """
 
-        bands = ['B02', 'B03', 'B04', 'B08', 'B05', 'B06', 'B07', 'B8A', 'B11', 'B12', "SCL"]
+        bands = ['B02', 'B03', 'B04', 'B08', 'B05', 'B06', 'B07', 'B8A', 'B11', 'B12', "SCL", "TCI"]
 
         for band in bands:
             resolution = self.setResolution(band)
 
-            for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.path, self.name)):
+            for (dirpath, _, filenames) in os.walk(os.path.join(self.path, self.name)):
                 for file in filenames:
                     if self.processing_level == 'Level-2A':
                         if fnmatch.fnmatch(file, "*{}*{}m*.jp2".format(band, resolution)):
@@ -126,284 +157,314 @@ class senimage():
                             setattr(self, 'datapath', os.path.join(dirpath))
                             break
 
-            for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.path, self.name)):
+            for (dirpath, _, filenames) in os.walk(os.path.join(self.path, self.name)):
                 for file in filenames:
                     if self.processing_level == 'Level-2A':
                         if fnmatch.fnmatch(file, "*{}*{}m*.jp2".format(band, resolution)):
-                            logging.debug(os.path.join(dirpath, file))
-                            setattr(self, '{}'.format(band), os.path.join(dirpath, file))
+                            setattr(self, '{}'.format(band), {resolution: {"raw" : os.path.join(dirpath, file)}})
                     else:    
                         if fnmatch.fnmatch(file, "*_{}_*.jp2".format(band)):
-                            logging.debug(os.path.join(dirpath, file))
-                            setattr(self, '{}'.format(band), os.path.join(dirpath, file))
+                            setattr(self, '{}'.format(band), {resolution: {"raw" : os.path.join(dirpath, file)}})
 
-
+    @property
     def show_metadata(self):
         """Prints metadata using __dict__
         """
         print (self.__dict__)
-
-    def ReadData(self, band = None):
-        """Reads bands as rasterio objects and the objects are added as attributes.
-
-        Args:
-            band (str, optional): Reads a specific band as rasterio object, in other case reads all the available bands. Defaults to None.
-
-        Returns:
-            rasterio.io.DatasetReader, list: Band as rasterio object or list of bands as rasterio objects 
-        """
-
-        if band == None:
-            bands = ['B02', 'B03', 'B04', 'B08', 'B05', 'B06', 'B07', 'B8A', 'B11', 'B12']
-            images = []
-            for b in bands:
-                # logging.info("Reading {}".format(getattr(self, b)))
-                image = rasterio.open(getattr(self, b))
-                setattr(self, 'rasterio{}'.format(b), image)
-                images.append(image)
-            
-            return images
-            
-        else:
-            # logging.info("Reading {}".format(getattr(self, band)))
-            image = rasterio.open(getattr(self, band))
-            setattr(self, 'rasterio{}'.format(band), image)
-        
-            return image
-
+    
     @staticmethod
-    def ReadArray(images, height = None, width = None, method = None):
-        """Reads rasterio objects as ndarray and if the user provides width and height resampling is applied. 
-
-        Args:
-            images (rasterio.io.DatasetReader, list): A rasterio object or a list of objects 
-            height (int, optional): New height to resample, if None no resampling is applied. Defaults to None
-            width (int, optional): New width to resample, if None no resampling is applied. Defaults to None
-            method (rasterio.enums.Resampling, optional): Resampling method if user provided height and width. If None Resampling.nearest is used.\
-            Other choices are Resampling.bilinear, Resampling.cubic, Resampling.cubic_spline, Resampling.lanczos etc.\
-            For more information read at https://rasterio.readthedocs.io/en/latest/api/rasterio.enums.html#rasterio.enums.Resampling. Defaults to None
-
-        Returns:
-             ndarray: Image as numpy array
-        """
-
-        #logging.info("Reading array...")
-        if isinstance(images, list):
-            arrays = []
-            for image in images:
-                if height is not None and width is not None:
-                    if method == None:
-                        method = Resampling.nearest
-                    array = image.read(out_shape = (height, width), resampling = method)
-                else:
-                    array = image.read()
-                arrays.append(array)
-            
-            return arrays
-        else:
-            if height is not None and width is not None:
-                    if method == None:
-                        method = Resampling.nearest
-                    array = images.read(out_shape = (height, width), resampling = method)
-            else:
-                array = images.read()
-            
-            return array
-
-    @staticmethod
-    def writeResults(path, name, array, width, height, crs, transform, driver = 'Gtiff', count = 1, dtype = rasterio.float32):
+    def writeResults(path:str, name:str, array:np.array, metadata:dict):
         """Writing a new image with the use of rasterio module.
-
         Args:
-            path (str, path-like): Path to image
+            path (str): Path to image
             name (str): Image name
-            array (ndarray): Image numpy array
-            width (int): Width of array
-            height (int): Height of array
-            crs (rasterio.crs.CRS): Coordinate system of the image
-            transform (affine.Affine): Transformation type
-            driver (str, optional): Currently only Gtiff is supported. Defaults to 'Gtiff'.
-            count (int, optional): Numbers of bands to write. Currently only 1 is supported. Defaults to 1.
-            dtype (str, optional): Datatype of the image. Defaults to rasterio.float32.
+            array (np.ndarray): Image numpy array
+            metadata (dict): Metadata dictionary
         """
-
         logging.info("Saving {}...".format(name))
-        with rasterio.open(os.path.join(path, name), "w", driver = driver, width = width, height = height, count = count,
-            crs = crs, transform = transform, dtype = dtype) as output_image:
-            output_image.write(array)
-
-    def calcVI(self, index):
-        """Calculates a selected vegetation index (NDVI, EVI, MCARI).
-
-        Args:
-            index (str): Vegetation index to be calculated and saved. Currently only NDVI, EVI and MCARI are supported
-        """
-        ext = 'tif'
-        
-        if index == 'NDVI':
-            if os.path.isfile(os.path.join(self.datapath_10, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))):
-                logging.info("File {} already exists...".format(os.path.join(self.datapath_10, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))))
-                if not hasattr(self, index):
-                    name = "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext)
-                    setattr(self, '{}'.format(index), os.path.join(self.datapath_10, name))
-                    # Setting NDVI image object to S2 image
-                    image = rasterio.open(getattr(self, index))
-                    setattr(self, 'rasterio{}'.format(index), image)
-                return
+        with rasterio.open(os.path.join(path, name), "w", **metadata) as dst:
+            if array.ndim == 2:
+                dst.write(array, 1)
             else:
-                if hasattr(self, "B08"):
-                    nir = self.ReadData('B08')
-                else:
-                    raise BandNotFound("{} object has no attribute B08 (Image: {})".format(self, self.name))
-                
-                if hasattr(self, "B04"):
-                    red = self.ReadData('B04')
-                else:
-                    raise BandNotFound("{} object has no attribute B04 (Image: {})".format(self, self.name))
-                
-                logging.info("Calculating {} for image {}...".format(index, self.name))
-                nir_array = self.ReadArray(nir).astype(rasterio.float32)
-                red_array = self.ReadArray(red).astype(rasterio.float32)
-                ndvi_array = vi.ndvi(red_array, nir_array)
-                path = self.datapath_10
-                name = "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext)
-                width = nir.width
-                height = nir.height
-                crs = nir.crs
-                transform=nir.transform
-                self.writeResults(path, name, ndvi_array, width, height, crs, transform)
-                # Setting NDVI attribute to S2 image
-                setattr(self, '{}'.format(index), os.path.join(path, name))
-                # Setting NDVI image object to S2 image
-                image = rasterio.open(getattr(self, index))
-                setattr(self, 'rasterio{}'.format(index), image)
-                
-                #logging.info("Done!")
+                dst.write(array)
 
-        elif index == "NDMI":
-            if os.path.isfile(os.path.join(self.datapath_20, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))):
-                logging.info("File {} already exists...".format(os.path.join(self.datapath_20, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))))
-                if not hasattr(self, index):
-                    name = "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext)
-                    setattr(self, '{}'.format(index), os.path.join(self.datapath_20, name))
-                    # Setting NDVI image object to S2 image
-                    image = rasterio.open(getattr(self, index))
-                    setattr(self, 'rasterio{}'.format(index), image)
-                return
-            else:
-                if hasattr(self, "B8A"):
-                    nir = self.ReadData('B8A')
-                else:
-                    raise BandNotFound("{} object has no attribute B8A (Image: {})".format(self, self.name))
-                
-                if hasattr(self, "B11"):
-                    swir = self.ReadData('B11')
-                else:
-                    raise BandNotFound("{} object has no attribute B11 (Image: {})".format(self, self.name))
-                
-                logging.info("Calculating {} for image {}...".format(index, self.name))
-                nir_array = self.ReadArray(nir).astype(rasterio.float32)
-                swir_array = self.ReadArray(swir).astype(rasterio.float32)
-                ndvi_array = vi.ndmi(nir_array, swir_array)
-                path = self.datapath_20
-                name = "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext)
-                width = nir.width
-                height = nir.height
-                crs = nir.crs
-                transform=nir.transform
-                self.writeResults(path, name, ndvi_array, width, height, crs, transform)
-                # Setting NDVI attribute to S2 image
-                setattr(self, '{}'.format(index), os.path.join(path, name))
-                # Setting NDVI image object to S2 image
-                image = rasterio.open(getattr(self, index))
-                setattr(self, 'rasterio{}'.format(index), image)
-                
-                logging.info("Done!")
+    def upsample(self, store = None, band = None, new = None, subregion = None, method = None, ext = 'tif'):
+        if subregion is None:
+            region = "raw"
+        else:
+            region = subregion
 
-        elif index == 'EVI':
-            
-            if os.path.isfile(os.path.join(self.datapath_10, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))):
-                logging.info("File {} already exists...".format(os.path.join(self.datapath_10, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))))
-                return
-            else:
-                if hasattr(self, "B08"):
-                    nir = self.ReadData('B08')
-                else:
-                    raise BandNotFound("{} object has no attribute B08 (Image: {})".format(self, self.name))
+        if band != None:
+            if hasattr(self, band):
+                resolution = self.setResolution(band)
+                if int(resolution) == 20:
+                    if hasattr(self, 'datapath'):
+                        if store is None:
+                            path = self.datapath
+                            res = 10
+                        else:
+                            path = store
+                            res = 10
+                    else:
+                        if store is None:
+                            if hasattr(self, 'datapath_10'):
+                                res = 10
+                                path = self.datapath_10
+                            else:
+                                raise PathError("Could not find a path to store the image.")
+                        else:
+                            res = 10
+                            path = store
                 
-                if hasattr(self, "B04"):
-                    red = self.ReadData('B04')
-                else:
-                    raise BandNotFound("{} object has no attribute B04 (Image: {})".format(self, self.name))
-                
-                if hasattr(self, "B02"):
-                    blue = self.ReadData('B02')
-                else:
-                    raise BandNotFound("{} object has no attribute B02 (Image: {})".format(self, self.name))
-                
-                logging.info("Calculating {} for image {}...".format(index, self.name))
-
-                nir_array = self.ReadArray(nir).astype(rasterio.float32)
-                red_array = self.ReadArray(red).astype(rasterio.float32)
-                blue_array = self.ReadArray(blue).astype(rasterio.float32)
-                evi_array = vi.evi(nir_array, red_array, blue_array)
-                path = self.datapath_10
-                name = "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext)
-                width = nir.width
-                height = nir.height
-                crs = nir.crs
-                transform=nir.transform
-                self.writeResults(path, name, evi_array, width, height, crs, transform)
-                # Setting index attribute to S2 image
-                setattr(self, '{}'.format(index), os.path.join(path, name))
-                # Setting index image object to S2 image
-                image = rasterio.open(getattr(self, index))
-                setattr(self, 'rasterio{}'.format(index), image)
-                
-                logging.info("Done!")
-
-        elif index == 'MCARI':
-            #(B05 - B04) - 0.2 * (B05 - B03)) * (B05 / B04)
-            if os.path.isfile(os.path.join(self.datapath_10, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))):
-                logging.info("File {} already exists...".format(os.path.join(self.datapath_10, "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext))))
-                return
-            else:
-                if hasattr(self, "B05"):
-                    red_edge = self.ReadData('B05')
-                else:
-                    raise BandNotFound("{} object has no attribute B05 (Image: {})".format(self, self.name))
-                
-                if hasattr(self, "B04"):
-                    red = self.ReadData('B04')
-                else:
-                    raise BandNotFound("{} object has no attribute B04 (Image: {})".format(self, self.name))
-                
-                if hasattr(self, "B03"):
-                    green = self.ReadData('B03')
-                else:
-                    raise BandNotFound("{} object has no attribute B03 (Image: {})".format(self, self.name))   
-                
-                logging.info("Calculating {} for image {}...".format(index, self.name))
+                if new is None:
+                    new = str(res) + "_Upsampled"
                     
-                re_array = self.ReadArray(red_edge, red.height, red.width).astype(rasterio.float32)
-                red_array = self.ReadArray(red).astype(rasterio.float32)
-                green_array = self.ReadArray(green).astype(rasterio.float32)
-                mcari_array = vi.mcari(re_array, red_array, green_array)
+                # New name for output image
+                out_tif = os.path.join(path, "T{}_{}_{}_{}.{}".format(self.tile_id, self.str_datetime, band, new, ext))
 
-                path = self.datapath_10
-                name = "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext)
-                width = red.width
-                height = red.height
-                crs = red.crs
-                transform=red.transform
-                self.writeResults(path, name, mcari_array, width, height, crs, transform)
-                # Setting index attribute to S2 image
-                setattr(self, '{}'.format(index), os.path.join(path, name))
-                # Setting index image object to S2 image
-                image = rasterio.open(getattr(self, index))
-                setattr(self, 'rasterio{}'.format(index), image)
+                if os.path.exists(out_tif) == True and os.stat(out_tif).st_size != 0:
+                    # Pass if file already exists & it's size is not zero
+                    logging.warning("File {} already exists...".format(os.path.join(path, "T{}_{}_{}_{}.{}".format(self.tile_id, self.str_datetime, band, new, ext))))
+                    try:
+                        getattr(self, band)[str(res)][region] = out_tif
+                    except KeyError:
+                        getattr(self, band).update({str(res): {region: out_tif}})    
+                    return
+                
+                if method is None:
+                    resampling = Resampling.nearest
+                else:
+                    resampling = method
 
-                logging.info("Done!")
+                # Use as high resolution bands only 4 and 8 that are trustworthy
+                hr_bands = ['B04', 'B08']
+                hr_band = None
+                for hrb in hr_bands:
+                    if hasattr(self, hrb):
+                        hr_band = getattr(self, hrb)["10"][region]
+                        break
+                if hr_bands is None:
+                    raise BandNotFound("No high resolution band found!")
+
+                fpath = getattr(self, band)[str(resolution)][region]
+                self.reproj_match(os.path.join(path, fpath), hr_band, to_file = True, outfile = out_tif, resampling = resampling)
+
+                try:
+                    getattr(self, band)[str(res)][region] = out_tif
+                except KeyError:
+                    getattr(self, band).update({str(res): {region: out_tif}})
+            
+            else:
+                raise BandNotFound("Object {} has no attribute {} (band).".format(self, band))
+    
+    @staticmethod
+    def reproj_match(image:str, base:str, to_file:bool = False, outfile:str = "output.tif", resampling:rasterio.warp.Resampling = Resampling.nearest) -> None:
+        """Reprojects/Resamples an image to a base image.
+        Args:
+            image (str): Path to input file to reproject/resample
+            base (str): Path to raster with desired shape and projection 
+            outfile (str): Path to saving Geotiff
+        """
+        # open input
+        with rasterio.open(image) as src:
+            # open input to match
+            with rasterio.open(base) as match:
+                dst_crs = match.crs
+                dst_transform = match.meta["transform"]
+                dst_width = match.width
+                dst_height = match.height
+            # set properties for output
+            metadata = src.meta.copy()
+            metadata.update({"crs": dst_crs,
+                            "transform": dst_transform,
+                            "width": dst_width,
+                            "height": dst_height,
+                            })
+            if to_file:
+                with rasterio.open(outfile, "w", **metadata) as dst:
+                    # iterate through bands and write using reproject function
+                    for i in range(1, src.count + 1):
+                        reproject(
+                            source = rasterio.band(src, i),
+                            destination = rasterio.band(dst, i),
+                            src_transform = src.transform,
+                            src_crs = src.crs,
+                            dst_transform = dst_transform,
+                            dst_crs = dst_crs,
+                            resampling = resampling)
+                return None
+            else:
+                array, transform = reproject(
+                            source = rasterio.band(src, 1),
+                            destination = np.ndarray((1, dst_height, dst_width)),
+                            src_transform = src.transform,
+                            src_crs = src.crs,
+                            dst_transform = dst_transform,
+                            dst_crs = dst_crs,
+                            resampling = resampling)
+                
+                return(array, transform)
+
+
+    def calcVI(self, index, store = None, subregion = None):
+        """Calculates a selected vegetation index (NDVI, NDBI, NDWI).
+        Args:
+            index (str): Vegetation index to be calculated and saved. Currently only NDVI, NDMI are supported
+        """
+        driver = "Gtiff"
+        ext = "tif"
+
+        if subregion is None:
+            region = "raw"
+            new_name = "T{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, ext)
 
         else:
-                raise VegetationIndexNotInList("The provided vegetation index is not in the list.")
+            region = subregion
+            new_name = "T{}_{}_{}_{}_{}.{}".format(self.tile_id, self.str_datetime, index, self.setResolution(index), subregion, ext)
+
+        if index == 'NDVI':
+            if store == None:
+                if os.path.isfile(os.path.join(self.datapath_10, new_name)):
+                    logging.warning("File {} already exists...".format(os.path.join(self.datapath_10, new_name)))
+                    if not hasattr(self, index):
+                        setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(self.datapath_10, new_name)}})
+                    return
+                else:
+                    if hasattr(self, "B08"):
+                        if self.B08.get("10").get(region) != None:
+                            nir = rasterio.open(self.B08["10"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B08 (Image: {})".format(self, self.name))
+                    
+                    if hasattr(self, "B04"):
+                        if self.B04.get("10").get(region) != None:
+                            red = rasterio.open(self.B04["10"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B04 (Image: {})".format(self, self.name))
+                    
+                    logging.info("Calculating {} for image {}...".format(index, self.name))
+                    nir_array = nir.read().astype(rasterio.float32)
+                    red_array = red.read().astype(rasterio.float32)
+                    ndvi_array = vi.ndvi(red_array, nir_array)
+                    ndvi_array[nir_array == nir.meta["nodata"]] = -9999.
+                    ndvi_array[red_array == red.meta["nodata"]] = -9999.
+                    path = self.datapath_10
+                    metadata = red.meta.copy()
+                    metadata.update({"driver": driver, "dtype": ndvi_array.dtype, "nodata": -9999.})
+                    self.writeResults(path, new_name, ndvi_array, metadata)
+                    # Setting NDVI attribute to S2 image
+                    setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(self.datapath_10, new_name)}})
+            else:
+                if os.path.isfile(os.path.join(store, new_name)):
+                    logging.warning("File {} already exists...".format(os.path.join(store, new_name)))
+                    if not hasattr(self, index):
+                        setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(store, new_name)}})
+                    return
+                else:
+                    if hasattr(self, "B08"):
+                        if self.B08.get("10").get(region) != None:
+                            nir = rasterio.open(self.B08["10"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B08 (Image: {})".format(self, self.name))
+                    
+                    if hasattr(self, "B04"):
+                        if self.B08.get("10").get(region) != None:
+                            red = rasterio.open(self.B04["10"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B04 (Image: {})".format(self, self.name))
+                    
+                    logging.info("Calculating {} for image {}...".format(index, self.name))
+                    nir_array = nir.read().astype(rasterio.float32)
+                    red_array = red.read().astype(rasterio.float32)
+                    ndvi_array = vi.ndvi(red_array, nir_array)
+                    ndvi_array[nir_array == nir.meta["nodata"]] = -9999.
+                    ndvi_array[red_array == red.meta["nodata"]] = -9999.
+                    path = store
+                    metadata = red.meta.copy()
+                    metadata.update({"driver": driver, "dtype": ndvi_array.dtype, "nodata": -9999.})
+                    self.writeResults(path, new_name, ndvi_array, metadata)
+                    # Setting NDVI attribute to S2 image
+                    setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(path, new_name)}})
+
+        elif index == 'NDMI':
+            if store == None:
+                if os.path.isfile(os.path.join(self.datapath_20, new_name)):
+                    logging.warning("File {} already exists...".format(os.path.join(self.datapath_20, new_name)))
+                    if not hasattr(self, index):
+                        setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(self.datapath_20, new_name)}})
+                    return
+                else:
+                    if hasattr(self, "B8A"):
+                        if self.B8A.get("20").get(region) != None:
+                            nir = rasterio.open(self.B8A["20"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B8A (Image: {})".format(self, self.name))
+                    
+                    if hasattr(self, "B11"):
+                        if self.B11.get("20").get(region) != None:
+                            swir = rasterio.open(self.B11["20"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B11 (Image: {})".format(self, self.name))
+                    
+                    logging.info("Calculating {} for image {}...".format(index, self.name))
+                    nir_array = nir.read().astype(rasterio.float32)
+                    swir_array = swir.read().astype(rasterio.float32)
+                    ndmi_array = vi.ndmi(nir_array, swir_array)
+                    ndmi_array[nir_array == nir.meta["nodata"]] = -9999.
+                    ndmi_array[swir_array == swir.meta["nodata"]] = -9999.
+                    path = self.datapath_20
+                    metadata = nir.meta.copy()
+                    metadata.update({"driver": driver, "dtype": ndmi_array.dtype, "nodata": -9999.})
+                    self.writeResults(path, new_name, ndmi_array, metadata)
+                    # Setting NDVI attribute to S2 image
+                    setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(self.datapath_20, new_name)}})
+            else:
+                if os.path.isfile(os.path.join(store, new_name)):
+                    logging.warning("File {} already exists...".format(os.path.join(store, new_name)))
+                    if not hasattr(self, index):
+                        setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(store, new_name)}})
+                    return
+                else:
+                    if hasattr(self, "B8A"):
+                        if self.B8A.get("20").get(region) != None:
+                            nir = rasterio.open(self.B8A["20"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B8A (Image: {})".format(self, self.name))
+                    
+                    if hasattr(self, "B11"):
+                        if self.B11.get("20").get(region) != None:
+                            swir = rasterio.open(self.B11["20"][region])
+                        else:
+                            raise BandNotFound("{} object has no stored path for resolution {} and raw data.".format(self, self.setResolution(index)))
+                    else:
+                        raise BandNotFound("{} object has no attribute B11 (Image: {})".format(self, self.name))
+                    
+                    logging.info("Calculating {} for image {}...".format(index, self.name))
+                    nir_array = nir.read().astype(rasterio.float32)
+                    swir_array = swir.read().astype(rasterio.float32)
+                    ndmi_array = vi.ndvi(nir_array, swir_array)
+                    ndmi_array[nir_array == nir.meta["nodata"]] = -9999.
+                    ndmi_array[swir_array == swir.meta["nodata"]] = -9999.
+                    path = store
+                    metadata = nir.meta.copy()
+                    metadata.update({"driver": driver, "dtype": ndmi_array.dtype, "nodata": -9999.})
+                    self.writeResults(path, new_name, ndmi_array, metadata)
+                    # Setting NDVI attribute to S2 image
+                    setattr(self, '{}'.format(index), {self.setResolution(index): {region : os.path.join(path, new_name)}})
+        else:
+            VegetationIndexNotInList(f"Index {index} not in list of available indexes.")
+
