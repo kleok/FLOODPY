@@ -61,7 +61,11 @@ def retrieve_ERA5_data(ERA5_variables:list, year_str:str, month_str:str, days_li
         
     return export_filename
  
-def Get_ERA5_data(ERA5_variables:list, start_datetime:datetime.datetime, end_datetime:datetime.datetime, bbox:list, ERA5_dir:str)->None:
+def Get_ERA5_data(ERA5_variables:list,
+                 start_datetime:datetime.datetime,
+                 end_datetime:datetime.datetime,
+                 bbox:list,
+                ERA5_dir:str) -> pd.DataFrame:
     """Downloads ERA5 datasets between two given dates.
 
     Args:
@@ -70,6 +74,9 @@ def Get_ERA5_data(ERA5_variables:list, start_datetime:datetime.datetime, end_dat
         end_datetime (datetime.datetime): Ending Datetime e.g.  datetime.datetime(2022, 2, 8, 0, 0)
         bbox (list): List of latitude/longitude [LONMIN, LATMIN,  LONMAX, LATMAX]
         ERA5_dir (str): Path that ERA5 data will be saved.
+
+    Returns:
+        Precipitation_data (pd.DataFrame): precipitation data
     """
     
     LONMIN, LATMIN,  LONMAX, LATMAX = bbox
@@ -186,5 +193,9 @@ def Get_ERA5_data(ERA5_variables:list, start_datetime:datetime.datetime, end_dat
         # in some cases ERA5 precipitation return negative values (issue #36)
         Precipitation_data['ERA5_tp_mm'].clip(lower=0, inplace=True)
         Precipitation_data.to_csv(precipitation_filename_df, index=False)
+    
+    else: # precipitation data have already been downloaded
+        Precipitation_data = pd.read_csv(precipitation_filename_df)
+        Precipitation_data.index = pd.to_datetime(Precipitation_data['Datetime'])
 
-        return Precipitation_data
+    return Precipitation_data
