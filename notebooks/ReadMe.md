@@ -1,3 +1,7 @@
-Case Studies
-- Greece (Ianos) September 2020 [here](https://nbviewer.org/github/kleok/FLOODPY/blob/main/notebooks/Floodpy_Ianos.ipynb)
-- Madagascar January 2023 [here](https://nbviewer.org/github/kleok/FLOODPY/blob/main/notebooks/Floodpy_Madagascar_Jan_2023.ipynb)
+## Case Studies
+
+| Region | Date | Jupyter notebook Link |
+|:--------------------:|:-----------------:|:-----------------:|
+| Greece Palams (Ianos) | September 2020 | <a href="https://nbviewer.org/github/kleok/FLOODPY/blob/main/notebooks/Floodpy_Palamas_Sep_2020.ipynb" target="_blank">link</a> |
+| Madagascar Ambilobe (Cheneso) | January 2023 | <a href="https://nbviewer.org/github/kleok/FLOODPY/blob/main/notebooks/Floodpy_Ambilobe_Jan_2023.ipynb" target="_blank">link</a> |
+| Greece (Ianos) | September 2020 | <a href="https://nbviewer.org/github/kleok/FLOODPY/blob/main/notebooks/Floodpy_Farahalana_Jan_2023.ipynb" target="_blank">link</a> |
