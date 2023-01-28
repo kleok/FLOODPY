@@ -45,7 +45,7 @@ def get_folium_categorical_template():
       <li><span style='background:rgb(250, 0, 0); opacity:1;'></span><b>Built-up</b></li>
       <li><span style='background:rgb(180, 180, 180); opacity:1;'></span><b>Bare/sparse vegetation</b></li>
       <li><span style='background:rgb(240, 240, 240); opacity:1;'></span><b>Snow and Ice</b></li>
-      <li><span style='background:rgb(0, 100, 20); opacity:1;'></span><b>Permanent water bodies</b></li>
+      <li><span style='background:rgb(0, 100, 200); opacity:1;'></span><b>Permanent water bodies</b></li>
       <li><span style='background:rgb(0, 150, 160); opacity:1;'></span><b>Herbaceous wetland</b></li>
       <li><span style='background:rgb(0, 207, 117); opacity:1;'></span><b>Mangroves</b></li>
       <li><span style='background:rgb(250, 230, 160); opacity:1;'></span><b>Moss and lichen</b></li>
