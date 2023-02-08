@@ -5,6 +5,7 @@ geopandas==0.9.0
 numpy
 netCDF4
 tqdm
+folium
 requests
 sentinelsat
 scipy
