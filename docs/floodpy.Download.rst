@@ -20,6 +20,14 @@ floodpy.Download.Download\_GFS module
    :undoc-members:
    :show-inheritance:
 
+floodpy.Download.Download\_LandCover module
+-------------------------------------------
+
+.. automodule:: floodpy.Download.Download_LandCover
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 floodpy.Download.Download\_orbits module
 ----------------------------------------
 
@@ -32,6 +40,14 @@ floodpy.Download.Sentinel\_1\_download module
 ---------------------------------------------
 
 .. automodule:: floodpy.Download.Sentinel_1_download
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+floodpy.Download.Sentinel\_1\_download timespan module
+------------------------------------------------------
+
+.. automodule:: floodpy.Download.Sentinel_1_download timespan
    :members:
    :undoc-members:
    :show-inheritance:
