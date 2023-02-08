@@ -9,7 +9,7 @@ folium
 requests
 sentinelsat
 scipy
-sklearn
+scikit-learn
 shapely
 h5py
 scikit-image
