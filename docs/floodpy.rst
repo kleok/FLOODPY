@@ -12,6 +12,7 @@ Subpackages
    floodpy.Preprocessing_S1_data
    floodpy.Preprocessing_S2_data
    floodpy.Statistical_analysis
+   floodpy.Visualization
    floodpy.utils
 
 Submodules

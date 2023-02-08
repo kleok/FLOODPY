@@ -24,10 +24,6 @@ The FLOod Mapping PYthon toolbox is a free and open-source python toolbox for ma
     
 - Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapping Using Sentinel-1 Intensity Time Series. Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
 
-- Gounari 0., Falagas A., Karamvasis K., Tsironis V., Karathanassi V., Karantzalos K.: Floodwater Mapping & Extraction of Flood-Affected Agricultural Fields. Living Planet Symposium Bonn 23-27 May 2022. https://drive.google.com/file/d/1HiGkep3wx45gAQT6Kq34CdECMpQc8GUV/view?usp=sharing
-
-- Zotou I., Karamvasis K., Karathanassi V., Tsihrintzis V.: Sensitivity of a coupled 1D/2D model in input parameter variation exploiting Sentinel-1-derived flood map. 7th IAHR Europe Congress. September 7-9, 2022. Page 247 at https://www.iahreuropecongress.org/PDF/IAHR2022_ABSTRACT_BOOK.pdf 
-
 Contact us
 ----------
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations.
