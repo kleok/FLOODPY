@@ -95,6 +95,7 @@ def Calc_flood_map(Preprocessing_dir: str,
     t_scores_flatten = t_scores_flatten[~np.isnan(t_scores_flatten)]
 
     glob_thresh = threshold_Otsu(t_scores_flatten)
+    print(glob_thresh)
 
     # binary mask (1: water surfaces, 0: non water surfaces)
     Flood_global_binary = t_score_dataset < glob_thresh   
