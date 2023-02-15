@@ -291,6 +291,13 @@ def Download_S1_data(scihub_username:str,
                                     flood_datetime,
                                     relOrbit,
                                     S1_dir)
+        
+        error_message = ("Houston we've got a problem. Not enough images are"
+                         " available between {} and {}. Please increase the" 
+                         " value of before_flood_days".format(Start_time,
+                                                              End_time))
+            
+        assert len(products_df) > 2, error_message
 
         if download:
             # checking if we have already downloaded data

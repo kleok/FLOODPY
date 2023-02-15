@@ -8,11 +8,12 @@ from rasterio.io import MemoryFile
 from rasterio.mask import mask
 from rasterio.warp import reproject
 import numpy as np
+from datetime import datetime, timedelta
 
 from floodpy.Download.Sentinel_2_download import Download_S2_data
 from floodpy.Preprocessing_S2_data.sts import sentimeseries
 
-def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_time:str, save_path:str)->str:
+def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_time:str, save_path:str, product:str = 'S2MSI1C')->str:
     """Searching and downloads the clearest Sentinel-2 images for the AOI and generates an background image.
     If the AOI is in more than one images (tiles) then finds the best combination to cover it and creates a single
     background image.
@@ -24,11 +25,16 @@ def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_t
         start_time (str): Starting search time (YYYYMMDD format)
         end_time (str): Ending search time (YYYYMMDD format)
         save_path (str): Path to store the data
+        product (str, optional): Sentinel-2 product level. Defaults to 'S2MSI1C'
 
     Returns:
         str: Path of the background image
     """
     RGB_Background = os.path.join(save_path, "background.tif")
+
+    #changing starting data in order to create S2 background with less clouds
+    start_time_dt = datetime.strptime(start_time, '%Y%m%d') - timedelta(days=90)
+    start_time = start_time_dt.strftime('%Y%m%d')
 
     data = Download_S2_data(
                         AOI = aoi,
@@ -37,7 +43,7 @@ def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_t
                         Start_time = start_time,
                         End_time = end_time,
                         write_dir = save_path,
-                        product = 'S2MSI2A',
+                        product = product,
                         download = False,
                         cloudcoverage = 100,
                         cov_thres=0,
@@ -89,7 +95,7 @@ def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_t
                     Start_time = clearest_image,
                     End_time = end_time,
                     write_dir = save_path,
-                    product = 'S2MSI2A',
+                    product = product,
                     download = True,
                     cloudcoverage = 100,
                     cov_thres=0,

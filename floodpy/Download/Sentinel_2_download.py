@@ -24,7 +24,7 @@ def S2_AOI_coverage(aoi_geometry:shapely.geometry, products_df:gpd.GeoDataFrame)
     return products_df
     
 
-def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str, write_dir:str, product:str = 'S2MSI2A', download:bool = False, cloudcoverage:float = 100, cov_thres:float = 0.5, to_file:bool = True, filename = None)->None:
+def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str, write_dir:str, product:str = 'S2MSI1C', download:bool = False, cloudcoverage:float = 100, cov_thres:float = 0.5, to_file:bool = True, filename = None)->None:
     """Download Sentinel 2 imagery.
 
     Args:
@@ -62,7 +62,7 @@ def Download_S2_data(AOI:str, user:str, passwd:str, Start_time:str, End_time:str
     products_df = S2_AOI_coverage(aoi_geometry, products_df)
     
     products_df = products_df[products_df['coverages']> cov_thres] 
-
+    print(products_df["filename"])
     products_df["tile"] = products_df.apply(lambda tile: tile["filename"].split("_")[5], axis = 1)
     
     if to_file:
