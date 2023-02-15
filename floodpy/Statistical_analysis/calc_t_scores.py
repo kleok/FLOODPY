@@ -100,7 +100,7 @@ def Calc_t_scores(Results_dir,
                      "of images before flood. Please increase the " 
                      "value of before_flood_days")
         
-    assert number_images_baseline < 3, error_message
+    assert number_images_baseline > 2, error_message
 
     # get value of flood image
     flood_index=SAR_stack_datetimes.index(flood_date)
