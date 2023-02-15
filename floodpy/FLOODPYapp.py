@@ -312,7 +312,7 @@ class FloodwaterEstimation:
         
         return 0
     
-    def run_preprocessing_S1_data(self, step_name):
+    def run_preprocessing_S1_data(self, step_name, overwrite = True):
         
         Get_images_for_baseline_stack(projectfolder = self.projectfolder,
                                       S1_dir = self.S1_dir,
@@ -326,7 +326,8 @@ class FloodwaterEstimation:
                           graph_dir = self.graph_dir,
                           S1_dir = self.S1_dir,
                           geojson_S1 = self.geojson_S1,
-                          Preprocessing_dir = self.Preprocessing_dir) 
+                          Preprocessing_dir = self.Preprocessing_dir,
+                          overwrite = overwrite) 
         
         return 0 
     

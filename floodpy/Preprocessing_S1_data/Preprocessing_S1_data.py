@@ -115,7 +115,7 @@ def check_coregistration_validity(Master_datetime, Baseline_datetimes, Preproces
        
     return list(Baseline_datetimes_refined)
 
-def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir, overwrite = True):
+def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir, overwrite):
     ''' 
     This function creates hdf5 stack that contains all the data for the stack.
     Assumes master is the latest image
@@ -209,7 +209,7 @@ def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir, 
     return os.path.join(Stack_dir,'SAR_Stack.h5')
 
 
-def _perform_single_GRD_preprocessing(gptcommand,master,outfile,Subset_AOI,xml_file,ext, overwrite=True):
+def _perform_single_GRD_preprocessing(gptcommand,master,outfile,Subset_AOI,xml_file,ext, overwrite):
     ''' 
     This function extracts information that shared among all SLC acquisitions
     in the stack. In uses a customized version of pair_preprocessing graph xml
@@ -230,7 +230,7 @@ def _perform_single_GRD_preprocessing(gptcommand,master,outfile,Subset_AOI,xml_f
     return 0
 
     
-def _perform_assembly_GRD_preprocessing(gptcommand, img1, img2 ,outfile, Subset_AOI, xml_file, ext, overwrite=True):
+def _perform_assembly_GRD_preprocessing(gptcommand, img1, img2 ,outfile, Subset_AOI, xml_file, ext, overwrite):
     ''' 
     This function extracts information that shared among all SLC acquisitions
     in the stack. In uses a customized version of pair_preprocessing graph xml
@@ -251,7 +251,7 @@ def _perform_assembly_GRD_preprocessing(gptcommand, img1, img2 ,outfile, Subset_
     subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     return 0
 
-def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_file, overwrite = True):
+def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_file, overwrite):
     
     """
     This function performs the preprocessing of the given pair from the
@@ -272,7 +272,7 @@ def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_f
     return 0
 
     
-def _perform_assembly_pair_preprocessing(gptcommand, master1, master2, slave1, slave2, outfile, Subset_AOI, xml_file, overwrite = True):
+def _perform_assembly_pair_preprocessing(gptcommand, master1, master2, slave1, slave2, outfile, Subset_AOI, xml_file, overwrite):
     
     """
     This function performs the preprocessing of the given pair from the
@@ -383,7 +383,8 @@ def Run_Preprocessing(projectfolder,
                       graph_dir,
                       S1_dir,
                       geojson_S1,
-                      Preprocessing_dir):
+                      Preprocessing_dir,
+                      overwrite):
     '''
     Performs all the preprocessing procedure of Sentinel-1 dataset
     '''
@@ -440,14 +441,16 @@ def Run_Preprocessing(projectfolder,
                                           flood_outfile,
                                           AOI_Polygon,
                                           single_grd_xml_file,
-                                          '.h5')
+                                          '.h5',
+                                          overwrite)
         
         _perform_single_GRD_preprocessing(gpt_exe,
                                           Flood_image_filename,
                                           flood_outfile,
                                           AOI_Polygon,
                                           single_grd_xml_tiff_file,
-                                          '.tif')
+                                          '.tif',
+                                          overwrite)
         flood_img1 = None
         flood_img2 = None
         
@@ -462,7 +465,8 @@ def Run_Preprocessing(projectfolder,
                                             flood_outfile,
                                             Subset_AOI,
                                             assembly_grd_xml_file,
-                                            '.h5')
+                                            '.h5',
+                                            overwrite)
         
         _perform_assembly_GRD_preprocessing(gpt_exe,
                                             flood_img1,
@@ -470,7 +474,8 @@ def Run_Preprocessing(projectfolder,
                                             flood_outfile,
                                             Subset_AOI,
                                             assembly_grd_xml_tiff_file,
-                                            '.tif')
+                                            '.tif',
+                                            overwrite)
     
     else:
         print("It seems that in order to cover you AOI more that 2 GRDs of the same orbit are needed.")
@@ -507,7 +512,8 @@ def Run_Preprocessing(projectfolder,
                                         Baseline_image_filename,
                                         baseline_outfile,
                                         AOI_Polygon,
-                                        single_baseline_grd_xml_file)
+                                        single_baseline_grd_xml_file,
+                                        overwrite)
             
         elif np.sum(S1_baseline_img_index) == 2:   
             
@@ -520,7 +526,8 @@ def Run_Preprocessing(projectfolder,
                                                  baseline_img2,
                                                  baseline_outfile,
                                                  Subset_AOI,
-                                                 assembly_baseline_grd_xml_file)
+                                                 assembly_baseline_grd_xml_file,
+                                                 overwrite)
             
         else:
             
@@ -545,7 +552,8 @@ def Run_Preprocessing(projectfolder,
     
     hdf5_stack_file=Create_dhf5_stack_file(Flood_datetime,
                                            Baseline_datetimes_refined,
-                                           Preprocessing_dir)
+                                           Preprocessing_dir,
+                                           overwrite)
     
     print ('All information from SAR imagery are stored at {}'.format(hdf5_stack_file))
     Plot_SAR_Stack(hdf5_stack_file,projectfolder)
