@@ -87,24 +87,27 @@ def Calc_t_scores(Results_dir,
     # calculate mean and std of baseline images
     #SAR_stack_datetimes = [element.decode("utf-8") for element in SAR_stack['Datetime_SAR'][:]]
     SAR_stack_datetimes = [element.decode('utf-8') for element in SAR_stack['Datetime_SAR'][:]]
-
-    print(SAR_stack_datetimes)
     
-
     baseline_common_dates= set(baseline_dates).intersection(SAR_stack_datetimes)
     indices_A = sorted([SAR_stack_datetimes.index(x) for x in baseline_common_dates])
     weights=np.cos(np.radians(SAR_stack["localIncidenceAngle"][:]))
     mean_baseline=np.mean(SAR_stack[band][indices_A,:,:], axis=0)*weights
     std_baseline=np.std(SAR_stack[band][indices_A,:,:], axis=0)*weights
     number_images_baseline=len(indices_A) # degrees of freedom
-    df=number_images_baseline
+    
+    error_message = ("Houston we've got a problem. We encountered a problem "
+                     "in the coregistration procedure due to a small number "
+                     "of images before flood. Please increase the " 
+                     "value of before_flood_days")
+        
+    assert number_images_baseline > 2, error_message
 
     # get value of flood image
     flood_index=SAR_stack_datetimes.index(flood_date)
     flood_value=SAR_stack[band][flood_index,:,:]*weights
     
     # t_score = (flood_value - mean(baseline)/(std(baseline)/sqrt(number_images_baseline))
-    t_scores = np.divide(flood_value-mean_baseline,std_baseline/np.sqrt(df))
+    t_scores = np.divide(flood_value-mean_baseline,std_baseline/np.sqrt(number_images_baseline))
     
     export_filename=os.path.join(Results_dir,'t_scores_{}.tif'.format(band))
 
