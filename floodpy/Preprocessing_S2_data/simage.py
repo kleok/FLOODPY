@@ -152,7 +152,7 @@ class senimage():
                             setattr(self, 'datapath_{}'.format(resolution), os.path.join(dirpath))
                             break
                     else:
-                        if fnmatch.fnmatch(file, "*_{}_*.jp2".format(band)):
+                        if fnmatch.fnmatch(file, "*_{}.jp2".format(band)):
                             logging.debug(os.path.join(dirpath, file))
                             setattr(self, 'datapath', os.path.join(dirpath))
                             break
@@ -163,7 +163,7 @@ class senimage():
                         if fnmatch.fnmatch(file, "*{}*{}m*.jp2".format(band, resolution)):
                             setattr(self, '{}'.format(band), {resolution: {"raw" : os.path.join(dirpath, file)}})
                     else:    
-                        if fnmatch.fnmatch(file, "*_{}_*.jp2".format(band)):
+                        if fnmatch.fnmatch(file, "*_{}.jp2".format(band)):
                             setattr(self, '{}'.format(band), {resolution: {"raw" : os.path.join(dirpath, file)}})
 
     @property
