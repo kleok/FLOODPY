@@ -33,7 +33,7 @@ def get_S2_background(aoi:str, username:str, password:str, start_time:str, end_t
     RGB_Background = os.path.join(save_path, "background.tif")
 
     #changing starting data in order to create S2 background with less clouds
-    start_time_dt = datetime.strptime(start_time, '%Y%m%d') - timedelta(days=30)
+    start_time_dt = datetime.strptime(start_time, '%Y%m%d') - timedelta(days=90)
     start_time = start_time_dt.strftime('%Y%m%d')
 
     data = Download_S2_data(
