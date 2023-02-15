@@ -115,7 +115,7 @@ def check_coregistration_validity(Master_datetime, Baseline_datetimes, Preproces
        
     return list(Baseline_datetimes_refined)
 
-def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir):
+def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir, overwrite = True):
     ''' 
     This function creates hdf5 stack that contains all the data for the stack.
     Assumes master is the latest image
@@ -132,8 +132,9 @@ def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir):
     
     output_stack_name=os.path.join(Stack_dir,'SAR_Stack.h5')
     
-    if os.path.exists(output_stack_name):
-        return os.path.join(Stack_dir,'SAR_Stack.h5')
+    if not overwrite:
+        if os.path.exists(output_stack_name):
+            return os.path.join(Stack_dir,'SAR_Stack.h5')
 
     #Create hdf5 file
     dt = h5py.special_dtype(vlen=str) 
@@ -208,83 +209,90 @@ def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir):
     return os.path.join(Stack_dir,'SAR_Stack.h5')
 
 
-def _perform_single_GRD_preprocessing(gptcommand,master,outfile,Subset_AOI,xml_file,ext):
+def _perform_single_GRD_preprocessing(gptcommand,master,outfile,Subset_AOI,xml_file,ext, overwrite=True):
     ''' 
     This function extracts information that shared among all SLC acquisitions
     in the stack. In uses a customized version of pair_preprocessing graph xml
     file and writes lat,lon,DEM, incidence angle as well as Polarimetric matrix
     information for the master image.
     '''
+    if not overwrite:
+        if os.path.exists(outfile+ext):
+            return 0
 
-    if not os.path.exists(outfile+ext):
-        argvs=[gptcommand, '-e',
-               xml_file,
-               '-Pfilein='+master,
-               '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-               '-Pfileout='+outfile]
+    argvs=[gptcommand, '-e',
+            xml_file,
+            '-Pfilein='+master,
+            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
+            '-Pfileout='+outfile]
 
-        subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    else:
-        pass
+    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    return 0
+
     
-def _perform_assembly_GRD_preprocessing(gptcommand, img1, img2 ,outfile, Subset_AOI, xml_file, ext):
+def _perform_assembly_GRD_preprocessing(gptcommand, img1, img2 ,outfile, Subset_AOI, xml_file, ext, overwrite=True):
     ''' 
     This function extracts information that shared among all SLC acquisitions
     in the stack. In uses a customized version of pair_preprocessing graph xml
     file and writes lat,lon,DEM, incidence angle as well as Polarimetric matrix
     information for the master image.
     '''
-    if not os.path.exists(outfile+ext):
-        argvs=[gptcommand, '-e',
-               xml_file,
-               '-Pfilein1='+img1,
-               '-Pfilein2='+img2,
-               '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-               '-Pfileout='+outfile+ext]
+    if not overwrite:
+        if os.path.exists(outfile+ext):
+            return 0
+        
+    argvs=[gptcommand, '-e',
+            xml_file,
+            '-Pfilein1='+img1,
+            '-Pfilein2='+img2,
+            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
+            '-Pfileout='+outfile+ext]
 
-        subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    else:
-        pass
+    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    return 0
 
-
-def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_file):
+def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_file, overwrite = True):
     
     """
     This function performs the preprocessing of the given pair from the
     input S1 SLC stack. 
     """
+    if not overwrite:
+        if os.path.exists(outfile+'.h5'):
+            return 0
 
-    if not os.path.exists(outfile+'.h5'):
-        argvs=[gptcommand, '-e',
-               xml_file,
-               '-Pfilein1='+master,
-               '-Pfilein2='+slave,
-               '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-               '-Pfileout='+outfile]
-        
-        subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    else:
-        pass
+    argvs=[gptcommand, '-e',
+            xml_file,
+            '-Pfilein1='+master,
+            '-Pfilein2='+slave,
+            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
+            '-Pfileout='+outfile]
     
-def _perform_assembly_pair_preprocessing(gptcommand, master1, master2, slave1, slave2, outfile, Subset_AOI, xml_file):
+    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    return 0
+
+    
+def _perform_assembly_pair_preprocessing(gptcommand, master1, master2, slave1, slave2, outfile, Subset_AOI, xml_file, overwrite = True):
     
     """
     This function performs the preprocessing of the given pair from the
     input S1 SLC stack. 
     """
-    if not os.path.exists(outfile+'.h5'):
-        argvs=[gptcommand, '-e',
-               xml_file,
-               '-Pfilein1='+master1,
-               '-Pfilein2='+master2,
-               '-Pfilein3='+slave1,
-               '-Pfilein4='+slave2,
-               '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-               '-Pfileout='+outfile]
+    if not overwrite:
+        if os.path.exists(outfile+'.h5'):
+            return 0
         
-        subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    else:
-        pass
+    argvs=[gptcommand, '-e',
+            xml_file,
+            '-Pfilein1='+master1,
+            '-Pfilein2='+master2,
+            '-Pfilein3='+slave1,
+            '-Pfilein4='+slave2,
+            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
+            '-Pfileout='+outfile]
+    
+    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    return 0
 
 def Plot_SAR_Stack(hdf5_stack_file,Plot_dir):
     '''
@@ -412,7 +420,6 @@ def Run_Preprocessing(projectfolder,
     Flood_image_filename = Flood_image
     Flood_datetime=os.path.basename(Flood_image)[17:32]
     print(" We coregister the images in respect with the acquisition of {}".format(os.path.basename(Flood_image_filename)))
-
 
     Flood_filename=os.path.basename(Flood_image_filename).split('.')[0]
     
