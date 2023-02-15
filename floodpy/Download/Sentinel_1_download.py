@@ -297,7 +297,7 @@ def Download_S1_data(scihub_username:str,
                          " value of before_flood_days".format(Start_time,
                                                               End_time))
             
-        assert len(products_df) < 3, error_message
+        assert len(products_df) > 2, error_message
 
         if download:
             # checking if we have already downloaded data
