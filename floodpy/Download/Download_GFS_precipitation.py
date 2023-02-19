@@ -146,7 +146,6 @@ def Get_GFS_data(GFS_variables:list,
         # Calculate the forecast horizon in hours based on the end_datetime
         horizon_hours = int((end_datetime-datetime.now()).total_seconds()//3600)
         days_before = int((datetime.now()-start_datetime).days)
-        bbox_gfs = [4, 55,  14, 60]
 
         gfs_dir = retrieve_GFS_data(GFS_variables[0], GFS_variables[1], days_before, horizon_hours, bbox_gfs, GFS_dir)
 
