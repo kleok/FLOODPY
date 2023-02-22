@@ -91,7 +91,7 @@ def Region_Growing(t_score_dataset: np.array,
 
     # Assert that the shapes of image and seed mask agree
     assert (t_score_dataset.shape==Flood_map.shape)
-    seeds=Flood_map.astype(np.bool)
+    seeds=Flood_map.astype(np.bool_)
     rows=t_score_dataset.shape[0]
     columns=t_score_dataset.shape[1]
     RG_result=np.copy(seeds)
