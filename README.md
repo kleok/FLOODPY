@@ -1,7 +1,6 @@
 # <img src="https://github.com/kleok/FLOODPY/blob/main/figures/Floodpy_logo.png" width="58"> FLOODPY - FLOOD PYthon toolbox 
 [![GitHub license](https://img.shields.io/badge/License-GNU3-green.svg)](https://github.com/kleok/FLOODPY)
-[![Release](https://img.shields.io/badge/Release-0.4.0-brightgreen)](https://github.com/kleok/FLOODPY)
-[![Facebook](https://img.shields.io/badge/Group-Flompy-yellowgreen.svg)](https://www.facebook.com/groups/876299509742954)
+[![Release](https://img.shields.io/badge/Release-0.6.0-brightgreen)](https://github.com/kleok/FLOODPY)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kleok/FLOODPY/issues)
 [![Documentation](https://readthedocs.org/projects/floodpy/badge/?version=latest)](https://floodpy.readthedocs.io/en/latest/)
 
@@ -17,11 +16,9 @@ This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS.
 
 The installation notes below are tested only on Linux.
 We provide some notes for Windows. 
-Recommended minimum setup: Python 3.9, SNAP 9.0
+Recommended setup: Python 3.9, SNAP 9.0
 
 ### 1.1 Install snap gpt including Sentinel-1 toolbox
-
-<b>[For linux users]</b>
 
  - Option 1: You can either run the automated script [aux/install_snap.sh](https://github.com/kleok/FLOODPY/blob/main/aux/install_snap.sh) for downloading and installing the official Linux installer from the official ESA repository. 
 
@@ -32,22 +29,10 @@ Recommended minimum setup: Python 3.9, SNAP 9.0
   ./install_snap.sh
   ```
 
-<b>[For windows users]</b>
-
-[Download](https://step.esa.int/main/download/snap-download/) and install manually ESA-SNAP.
-
 ### 1.2 Install aria for downloading Sentinel-1 acquisitions
-
-<b>[For linux users]</b>
 
 - Please also install aria using the following command:
     ``` sudo apt-get install aria2 ```
-
-<b>[For windows users]</b>
-
-- [Download](https://aria2.github.io/) and install aria2
-
-- Append the directory of the aria executable to PATH environmental variable. More info [here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)
 
 ### 1.3 Account setup for downloading Sentinel-1 acquisitions
 
@@ -64,8 +49,6 @@ traffic.
 Currently, FloodPy is based on ERA-5 data. ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS).
 You have to create a new account [here](https://cds.climate.copernicus.eu/user/register?destination=%2F%23!%2Fhome) if you don't own a user account yet. 
 After the creation of your profile, you will find your user id (UID) and your personal API Key on your User profile page. 
- 
-<b>[For linux users]</b>
 
 - Option 1: create manually a ```.cdsapirc``` file  under your ```HOME``` directory with the following information:
 
@@ -80,33 +63,14 @@ chmod +x install_CDS_key.sh
 ./install_CDS_key.sh
 ```
 
-<b>[For windows users]</b>
-
-- Create manually a ```.cdsapirc``` file  under your ```C:\Users\Username folder``` directory with the following information:
-
-```
-url: https://cds.climate.copernicus.eu/api/v2
-key: UID:personal API Key
-```
-
 More details for CDS API for windows can be found [here](https://confluence.ecmwf.int/display/CKB/How+to+install+and+use+CDS+API+on+Windows).
 
 ### 1.5 Download FLOODPY
 
-<b>[For linux users]</b>
-
-You have to download FLOODPY toolbox using the following command:
+You can download FLOODPY toolbox using the following command:
 ```git clone https://github.com/kleok/FLOODPY.git```
 
-<b>[For windows users]</b>
-
-- Option 1 : Download the most recent copy of the code. go to the GitHub page of FloodPy [here](https://github.com/kleok/FLOODPY), click on the green Code button, then download the repository as a ZIP file. 
-
-- Option 2 : Install git and clone FloodPy repo. Instructions can be found [here](https://www.simplilearn.com/tutorials/git-tutorial/git-installation-on-windows)
-
 ### 1.6 Create python environment for FLOODPY
-
-<b>[For linux users]</b>
 
 FLOODPY is written in Python3 and relies on several Python modules. You can install them by using conda or pip.
 
@@ -125,18 +89,7 @@ cd path_to_FLOODPY
 pip install .
 ```
 
-<b>[For windows users]</b>
-
-- Install anaconda. More info [here](https://docs.anaconda.com/anaconda/install/windows/)
-- Open anaconda promt and run the following command in order to create a new conda environment with required packages using the file [FLOODPY_win_env.yml](https://github.com/kleok/FLOODPY/blob/main/FLOODPY_win_env.yml).
-
-```
-conda env create -f path_to_FLOODPY/FLOODPY_win_env.yml
-```
-
 ### 1.7 Set environmental variables
-
-<b>[For linux users]</b>
 
 Append to .bashrc file
 ```
@@ -144,10 +97,6 @@ export FLOODPY_HOME= path_of_the_FLOODPY_folder
 export PYTHONPATH=${PYTHONPATH}:${FLOODPY_HOME}
 export PATH=${PATH}:${FLOODPY_HOME}/floodpy
 ```
-<b>[For windows users]</b>
-
-Append the path of the floodpy folder (e.g. C:/users/user/FLOODPY-main/floodpy) to PATH environmental variable. 
-More info about setting environmental variables [here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)
 
 ## 2. Running FLOODPY
 
@@ -197,7 +146,7 @@ GPTBIN_PATH = /home/kleanthis/snap9/bin/gpt
 # will be between Flood_datetime and Flood_datetime+after_flood_days
 # the closest Sentinel-1 to the Flood_datetime is picked
 #-------------------------------------------------------------
-# B1. The datetime of flood event (Format is YYYYMMDDTHHMMSS)
+# B1. The datetime (time in UTC) of flood event (Format is YYYYMMDDTHHMMSS)
 Flood_datetime = 20200921T030000
 
 # B2. Days before flood event for baseline stack construction
@@ -297,6 +246,20 @@ FLOODPYapp.py FLOODPYapp_template.cfg --dostep Floodwater_classification
 ## 3. Documentation and citation
 Algorithms implemented in the software are described in detail at our publications. If FLOODPY was useful for you, we encourage you to cite the following work: 
 - Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapping Using Sentinel-1 Intensity Time Series. Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
+
+You can also have a look at other works that are using FLOODPY:
+
+- Gounari 0., Falagas A., Karamvasis K., Tsironis V., Karathanassi V., 
+Karantzalos K.: Floodwater Mapping & Extraction of Flood-Affected 
+Agricultural Fields. Living Planet Symposium Bonn 23-27 May 2022.      
+https://drive.google.com/file/d/1HiGkep3wx45gAQT6Kq34CdECMpQc8GUV/view?usp=sharing
+
+- Zotou I., Karamvasis K., Karathanassi V., Tsihrintzis V.: Sensitivity of a coupled 1D/2D 
+model in input parameter variation exploiting Sentinel-1-derived flood map. 
+7th IAHR Europe Congress. September 7-9, 2022. Page 247 at 
+https://www.iahreuropecongress.org/PDF/IAHR2022_ABSTRACT_BOOK.pdf
+
+- Zotou I, Karamvasis K, Karathanassi V, Tsihrintzis VA. Potential of Two SAR-Based Flood Mapping Approaches in Supporting an Integrated 1D/2D HEC-RAS Model. Water. 2022; 14(24):4020. https://doi.org/10.3390/w14244020 
 
 ## 4. Contact us
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome! :heart:
