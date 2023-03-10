@@ -518,6 +518,7 @@ def Run_Preprocessing(projectfolder,
         elif np.sum(S1_baseline_img_index) == 2:   
             
             baseline_img1, baseline_img2 = S1_images_df['S1_GRD'][S1_baseline_img_index]
+            Subset_AOI = gpd.read_file(geojson_S1)['geometry'][0]
             
             _perform_assembly_pair_preprocessing(gpt_exe,
                                                  flood_img1,
