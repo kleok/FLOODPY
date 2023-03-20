@@ -189,6 +189,7 @@ class FloodwaterEstimation:
         self.scriptsfolder  = self.template_dict['src_dir']
         self.gptcommand     = self.template_dict['GPTBIN_PATH']
         self.snap_dir       = self.template_dict['snap_dir']
+        self.wget_path      = self.template_dict['WGET_PATH']
         
         # Flood event temporal information
         self.flood_datetime = datetime.datetime.strptime(self.template_dict['Flood_datetime'],'%Y%m%dT%H%M%S')
@@ -289,13 +290,14 @@ class FloodwaterEstimation:
                           End_time = self.End_time,
                           relOrbit = self.relOrbit,
                           flood_datetime = self.flood_datetime,
-                          time_sleep=1, # 1 minute
+                          time_sleep=1, # in seconds
                           max_tries=100,
                           download=True)
 
         download_orbits(snap_dir = self.snap_dir,
                 temp_export_dir = self.temp_export_dir,
-                S1_dir = self.S1_dir)
+                S1_dir = self.S1_dir,
+                wget_path = self.wget_path)
         
         print("Sentinel-1 data and orbit information have been successfully downloaded")
         

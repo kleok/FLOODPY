@@ -1,4 +1,4 @@
-name: floodpy_pip
+name: floodpy
 channels:
   - conda-forge
   - https://conda.anaconda.org/conda-forge/
