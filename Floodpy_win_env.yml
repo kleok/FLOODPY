@@ -8,6 +8,7 @@ dependencies:
 - richdem
 - jupyter
 - scikit-image
+- h5py
 - pip
 - pip:
   - .
