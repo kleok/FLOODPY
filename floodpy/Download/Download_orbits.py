@@ -36,10 +36,12 @@ def _get_orbit_filenames(start_datetime:datetime.datetime, end_datetime:datetime
                                 time2 = time2)
     
     os.chdir(temp_export_dir)
-    if platform.system().startswith('Win'):
-        string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
-    else:
-        raise Error("System is not supported! Only windows and Linux systems are supported")
+    string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
+    
+    # if platform.system().startswith('Win'):
+    #     string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
+    # else:
+    #     raise ValueError("System is not supported! Only windows and Linux systems are supported")
 
     subprocess.Popen(string_command, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL).wait()
 
