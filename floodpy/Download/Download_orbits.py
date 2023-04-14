@@ -6,14 +6,16 @@ import datetime
 import pandas as pd
 import requests
 from tqdm import tqdm
+import platform
 
-def _get_orbit_filenames(start_datetime:datetime.datetime, end_datetime:datetime.datetime, temp_export_dir:str, orbit_type:str = 'AUX_POEORB')->str:
+def _get_orbit_filenames(start_datetime:datetime.datetime, end_datetime:datetime.datetime, temp_export_dir:str, wget_path:str = "", orbit_type:str = 'AUX_POEORB')->str:
     """Gets orbit filenames,
 
     Args:
         start_datetime (datetime.datetime): Starting date
         end_datetime (datetime.datetime): Ending date
         temp_export_dir (str): Temporary directory
+        wget_path (str, optional): Windows users must provide the full path to wget executable. Defaults to "".
         orbit_type (str, optional): Type of orbit. Defaults to 'AUX_POEORB'
 
     Returns:
@@ -34,12 +36,15 @@ def _get_orbit_filenames(start_datetime:datetime.datetime, end_datetime:datetime
                                 time2 = time2)
     
     os.chdir(temp_export_dir)
-    string_command = 'wget --no-check-certificate --output-document=query_results.json "{url_request}"'.format(url_request=url_request)
+    string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
+    
+    # if platform.system().startswith('Win'):
+    #     string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
+    # else:
+    #     raise ValueError("System is not supported! Only windows and Linux systems are supported")
+
     subprocess.Popen(string_command, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL).wait()
 
-    #os.system('wget --no-check-certificate --output-document=query_results.json "{url_request}"'.format(url_request=url_request))
-    
-    
     return os.path.join(temp_export_dir,"query_results.json")
 
 
@@ -94,7 +99,7 @@ def downloads_orbit_filename(orbit_dictionary, snap_orbit_dir,S1_filename, S1_da
             
     
  
-def download_orbits(snap_dir:str, temp_export_dir:str, S1_dir:str)->None:
+def download_orbits(snap_dir:str, temp_export_dir:str, S1_dir:str, wget_path:str = "")->None:
     """
     Download Sentinel-1 orbits
 
@@ -102,6 +107,7 @@ def download_orbits(snap_dir:str, temp_export_dir:str, S1_dir:str)->None:
         snap_dir (str): Directory that snap stores Sentinel-1 orbits files.
         temp_export_dir (str): Temporary directory.
         S1_dir (str): Directory the Sentinel-1 images are stored.
+        wget_path (str, optional): Windows users must provide the full path to wget executable. Defaults to "".
     """
     
     S1_products = os.path.join(S1_dir,'S1_products.csv')
@@ -117,13 +123,13 @@ def download_orbits(snap_dir:str, temp_export_dir:str, S1_dir:str)->None:
         end_datetime=S1_datetime+datetime.timedelta(hours=4)
         start_datetime=S1_datetime-datetime.timedelta(hours=6)
     
-        orbits_json=_get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, orbit_type='AUX_RESORB')
+        orbits_json=_get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, wget_path = wget_path,  orbit_type='AUX_RESORB')
         
         orbits_df=pd.read_json(orbits_json)
         if orbits_df['feed']['opensearch:totalResults']=='0': # downloads precise orbit files
             end_datetime=S1_datetime+datetime.timedelta(hours=48)
             start_datetime=S1_datetime-datetime.timedelta(hours=48)
-            orbits_json=_get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, orbit_type='AUX_POEORB')
+            orbits_json=_get_orbit_filenames(start_datetime, end_datetime, temp_export_dir, wget_path = wget_path, orbit_type='AUX_POEORB')
             orbits_df=pd.read_json(orbits_json)
             orbit_dictionary=orbits_df['feed']['entry']
             snap_POEORB_dir = os.path.join(snap_dir, 'POEORB')
