@@ -78,15 +78,20 @@ def _Select_slave_image(baseline_filename):
     This function returns the secondary image from a given pair of images
     # changeeee
     '''
-    All_data=h5py.File(baseline_filename,'r')['bands']
-    Baseline_data=[All_data[data] for data in All_data if 'slv' in data]
-    All_data=None
+    try:
+        All_data=h5py.File(baseline_filename,'r')['bands']
+        Baseline_data=[All_data[data] for data in All_data if 'slv' in data]
+        All_data=None
+    except OSError:
+        print("We cannot read the data for {}".format(baseline_filename))
+        print("This is possibly due to failed coregistration")
+        Baseline_data=None
     return Baseline_data
 
-def check_coregistration_validity(Master_datetime, Baseline_datetimes, Preprocessing_dir, valid_ratio = 0.25):
+def check_coregistration_validity(Master_datetime, Baseline_datetimes, Preprocessing_dir, valid_ratio = 0.85):
     '''
     Discards the pairs of images that the coregistration was not sucessful.
-    Assumes that if the coregistration is not sucessful the result is a numpy 
+    Assumes that if the coregistration is not successful if the result is a numpy 
     full of zeros!
     '''
     
@@ -97,19 +102,24 @@ def check_coregistration_validity(Master_datetime, Baseline_datetimes, Preproces
         print (baseline_datetime)
         
         temp_baseline_data=_Select_slave_image(os.path.join(Preprocessing_dir,baseline_datetime+'.h5'))
-        temp_VH=temp_baseline_data[0][:]
-        num_pixels = temp_VH.shape[0]*temp_VH.shape[1]
         
-        if np.mean(temp_VH)==0.0:
+        if temp_baseline_data is None:
             drop_indices.append(image_index)
             print ('Dropped... {}'.format(baseline_datetime))
-            
-        elif np.sum(temp_VH==0.0)>(num_pixels*valid_ratio):
-            drop_indices.append(image_index)
-            print ('Dropped... {}'.format(baseline_datetime))
-            
         else:
-            pass
+            temp_VH=temp_baseline_data[0][:]
+            num_pixels = temp_VH.shape[0]*temp_VH.shape[1]
+            
+            if np.mean(temp_VH)==0.0:
+                drop_indices.append(image_index)
+                print ('Dropped... {}'.format(baseline_datetime))
+                
+            elif np.sum(temp_VH==0.0)>(num_pixels*valid_ratio):
+                drop_indices.append(image_index)
+                print ('Dropped... {}'.format(baseline_datetime))
+                
+            else:
+                pass
         
     Baseline_datetimes_refined = np.delete(Baseline_datetimes_refined,drop_indices)
        
@@ -267,8 +277,15 @@ def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_f
             '-Pfilein2='+slave,
             '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
             '-Pfileout='+outfile]
-    
-    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    try:
+        subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+    except:
+        print('---------------------------')
+        print("Coregistration between \n {image1} \n and \n {image2} \n has failed!".format(image1 = os.path.basename(master),
+                                                                                            image2 = os.path.basename(slave)))
+        print("We have to drop {image2} image from the stack processing.".format(image2 = os.path.basename(slave)))
+        print('---------------------------')
     return 0
 
     
@@ -545,9 +562,9 @@ def Run_Preprocessing(projectfolder,
     Baseline_datetimes_refined = check_coregistration_validity(Flood_datetime,
                                                             Baseline_datetimes,
                                                             Preprocessing_dir,
-                                                            0.5)
+                                                            0.85)
     print('Baseline Stack images:')
-    [print(image) for image in Baseline_datetimes]
+    [print(image) for image in Baseline_datetimes_refined]
     print('Flood image:')
     print(Flood_datetime)
     
