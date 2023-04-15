@@ -230,18 +230,27 @@ class FloodwaterEstimation:
         [os.mkdir(directory) for directory in self.directories if not os.path.exists(directory)]
 
         if self.AOI_File.upper() == "NONE":
+            # creates a geojson file with the bounding box of the 
+            # provided Lons, Lats
+
             self.bbox           = [self.LONMIN,
                                    self.LATMIN,
                                    self.LONMAX,
                                    self.LATMAX,] 
 
-            self.geojson_S1     = Coords_to_geojson(self.bbox,
+            self.geojson_bbox     = Coords_to_geojson(self.bbox,
                                                     self.projectfolder,
-                                                    '{}_AOI.geojson'.format(self.projectname))
+                                                    '{}_bbox_AOI.geojson'.format(self.projectname))
         else:
+            # reads the provided vector file, calculated the lats,lons of the 
+            # bounding box and writes a geojson file.
+            
             self.bbox, self.geojson_S1 = Input_vector_to_geojson(self.AOI_File,
                                                                  self.projectfolder,
                                                                  '{}_AOI.geojson'.format(self.projectname))
+            self.geojson_bbox     = Coords_to_geojson(self.bbox,
+                                                    self.projectfolder,
+                                                    '{}_bbox_AOI.geojson'.format(self.projectname))
 
         #Precipitation information
         self.days_back     = int(self.template_dict['days_back'])
@@ -284,7 +293,7 @@ class FloodwaterEstimation:
                           aria_username = self.aria_username,
                           aria_password = self.aria_password,
                           S1_dir = self.S1_dir,
-                          geojson_S1 = self.geojson_S1,
+                          geojson_S1 = self.geojson_bbox,
                           S1_type = self.S1_type,
                           Start_time = self.Start_time,
                           End_time = self.End_time,
@@ -316,7 +325,7 @@ class FloodwaterEstimation:
                           gpt_exe = self.gptcommand,
                           graph_dir = self.graph_dir,
                           S1_dir = self.S1_dir,
-                          geojson_S1 = self.geojson_S1,
+                          geojson_S1 = self.geojson_bbox,
                           Preprocessing_dir = self.Preprocessing_dir,
                           overwrite = overwrite) 
         
@@ -354,7 +363,7 @@ class FloodwaterEstimation:
 
     def run_download_S2_background(self, step_name):
        
-        self.S2_RGB_background = get_S2_background(self.geojson_S1,
+        self.S2_RGB_background = get_S2_background(self.geojson_bbox,
                                         self.scihub_username, 
                                         self.scihub_password, 
                                         self.Start_time,
@@ -367,7 +376,7 @@ class FloodwaterEstimation:
 
         [self.LC_worldcover,
         self.LC_worldcover_categories,
-        self.LC_worldcover_colors] = worldcover(self.geojson_S1,
+        self.LC_worldcover_colors] = worldcover(self.geojson_bbox,
                                                 self.Land_Cover)
 
 
