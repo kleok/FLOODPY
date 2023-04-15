@@ -36,7 +36,10 @@ def _get_orbit_filenames(start_datetime:datetime.datetime, end_datetime:datetime
                                 time2 = time2)
     
     os.chdir(temp_export_dir)
-    string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
+    if str(wget_path)=='""':
+        string_command = f'"wget" --no-check-certificate --output-document=query_results.json "{url_request}"'
+    else:
+        string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
     
     # if platform.system().startswith('Win'):
     #     string_command = f'{os.path.join(wget_path, "wget")} --no-check-certificate --output-document=query_results.json "{url_request}"'
@@ -109,7 +112,7 @@ def download_orbits(snap_dir:str, temp_export_dir:str, S1_dir:str, wget_path:str
         S1_dir (str): Directory the Sentinel-1 images are stored.
         wget_path (str, optional): Windows users must provide the full path to wget executable. Defaults to "".
     """
-    
+    print(wget_path)
     S1_products = os.path.join(S1_dir,'S1_products.csv')
     assert os.path.exists(S1_products)
     S1_filenames=pd.read_csv(S1_products)
