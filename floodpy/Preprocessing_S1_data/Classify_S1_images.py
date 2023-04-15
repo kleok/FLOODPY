@@ -66,6 +66,7 @@ def Get_images_for_baseline_stack(projectfolder,
     flood_S1_datetime = pd.Timestamp(flood_S1_image[17:32])
     
     Good_images_for_baseline['baseline'].loc[flood_S1_datetime:]=False
+    Good_images_for_baseline = Good_images_for_baseline[~Good_images_for_baseline.index.duplicated(keep='first')]
     assert np.all(S1_df.index==Good_images_for_baseline.index)==True
     
     Good_images_for_baseline['S1_GRD']=S1_df['S1_GRD']
