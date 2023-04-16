@@ -11,46 +11,12 @@ from shapely.geometry import Point, Polygon
 from osgeo import gdal
 import shapely.wkt
 from tqdm import tqdm
-
-def _shapely_to_snap_polygon(AOI):
-    
-    x, y = AOI.exterior.coords.xy
-    
-    str_polygon=str(AOI)
-    str_polygon = str_polygon.split('))')[0]
-    
-    last_coords = ', {} {}))'.format(x[-1], y[-1])
-    
-    snap_polygon = str_polygon+last_coords
-    return snap_polygon
-    
-def _extract_geo_bounds(vector_file, buffer_distance=0.01):
-    ''' 
-    This function returns a list of coordinates of 
-    the bounding box of the given vector file.
-    '''
-    
-    pol1 = gpd.GeoDataFrame.from_file(vector_file)
-
-    bbox_old = pol1.total_bounds
-    bbox=[bbox_old[0]-buffer_distance,
-          bbox_old[1]-buffer_distance,
-          bbox_old[2]-buffer_distance,
-          bbox_old[3]-buffer_distance ]
-
-    p1 = Point(bbox[0], bbox[3])
-    p2 = Point(bbox[2], bbox[3])
-    p3 = Point(bbox[2], bbox[1])
-    p4 = Point(bbox[0], bbox[1])
-
-    np1 = (p1.coords.xy[0][0], p1.coords.xy[1][0])
-    np2 = (p2.coords.xy[0][0], p2.coords.xy[1][0])
-    np3 = (p3.coords.xy[0][0], p3.coords.xy[1][0])
-    np4 = (p4.coords.xy[0][0], p4.coords.xy[1][0])
-    
-    bb_polygon = Polygon([np1, np2, np3, np4])
-    
-    return str(bb_polygon)
+from floodpy.Preprocessing_S1_data.snap_preprocessing_funcs import perform_single_1GRD_preprocessing
+from floodpy.Preprocessing_S1_data.snap_preprocessing_funcs import perform_single_2GRD_preprocessing
+from floodpy.Preprocessing_S1_data.snap_preprocessing_funcs import perform_pair_preprocessing_1GRD_1GRD
+from floodpy.Preprocessing_S1_data.snap_preprocessing_funcs import perform_pair_preprocessing_1GRD_2GRD
+from floodpy.Preprocessing_S1_data.snap_preprocessing_funcs import perform_pair_preprocessing_2GRD_1GRD
+from floodpy.Preprocessing_S1_data.snap_preprocessing_funcs import perform_pair_preprocessing_2GRD_2GRD
 
 def _refine_geo_bounds(S1_products_df, S1_filename, bb_polygon):
     '''
@@ -72,7 +38,6 @@ def _refine_geo_bounds(S1_products_df, S1_filename, bb_polygon):
     
     return subset_polygon.iloc[0]
   
-
 def _Select_slave_image(baseline_filename):
     ''' 
     This function returns the secondary image from a given pair of images
@@ -218,99 +183,6 @@ def Create_dhf5_stack_file(Master_datetime, Slave_datetimes, Preprocessing_dir, 
 
     return os.path.join(Stack_dir,'SAR_Stack.h5')
 
-
-def _perform_single_GRD_preprocessing(gptcommand,master,outfile,Subset_AOI,xml_file,ext, overwrite):
-    ''' 
-    This function extracts information that shared among all SLC acquisitions
-    in the stack. In uses a customized version of pair_preprocessing graph xml
-    file and writes lat,lon,DEM, incidence angle as well as Polarimetric matrix
-    information for the master image.
-    '''
-    if not overwrite:
-        if os.path.exists(outfile+ext):
-            return 0
-
-    argvs=[gptcommand, '-e',
-            xml_file,
-            '-Pfilein='+master,
-            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-            '-Pfileout='+outfile]
-
-    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    return 0
-
-    
-def _perform_assembly_GRD_preprocessing(gptcommand, img1, img2 ,outfile, Subset_AOI, xml_file, ext, overwrite):
-    ''' 
-    This function extracts information that shared among all SLC acquisitions
-    in the stack. In uses a customized version of pair_preprocessing graph xml
-    file and writes lat,lon,DEM, incidence angle as well as Polarimetric matrix
-    information for the master image.
-    '''
-    if not overwrite:
-        if os.path.exists(outfile+ext):
-            return 0
-        
-    argvs=[gptcommand, '-e',
-            xml_file,
-            '-Pfilein1='+img1,
-            '-Pfilein2='+img2,
-            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-            '-Pfileout='+outfile+ext]
-
-    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    return 0
-
-def _perform_pair_preprocessing(gptcommand,master,slave,outfile,Subset_AOI,xml_file, overwrite):
-    
-    """
-    This function performs the preprocessing of the given pair from the
-    input S1 SLC stack. 
-    """
-    if not overwrite:
-        if os.path.exists(outfile+'.h5'):
-            return 0
-
-    argvs=[gptcommand, '-e',
-            xml_file,
-            '-Pfilein1='+master,
-            '-Pfilein2='+slave,
-            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-            '-Pfileout='+outfile]
-    try:
-        subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-
-    except:
-        print('---------------------------')
-        print("Coregistration between \n {image1} \n and \n {image2} \n has failed!".format(image1 = os.path.basename(master),
-                                                                                            image2 = os.path.basename(slave)))
-        print("We have to drop {image2} image from the stack processing.".format(image2 = os.path.basename(slave)))
-        print('---------------------------')
-    return 0
-
-    
-def _perform_assembly_pair_preprocessing(gptcommand, master1, master2, slave1, slave2, outfile, Subset_AOI, xml_file, overwrite):
-    
-    """
-    This function performs the preprocessing of the given pair from the
-    input S1 SLC stack. 
-    """
-    if not overwrite:
-        if os.path.exists(outfile+'.h5'):
-            return 0
-        
-    argvs=[gptcommand, '-e',
-            xml_file,
-            '-Pfilein1='+master1,
-            '-Pfilein2='+master2,
-            '-Pfilein3='+slave1,
-            '-Pfilein4='+slave2,
-            '-Ppolygon='+_shapely_to_snap_polygon(Subset_AOI),
-            '-Pfileout='+outfile]
-    
-    subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    return 0
-
 def Plot_SAR_Stack(hdf5_stack_file,Plot_dir):
     '''
     Plotting functionality of SAR stack
@@ -318,16 +190,6 @@ def Plot_SAR_Stack(hdf5_stack_file,Plot_dir):
     
     plot_stack=h5py.File(hdf5_stack_file,'r')
     number_of_images=plot_stack['Datetime_SAR'].shape[0]
-
-    # lats=np.nanmean(plot_stack['latitude'][:], axis=1)
-    # lons=np.nanmean(plot_stack['longitude'][:], axis=0)
-
-    # min_lat = np.min(lats)
-    # min_lon = np.min(lons)
-    # max_lat = np.max(lats)
-    # max_lon = np.max(lons)
-    
-    # del lats, lons
 
     Static_Datasets=['elevation', 'localIncidenceAngle']
     
@@ -422,23 +284,32 @@ def Run_Preprocessing(projectfolder,
     assert (os.path.exists(Flood_image))
     
     # SNAP graphs that will be used for preprocessing
-    # AOI is covered by a single GRD
-    single_grd_xml_file = os.path.join(graph_dir,'preprocessing_single_GRD.xml')
-    single_grd_xml_tiff_file = os.path.join(graph_dir,'preprocessing_single_GRD_tiff.xml')
-    single_baseline_grd_xml_file = os.path.join(graph_dir,'preprocessing_GRD_pair.xml')
-    
-    # AOI is covered by two GRDs
-    assembly_grd_xml_file = os.path.join(graph_dir,'preprocessing_assembly_GRD.xml')
-    assembly_grd_xml_tiff_file = os.path.join(graph_dir,'preprocessing_assembly_GRD_tiff.xml')
-    assembly_baseline_grd_xml_file = os.path.join(graph_dir,'preprocessing_assembly_GRD_pair.xml')
+    SNAP_GRAPHS = {
+                   '1GRD_h5' : os.path.join(graph_dir,
+                                            'preprocessing_primary_1GRD.xml'),
+                   '1GRD_tiff' : os.path.join(graph_dir,
+                                              'preprocessing_primary_1GRD_tiff.xml'),
+                   '2GRD_h5' : os.path.join(graph_dir,
+                                            'preprocessing_primary_2GRDs.xml'),
+                   '2GRD_tiff' : os.path.join(graph_dir,
+                                              'preprocessing_primary_2GRDs_tiff.xml'),
+                   'pair_1GRD_1GRD' : os.path.join(graph_dir,
+                                                   'preprocessing_pair_primary_1GRD_secondary_1GRD.xml'),
+                   'pair_1GRD_2GRD' : os.path.join(graph_dir,
+                                                   'preprocessing_pair_primary_1GRD_secondary_2GRD.xml'),
+                   'pair_2GRD_1GRD' : os.path.join(graph_dir,
+                                                   'preprocessing_pair_primary_2GRD_secondary_1GRD.xml'),
+                   'pair_2GRD_2GRD' : os.path.join(graph_dir,
+                                                   'preprocessing_pair_primary_2GRD_secondary_2GRD.xml'),
+                   }
 
     S1_images_df = pd.read_csv(os.path.join(S1_dir,'baseline_images.csv'))   
 
     # Flood image is selected as Primary/master image
     Flood_image_filename = Flood_image
     Flood_datetime=os.path.basename(Flood_image)[17:32]
-    print(" We coregister the images in respect with the acquisition of {}".format(os.path.basename(Flood_image_filename)))
-
+    print(" The generated Sentinel-1 backscatter stack will have be have as primary image the acquisition of : \n {}".format(os.path.basename(Flood_image_filename)))
+    print("\n")
     Flood_filename=os.path.basename(Flood_image_filename).split('.')[0]
     
     # now we check if assembly functionalities are required for master image
@@ -448,51 +319,55 @@ def Run_Preprocessing(projectfolder,
     
     flood_outfile=os.path.join(Preprocessing_dir,Flood_datetime)
     print ('Processing of flood image {}'.format(os.path.basename(Flood_datetime)))
+    print("\n")
     
     if np.sum(S1_flood_img_index) == 1: # we have only a single GRD for the flood date
         AOI_Polygon=_refine_geo_bounds(S1_products,Flood_filename , geojson_S1)
         assert str(AOI_Polygon) !='POLYGON EMPTY' 
         
-        _perform_single_GRD_preprocessing(gpt_exe,
+        perform_single_1GRD_preprocessing(gpt_exe,
                                           Flood_image_filename,
                                           flood_outfile,
                                           AOI_Polygon,
-                                          single_grd_xml_file,
+                                          SNAP_GRAPHS['1GRD_h5'],
                                           '.h5',
                                           overwrite)
         
-        _perform_single_GRD_preprocessing(gpt_exe,
+        perform_single_1GRD_preprocessing(gpt_exe,
                                           Flood_image_filename,
                                           flood_outfile,
                                           AOI_Polygon,
-                                          single_grd_xml_tiff_file,
+                                          SNAP_GRAPHS['1GRD_tiff'],
                                           '.tif',
                                           overwrite)
         flood_img1 = None
         flood_img2 = None
+        num_flood_grd_tiles = 1
         
     elif np.sum(S1_flood_img_index) == 2: # we have two GRD images to assebly for the flood date
         
         flood_img1, flood_img2 = S1_images_df['S1_GRD'][S1_flood_img_index]
+        print(flood_img1, flood_img2)
         Subset_AOI = gpd.read_file(geojson_S1)['geometry'][0]
         
-        _perform_assembly_GRD_preprocessing(gpt_exe,
+        perform_single_2GRD_preprocessing(gpt_exe,
                                             flood_img1,
                                             flood_img2,
                                             flood_outfile,
                                             Subset_AOI,
-                                            assembly_grd_xml_file,
+                                            SNAP_GRAPHS['2GRD_h5'],
                                             '.h5',
                                             overwrite)
         
-        _perform_assembly_GRD_preprocessing(gpt_exe,
+        perform_single_2GRD_preprocessing(gpt_exe,
                                             flood_img1,
                                             flood_img2,
                                             flood_outfile,
                                             Subset_AOI,
-                                            assembly_grd_xml_tiff_file,
+                                            SNAP_GRAPHS['2GRD_tiff'],
                                             '.tif',
                                             overwrite)
+        num_flood_grd_tiles = 2
     
     else:
         print("It seems that in order to cover you AOI more that 2 GRDs of the same orbit are needed.")
@@ -519,40 +394,86 @@ def Run_Preprocessing(projectfolder,
         S1_baseline_img_index = np.abs(time_diffs_df.dt.total_seconds())<60
         baseline_outfile=os.path.join(Preprocessing_dir,Baseline_datetime)
         print ('Processing of baseline image {}'.format(os.path.basename(Baseline_datetime)))
+        print("\n")
         Baseline_datetimes.append(Baseline_datetime)
 
         # We need to coregister the assembly products in order to work         
         if np.sum(S1_baseline_img_index) == 1:
-             
-            _perform_pair_preprocessing(gpt_exe,
-                                        Flood_image_filename,
-                                        Baseline_image_filename,
-                                        baseline_outfile,
-                                        AOI_Polygon,
-                                        single_baseline_grd_xml_file,
-                                        overwrite)
+
+            if num_flood_grd_tiles == 1:
+
+                print("Coregistrating the primary image (1 GRD): \n {}".format(os.path.basename(Flood_image_filename)))
+                print("with secondary image (1 GRD): \n {}".format(os.path.basename(Baseline_image_filename)))
+                print("\n")
+
+                perform_pair_preprocessing_1GRD_1GRD(gpt_exe,
+                                                        Flood_image_filename,
+                                                        Baseline_image_filename,
+                                                        baseline_outfile,
+                                                        AOI_Polygon,
+                                                        SNAP_GRAPHS['pair_1GRD_1GRD'],
+                                                        overwrite)
+            elif num_flood_grd_tiles==2:
+            
+                print("Coregistrating the primary image (2 GRDs): \n {} \n {}".format(os.path.basename(flood_img1),
+                                                                            os.path.basename(flood_img2)))
+                print("with secondary image (1 GRD): \n {}".format(os.path.basename(Baseline_image_filename)))
+                print("\n")
+
+                perform_pair_preprocessing_2GRD_1GRD(gpt_exe,
+                                                        flood_img1,
+                                                        flood_img2,
+                                                        Baseline_image_filename,
+                                                        baseline_outfile,
+                                                        AOI_Polygon,
+                                                        SNAP_GRAPHS['pair_2GRD_1GRD'],
+                                                        overwrite)
             
         elif np.sum(S1_baseline_img_index) == 2:   
             
             baseline_img1, baseline_img2 = S1_images_df['S1_GRD'][S1_baseline_img_index]
             Subset_AOI = gpd.read_file(geojson_S1)['geometry'][0]
             
-            _perform_assembly_pair_preprocessing(gpt_exe,
-                                                 flood_img1,
-                                                 flood_img2,
-                                                 baseline_img1,
-                                                 baseline_img2,
-                                                 baseline_outfile,
-                                                 Subset_AOI,
-                                                 assembly_baseline_grd_xml_file,
-                                                 overwrite)
+            if num_flood_grd_tiles == 1:
             
+                print("Coregistrating the primary image (1 GRD): \n {}".format(os.path.basename(Flood_image_filename)))
+                print("with secondary image (2 GRDs): \n {} \n {}".format(os.path.basename(baseline_img1),
+                                                                  os.path.basename(baseline_img2)))
+                print("\n")
+
+                perform_pair_preprocessing_1GRD_2GRD(gpt_exe,
+                                                    Flood_image_filename,
+                                                    baseline_img1,
+                                                    baseline_img2,
+                                                    baseline_outfile,
+                                                    Subset_AOI,
+                                                    SNAP_GRAPHS['pair_1GRD_2GRD'],
+                                                    overwrite)
+
+            
+            elif num_flood_grd_tiles==2:
+            
+                print("Coregistrating the primary image (2 GRDs): \n {} \n {}".format(os.path.basename(flood_img1),
+                                                                            os.path.basename(flood_img2)))
+                print("with secondary image (2 GRDs): \n {} \n {}".format(os.path.basename(baseline_img1),
+                                                                  os.path.basename(baseline_img2)))
+                print("\n")
+
+                perform_pair_preprocessing_2GRD_2GRD(gpt_exe,
+                                                    flood_img1,
+                                                    flood_img2,
+                                                    baseline_img1,
+                                                    baseline_img2,
+                                                    baseline_outfile,
+                                                    Subset_AOI,
+                                                    SNAP_GRAPHS['pair_2GRD_2GRD'],
+                                                    overwrite)
+                
         else:
-            
-            print("It seems that in order to cover you AOI more that 2 GRDs of the same orbit are needed.")
+            assert (np.sum(S1_baseline_img_index)>2)
+            print("It seems that your AOI requires more than 2 GRDs (of the same orbit).")
             print("Currently we dont support this.")
             print("Please use a smaller AOI.")
-            #return
         
         # We drop each baseline image after the processing
         S1_images_df.drop(S1_images_df.index[S1_baseline_img_index], inplace=True)
