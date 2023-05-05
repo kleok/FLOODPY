@@ -10,6 +10,10 @@ import pandas as pd
 import subprocess
 from datetime import datetime
 import geopandas as gpd
+import platform
+
+def is_platform_linux():
+    return platform.system() == "Linux"
 
 def check_downloaded_data(S1_dir:str,product_df_suffle:pd.DataFrame)-> tuple:
     """
@@ -268,7 +272,7 @@ def Download_S1_data(scihub_username:str,
     """
     # Decide what download functionality we should use.
     # Sentinelsat for recent imagery and aria2c for older imagery
-    if (datetime.now() - flood_datetime).days > 100:
+    if (datetime.now() - flood_datetime).days > 100 and is_platform_linux():
         download_variant = 'aria2c'
     else:
         download_variant = 'sentinelsat'
