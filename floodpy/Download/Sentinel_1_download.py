@@ -78,7 +78,20 @@ def download_products(scihub_username:str,
                               scihub_password,
                               'https://scihub.copernicus.eu/dhus')
             # download single scene by known product id
-            api.download(product)
+            try_num = 0
+            tries = 3
+            download = False
+            while try_num < tries and not download:
+                try:
+                    api.download(product)
+                    download= True
+                except :
+                    print("The requested product is not online {}".format(product))
+                    print("We will request this product again in 30 min...")
+                    download= False
+                    time.sleep(1800)
+
+
     elif download_variant == 'aria2c':
         # more info at: https://docs.asf.alaska.edu/api/tools/
         for index, product in products_df.iterrows():
