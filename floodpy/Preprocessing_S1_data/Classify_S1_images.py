@@ -44,7 +44,7 @@ def Get_images_for_baseline_stack(projectfolder,
     
     # get values at the specific S1_dates
     for S1_date in S1_dates:
-        df2=df2.append(pd.DataFrame(index=[S1_date]))
+        df2 = pd.concat([df2, pd.DataFrame(index=[S1_date])])
 
     # create a dataframe with the accumulated precipitation values at S1 dates
     df2 = df2.sort_index()
