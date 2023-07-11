@@ -103,7 +103,7 @@ export PATH=${PATH}:${FLOODPY_HOME}/floodpy
 FLOODPY generates a floodwater map based on Sentinel-1 GRD products and meteorological data. 
 You can run FLOODPY via jupyter notebook or via command line.
 
-### Option 1: Run FloodPy via Jupyter Notebook. See example [here](https://github.com/kleok/FLOODPY/blob/main/notebooks/Floodpy_Ianos.ipynb)
+### Option 1: Run FloodPy via Jupyter Notebook. See example [here](https://github.com/kleok/FLOODPY-docs)
 
 ------
 
