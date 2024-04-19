@@ -28,5 +28,7 @@ dependencies:
   - glib==2.72.1
   - scipy==1.8.0
   - jupyter==1.0.0
-  
+  - xarray-spatial==0.3.7
+  - rioxarray==0.15.0
+
   
