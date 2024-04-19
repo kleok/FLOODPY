@@ -82,7 +82,7 @@ export PATH=${PATH}:${FLOODPY_HOME}/floodpy
 
 FLOODPY generates a map with flooded regions based on Sentinel-1 GRD products and meteorological data. 
 Sentinel-1 orbits are downloaded using the [sentineleof](https://github.com/scottstanie/sentineleof)
-You can run FLOODPY via jupyter notebook. See example [here](https://github.com/kleok/FLOODPY/blob/main/Floodpyapp_notebook.ipynb)
+You can run FLOODPY via jupyter notebook. See example [here](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_notebook.ipynb)
 
 ## 3. Documentation and citation
 Algorithms implemented in the software are described in detail at our publications. If FLOODPY was useful for you, we encourage you to cite the following work: 
