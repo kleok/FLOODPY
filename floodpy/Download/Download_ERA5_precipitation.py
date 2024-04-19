@@ -44,7 +44,7 @@ def retrieve_ERA5_data(ERA5_variables:list, year_str:str, month_str:str, days_li
         export_filename (string): Full path of dataset
     """
 
-    c = cdsapi.Client()
+    c = cdsapi.Client(quiet=True)
     c.retrieve(
         'reanalysis-era5-single-levels',
         {
@@ -65,7 +65,8 @@ def Get_ERA5_data(ERA5_variables:list,
                  start_datetime:datetime.datetime,
                  end_datetime:datetime.datetime,
                  bbox:list,
-                ERA5_dir:str) -> pd.DataFrame:
+                 ERA5_dir:str) -> pd.DataFrame:
+    
     """Downloads ERA5 datasets between two given dates.
 
     Args:
