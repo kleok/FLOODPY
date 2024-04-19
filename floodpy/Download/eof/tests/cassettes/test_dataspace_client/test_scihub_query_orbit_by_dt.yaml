@@ -1,0 +1,36 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.28.2
+    method: GET
+    uri: https://catalogue.dataspace.copernicus.eu/odata/v1/Products?%24filter=startswith%28Name%2C%27S1A%27%29+and+contains%28Name%2C%27AUX_POEORB%27%29+and+ContentDate%2FStart+lt+%272019-12-31T22%3A20%3A15.428571Z%27+and+ContentDate%2FEnd+gt+%272020-01-01T00%3A01%3A00.000000Z%27&%24orderby=ContentDate%2FStart+asc&%24top=1
+  response:
+    body:
+      string: '{"@odata.context":"$metadata#Products","value":[{"@odata.mediaContentType":"application/octet-stream","Id":"21db46df-3991-4700-a454-dd91b6f2217a","Name":"S1A_OPER_AUX_POEORB_OPOD_20210315T155112_V20191230T225942_20200101T005942.EOF","ContentType":"application/octet-stream","ContentLength":4409905,"OriginDate":"2021-04-17T10:54:33.561Z","PublicationDate":"2023-10-25T14:34:15.278Z","ModificationDate":"2023-10-25T14:49:02.414Z","Online":true,"EvictionDate":"","S3Path":"/eodata/Sentinel-1/AUX/AUX_POEORB/2019/12/30/S1A_OPER_AUX_POEORB_OPOD_20210315T155112_V20191230T225942_20200101T005942.EOF","Checksum":[{"Value":"e0345368421e1b65127adc6ea103ab53","Algorithm":"MD5","ChecksumDate":"2023-10-25T14:49:02.002746Z"},{"Value":"b8fcec2aca5a68702f4887652b17994e4f23fb2392501dfba4106bee5ad7ce94","Algorithm":"BLAKE3","ChecksumDate":"2023-10-25T14:49:02.020456Z"}],"ContentDate":{"Start":"2019-12-30T22:59:42.000Z","End":"2020-01-01T00:59:42.000Z"},"Footprint":null,"GeoFootprint":null}],"@odata.nextLink":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products?%24filter=startswith%28Name%2C%27S1A%27%29+and+contains%28Name%2C%27AUX_POEORB%27%29+and+ContentDate%2FStart+lt+%272019-12-31T22%3A20%3A15.428571Z%27+and+ContentDate%2FEnd+gt+%272020-01-01T00%3A01%3A00.000000Z%27&%24orderby=ContentDate%2FStart+asc&%24top=1&%24skip=1"}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1329'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 06 Nov 2023 23:17:28 GMT
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      request-id:
+      - 85a6a627-cfb2-407c-a61b-5322f7764983
+      x-envoy-upstream-service-time:
+      - '174'
+    status:
+      code: 200
+      message: OK
+version: 1
