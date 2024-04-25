@@ -18,8 +18,8 @@ from floodpy.Visualization.plot_ERA5_data import plot_ERA5
 from floodpy.Download.Download_ERA5_precipitation import Get_ERA5_data
 from floodpy.Download.Download_LandCover import worldcover
 from floodpy.Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
-from floodpy.Floodwater_delineation.Statistical_analysis.calc_t_scores import Calculate_t_scores
-from floodpy.Floodwater_delineation.Classification import Calc_flood_map
+from floodpy.Floodwater_delineation.Statistical_approach.calc_t_scores import Calculate_t_scores
+from floodpy.Floodwater_delineation.Statistical_approach.Classification import Calc_flood_map
 
 def is_platform_linux():
     return platform.system() == "Linux"

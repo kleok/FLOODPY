@@ -5,9 +5,9 @@ import numpy as np
 from joblib import Parallel, delayed, wrap_non_picklable_objects
 from itertools import product
 
-from floodpy.Floodwater_delineation.BC_masking import Bimodality_test
-from floodpy.Floodwater_delineation.Thresholding_methods import threshold_Kittler, threshold_Otsu
-from floodpy.Floodwater_delineation.Comparison_tools import Is_similar_non_parametric, Is_darker_than, Is_brighter_than
+from floodpy.Floodwater_delineation.Statistical_approach.BC_masking import Bimodality_test
+from floodpy.Floodwater_delineation.Statistical_approach.Thresholding_methods import threshold_Kittler, threshold_Otsu
+from floodpy.Floodwater_delineation.Statistical_approach.Comparison_tools import Is_similar_non_parametric, Is_darker_than, Is_brighter_than
 
 def sel_borders(row: int,
                 col: int,
