@@ -5,11 +5,11 @@ import numpy as np
 import xarray as xr
 import os
 
-from floodpy.Floodwater_classification.BC_masking import Calculation_bimodality_mask
-from floodpy.Floodwater_classification.Region_growing import Region_Growing
-from floodpy.Floodwater_classification.Thresholding_methods import threshold_Otsu
-from floodpy.Floodwater_classification.Adaptive_thresholding import Adapt_local_thresholding
-from floodpy.Floodwater_classification.Morphological_filtering import morphological_postprocessing
+from floodpy.Floodwater_delineation.BC_masking import Calculation_bimodality_mask
+from floodpy.Floodwater_delineation.Region_growing import Region_Growing
+from floodpy.Floodwater_delineation.Thresholding_methods import threshold_Otsu
+from floodpy.Floodwater_delineation.Adaptive_thresholding import Adapt_local_thresholding
+from floodpy.Floodwater_delineation.Morphological_filtering import morphological_postprocessing
 
 def Calc_flood_map(Floodpy_app):
 
