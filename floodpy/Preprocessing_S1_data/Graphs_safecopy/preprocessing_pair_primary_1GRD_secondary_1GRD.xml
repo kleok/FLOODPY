@@ -36,44 +36,6 @@
       <continueOnFail>false</continueOnFail>
     </parameters>
   </node>
-  <node id="Subset(2)">
-    <operator>Subset</operator>
-    <sources>
-      <sourceProduct refid="Apply-Orbit-File(2)"/>
-    </sources>
-    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <sourceBands/>
-      <region>0,0,25757,16697</region>
-      <geoRegion>$polygon</geoRegion>
-      <subSamplingX>1</subSamplingX>
-      <subSamplingY>1</subSamplingY>
-      <fullSwath>false</fullSwath>
-      <tiePointGridNames/>
-      <copyMetadata>true</copyMetadata>
-    </parameters>
-  </node>
-  <node id="ThermalNoiseRemoval(2)">
-    <operator>ThermalNoiseRemoval</operator>
-    <sources>
-      <sourceProduct refid="Subset(2)"/>
-    </sources>
-    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <selectedPolarisations/>
-      <removeThermalNoise>true</removeThermalNoise>
-      <reIntroduceThermalNoise>false</reIntroduceThermalNoise>
-    </parameters>
-  </node>
-  <node id="Remove-GRD-Border-Noise(2)">
-    <operator>Remove-GRD-Border-Noise</operator>
-    <sources>
-      <sourceProduct refid="ThermalNoiseRemoval(2)"/>
-    </sources>
-    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <selectedPolarisations/>
-      <borderLimit>500</borderLimit>
-      <trimThreshold>50.0</trimThreshold>
-    </parameters>
-  </node>
   <node id="Subset">
     <operator>Subset</operator>
     <sources>
@@ -90,32 +52,26 @@
       <copyMetadata>true</copyMetadata>
     </parameters>
   </node>
-  <node id="ThermalNoiseRemoval">
-    <operator>ThermalNoiseRemoval</operator>
+  <node id="Subset(2)">
+    <operator>Subset</operator>
     <sources>
-      <sourceProduct refid="Subset"/>
+      <sourceProduct refid="Apply-Orbit-File(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <selectedPolarisations/>
-      <removeThermalNoise>true</removeThermalNoise>
-      <reIntroduceThermalNoise>false</reIntroduceThermalNoise>
-    </parameters>
-  </node>
-  <node id="Remove-GRD-Border-Noise">
-    <operator>Remove-GRD-Border-Noise</operator>
-    <sources>
-      <sourceProduct refid="ThermalNoiseRemoval"/>
-    </sources>
-    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <selectedPolarisations/>
-      <borderLimit>500</borderLimit>
-      <trimThreshold>50.0</trimThreshold>
+      <sourceBands/>
+      <region>0,0,25757,16697</region>
+      <geoRegion>$polygon</geoRegion>
+      <subSamplingX>1</subSamplingX>
+      <subSamplingY>1</subSamplingY>
+      <fullSwath>false</fullSwath>
+      <tiePointGridNames/>
+      <copyMetadata>true</copyMetadata>
     </parameters>
   </node>
   <node id="Calibration">
     <operator>Calibration</operator>
     <sources>
-      <sourceProduct refid="Remove-GRD-Border-Noise"/>
+      <sourceProduct refid="Subset"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
@@ -129,32 +85,12 @@
       <outputSigmaBand>true</outputSigmaBand>
       <outputGammaBand>false</outputGammaBand>
       <outputBetaBand>false</outputBetaBand>
-    </parameters>
-  </node>
-  <node id="Speckle-Filter">
-    <operator>Speckle-Filter</operator>
-    <sources>
-      <sourceProduct refid="Calibration"/>
-    </sources>
-    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <sourceBands/>
-      <filter>Lee Sigma</filter>
-      <filterSizeX>3</filterSizeX>
-      <filterSizeY>3</filterSizeY>
-      <dampingFactor>2</dampingFactor>
-      <estimateENL>true</estimateENL>
-      <enl>1.0</enl>
-      <numLooksStr>1</numLooksStr>
-      <windowSize>7x7</windowSize>
-      <targetWindowSizeStr>3x3</targetWindowSizeStr>
-      <sigmaStr>0.9</sigmaStr>
-      <anSize>50</anSize>
     </parameters>
   </node>
   <node id="Calibration(2)">
     <operator>Calibration</operator>
     <sources>
-      <sourceProduct refid="Remove-GRD-Border-Noise(2)"/>
+      <sourceProduct refid="Subset(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
@@ -170,31 +106,11 @@
       <outputBetaBand>false</outputBetaBand>
     </parameters>
   </node>
-  <node id="Speckle-Filter(2)">
-    <operator>Speckle-Filter</operator>
-    <sources>
-      <sourceProduct refid="Calibration(2)"/>
-    </sources>
-    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <sourceBands/>
-      <filter>Lee Sigma</filter>
-      <filterSizeX>3</filterSizeX>
-      <filterSizeY>3</filterSizeY>
-      <dampingFactor>2</dampingFactor>
-      <estimateENL>true</estimateENL>
-      <enl>1.0</enl>
-      <numLooksStr>1</numLooksStr>
-      <windowSize>7x7</windowSize>
-      <targetWindowSizeStr>3x3</targetWindowSizeStr>
-      <sigmaStr>0.9</sigmaStr>
-      <anSize>50</anSize>
-    </parameters>
-  </node>
   <node id="CreateStack">
     <operator>CreateStack</operator>
     <sources>
-      <sourceProduct refid="Speckle-Filter"/>
-      <sourceProduct.1 refid="Speckle-Filter(2)"/>
+      <sourceProduct refid="Calibration"/>
+      <sourceProduct.1 refid="Calibration(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <masterBands/>

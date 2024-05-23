@@ -34,13 +34,35 @@
       <copyMetadata>true</copyMetadata>
     </parameters>
   </node>
+  <node id="ThermalNoiseRemoval">
+    <operator>ThermalNoiseRemoval</operator>
+    <sources>
+      <sourceProduct refid="Subset"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <selectedPolarisations/>
+      <removeThermalNoise>true</removeThermalNoise>
+      <reIntroduceThermalNoise>false</reIntroduceThermalNoise>
+    </parameters>
+  </node>
+  <node id="Remove-GRD-Border-Noise">
+    <operator>Remove-GRD-Border-Noise</operator>
+    <sources>
+      <sourceProduct refid="ThermalNoiseRemoval"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <selectedPolarisations/>
+      <borderLimit>500</borderLimit>
+      <trimThreshold>50.0</trimThreshold>
+    </parameters>
+  </node>
   <node id="Subset(2)">
     <operator>Subset</operator>
     <sources>
       <sourceProduct refid="SliceAssembly(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <sourceBands>Amplitude_VH,Intensity_VH,Amplitude_VV,Intensity_VV</sourceBands>
+      <sourceBands>Intensity_VH,Intensity_VV</sourceBands>
       <region/>
       <referenceBand/>
       <geoRegion>$polygon</geoRegion>
@@ -54,7 +76,7 @@
   <node id="Calibration">
     <operator>Calibration</operator>
     <sources>
-      <sourceProduct refid="Subset"/>
+      <sourceProduct refid="Subset(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
@@ -70,10 +92,30 @@
       <outputBetaBand>false</outputBetaBand>
     </parameters>
   </node>
+  <node id="Speckle-Filter">
+    <operator>Speckle-Filter</operator>
+    <sources>
+      <sourceProduct refid="Calibration"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <sourceBands/>
+      <filter>Lee Sigma</filter>
+      <filterSizeX>3</filterSizeX>
+      <filterSizeY>3</filterSizeY>
+      <dampingFactor>2</dampingFactor>
+      <estimateENL>true</estimateENL>
+      <enl>1.0</enl>
+      <numLooksStr>1</numLooksStr>
+      <windowSize>7x7</windowSize>
+      <targetWindowSizeStr>3x3</targetWindowSizeStr>
+      <sigmaStr>0.9</sigmaStr>
+      <anSize>50</anSize>
+    </parameters>
+  </node>
   <node id="Calibration(2)">
     <operator>Calibration</operator>
     <sources>
-      <sourceProduct refid="Subset(2)"/>
+      <sourceProduct refid="Remove-GRD-Border-Noise(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
@@ -89,11 +131,31 @@
       <outputBetaBand>false</outputBetaBand>
     </parameters>
   </node>
+  <node id="Speckle-Filter(2)">
+    <operator>Speckle-Filter</operator>
+    <sources>
+      <sourceProduct refid="Calibration(2)"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <sourceBands/>
+      <filter>Lee Sigma</filter>
+      <filterSizeX>3</filterSizeX>
+      <filterSizeY>3</filterSizeY>
+      <dampingFactor>2</dampingFactor>
+      <estimateENL>true</estimateENL>
+      <enl>1.0</enl>
+      <numLooksStr>1</numLooksStr>
+      <windowSize>7x7</windowSize>
+      <targetWindowSizeStr>3x3</targetWindowSizeStr>
+      <sigmaStr>0.9</sigmaStr>
+      <anSize>50</anSize>
+    </parameters>
+  </node>
   <node id="CreateStack">
     <operator>CreateStack</operator>
     <sources>
-      <sourceProduct refid="Calibration"/>
-      <sourceProduct.1 refid="Calibration(2)"/>
+      <sourceProduct refid="Speckle-Filter"/>
+      <sourceProduct.1 refid="Speckle-Filter(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <masterBands/>
@@ -213,6 +275,28 @@
       <continueOnFail>false</continueOnFail>
     </parameters>
   </node>
+  <node id="ThermalNoiseRemoval(3)">
+    <operator>ThermalNoiseRemoval</operator>
+    <sources>
+      <sourceProduct refid="Apply-Orbit-File(3)"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <selectedPolarisations/>
+      <removeThermalNoise>true</removeThermalNoise>
+      <reIntroduceThermalNoise>false</reIntroduceThermalNoise>
+    </parameters>
+  </node>
+  <node id="Remove-GRD-Border-Noise(3)">
+    <operator>Remove-GRD-Border-Noise</operator>
+    <sources>
+      <sourceProduct refid="ThermalNoiseRemoval(3)"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <selectedPolarisations/>
+      <borderLimit>500</borderLimit>
+      <trimThreshold>50.0</trimThreshold>
+    </parameters>
+  </node>
   <node id="Apply-Orbit-File(4)">
     <operator>Apply-Orbit-File</operator>
     <sources>
@@ -224,11 +308,33 @@
       <continueOnFail>false</continueOnFail>
     </parameters>
   </node>
+  <node id="ThermalNoiseRemoval(4)">
+    <operator>ThermalNoiseRemoval</operator>
+    <sources>
+      <sourceProduct refid="Apply-Orbit-File(4)"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <selectedPolarisations/>
+      <removeThermalNoise>true</removeThermalNoise>
+      <reIntroduceThermalNoise>false</reIntroduceThermalNoise>
+    </parameters>
+  </node>
+  <node id="Remove-GRD-Border-Noise(4)">
+    <operator>Remove-GRD-Border-Noise</operator>
+    <sources>
+      <sourceProduct refid="ThermalNoiseRemoval(4)"/>
+    </sources>
+    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+      <selectedPolarisations/>
+      <borderLimit>500</borderLimit>
+      <trimThreshold>50.0</trimThreshold>
+    </parameters>
+  </node>
   <node id="SliceAssembly(2)">
     <operator>SliceAssembly</operator>
     <sources>
-      <sourceProduct refid="Apply-Orbit-File(4)"/>
-      <sourceProduct.1 refid="Apply-Orbit-File(3)"/>
+      <sourceProduct refid="Remove-GRD-Border-Noise(4)"/>
+      <sourceProduct.1 refid="Remove-GRD-Border-Noise(3)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <selectedPolarisations>VH,VV</selectedPolarisations>
