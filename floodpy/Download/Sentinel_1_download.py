@@ -41,7 +41,7 @@ def download_S1_data(Floodpy_app):
     t1 = datetime.now()
     print('Creating token for downloading Copernicus products')
     access_token = get_access_token(Floodpy_app.Copernicus_username, Floodpy_app.Copernicus_password)
-    download_df = Floodpy_app.query_S1_sel_df.reset_index(drop=True)
+    download_df = Floodpy_app.query_S1_df.reset_index(drop=True)
     for index, query_row in download_df.iterrows():
         print(' Downloading {}/{}'.format(index+1, len(download_df.index)))
         print(query_row['Name'])
