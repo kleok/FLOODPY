@@ -20,11 +20,11 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'floodpy'
-copyright = '2023, Kleanthis Karamvasis, Alekos Falagas'
+copyright = '2024, Kleanthis Karamvasis'
 author = 'Kleanthis Karamvasis, Alekos Falagas'
 
 # The full version, including alpha/beta/rc tags
-release = '0.6.0'
+release = '0.7.0'
 
 
 # -- General configuration ---------------------------------------------------

@@ -15,7 +15,6 @@ h5py
 scikit-image
 joblib
 matplotlib
-richdem
 pyproj
 seaborn
 rasterio
