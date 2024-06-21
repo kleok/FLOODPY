@@ -34,7 +34,7 @@ def Calc_flood_map(Floodpy_app):
                       'window_half_size_min' : 15,
                       'window_half_size_max' : 30,
                       'window_step' : 5,
-                      'bimodality_thres' : 0.7,
+                      'bimodality_thres' : 0.75,
                       'probability_thres' : 0.25,
                       'search_RG_window_size' : 1,
                       'RG_thres' : 0.5,

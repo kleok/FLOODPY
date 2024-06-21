@@ -11,4 +11,4 @@ def calc_slope_mask(Floodpy_app):
     DEM_xarray['slope_mask'] = DEM_xarray['slope'] < Floodpy_app.slope_thres
 
     # overwriting file
-    DEM_xarray.to_netcdf(Floodpy_app.DEM_slope_filename, mode='a')
+    DEM_xarray.to_netcdf(Floodpy_app.DEM_slope_filename)

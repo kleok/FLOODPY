@@ -81,11 +81,11 @@ def Create_Regions(data: np.array, window_size:int = 200) -> np.array:
 
     
 def Calculation_bimodality_mask(t_score_dataset: np.array,
-                                min_window_size: int = 25,
+                                min_window_size: int = 50,
                                 max_window_size: int = 500,
                                 step_window_size: int = 50,
                                 bimodality_thres: float = 0.555,
-                                segmentation_thres: float = 0.5) -> np.array:
+                                segmentation_thres: float = 0.1) -> np.array:
 
     """Calculation of the bimodality mask.
 
@@ -100,7 +100,7 @@ def Calculation_bimodality_mask(t_score_dataset: np.array,
         max_window_size (int, optional): Maximum size of window. Defaults to 500.
         step_window_size (int, optional): Size of step. Defaults to 50.
         bimodality_thres (float, optional): Threshold of Bimodality coefficient. Defaults to 0.555.
-        segmentation_thres (float, optional): Thresholding percentage to create binary bimodality mask. Defaults to 0.5.
+        segmentation_thres (float, optional): Thresholding percentage to create binary bimodality mask. Defaults to 0.6.
 
     Returns:
         np.array: a boolean array where True (1) represents the regions where bimodality exists.
@@ -131,7 +131,10 @@ def Calculation_bimodality_mask(t_score_dataset: np.array,
                 dim2_index_max=iy*window_size+window_size 
                 
                 if BC[ix,iy]>bimodality_thres :
-                    BC_flag[dim1_index_min:dim1_index_max,dim2_index_min:dim2_index_max] = 1
+                    if np.nanmean(Blocks[ix,iy]) < 0:
+                        BC_flag[dim1_index_min:dim1_index_max,dim2_index_min:dim2_index_max] = 1
+                    else:
+                        BC_flag[dim1_index_min:dim1_index_max,dim2_index_min:dim2_index_max] = 0
                 else:
                     BC_flag[dim1_index_min:dim1_index_max,dim2_index_min:dim2_index_max] = 0
                     
