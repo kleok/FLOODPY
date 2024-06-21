@@ -8,10 +8,7 @@ Subpackages
    :maxdepth: 4
 
    floodpy.Download
-   floodpy.Floodwater_classification
    floodpy.Preprocessing_S1_data
-   floodpy.Preprocessing_S2_data
-   floodpy.Statistical_analysis
    floodpy.Visualization
    floodpy.utils
 

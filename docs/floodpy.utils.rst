@@ -28,6 +28,14 @@ floodpy.utils.folium\_categorical\_legend module
    :undoc-members:
    :show-inheritance:
 
+floodpy.utils.geo\_utils module
+-------------------------------
+
+.. automodule:: floodpy.utils.geo_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 floodpy.utils.read\_AOI module
 ------------------------------
 

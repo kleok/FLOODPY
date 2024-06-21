@@ -1,9 +1,9 @@
-.. FLOODPY documentation master file, created by
-   sphinx-quickstart on Sat Dec  4 13:58:33 2021.
+.. floodpy documentation master file, created by
+   sphinx-quickstart on Fri Jun 21 18:43:12 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to FLOODPY's documentation!
+Welcome to floodpy's documentation!
 ===================================
 
 What is FLOODPY?
