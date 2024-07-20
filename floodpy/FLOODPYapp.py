@@ -12,14 +12,16 @@ from floodpy.Download.Query_Sentinel_1_products import query_Sentinel_1
 from floodpy.Download.Sentinel_1_download import download_S1_data
 from floodpy.Download.Sentinel_1_orbits_download import download_S1_POEORB_orbits
 from floodpy.Preprocessing_S1_data.DEM_funcs import calc_slope_mask
+
 # Visualization
 from floodpy.Visualization.plot_ERA5_data import plot_ERA5
 
 from floodpy.Download.Download_ERA5_precipitation import Get_ERA5_data
 from floodpy.Download.Download_LandCover import worldcover
 from floodpy.Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
-from floodpy.Statistical_analysis.calc_t_scores import Calculate_t_scores
-from floodpy.Floodwater_classification.Classification import Calc_flood_map
+from floodpy.Floodwater_delineation.Statistical_approach.calc_t_scores import Calculate_t_scores
+from floodpy.Floodwater_delineation.Statistical_approach.Classification import Calc_flood_map
+from floodpy.Floodwater_delineation.Vit_approach.Predict_flooded_regions import predict_flooded_regions
 
 def is_platform_linux():
     return platform.system() == "Linux"
@@ -169,7 +171,7 @@ class FloodwaterEstimation:
     def calc_slope(self, slope_thres = 10):
         self.slope_thres = slope_thres
         self.DEM_slope_filename = os.path.join(self.Preprocessing_dir,'DEM_slope.nc')
-        calc_slope_mask(self)
+        calc_slope_mask(self, overwrite = True)
 
     def calc_t_scores(self):
 
@@ -185,3 +187,8 @@ class FloodwaterEstimation:
         
         self.Flood_map_dataset_filename = os.path.join(self.Results_dir, 'Flood_map_dataset_{}.nc'.format(self.flood_datetime_str))
         Calc_flood_map(self)
+
+    def calc_flooded_regions_ViT(self, ViT_model_filename):
+
+        self.Flood_map_dataset_filename = os.path.join(self.Results_dir, 'Flood_map_ViT_{}.nc'.format(self.flood_datetime_str))
+        predict_flooded_regions(self, ViT_model_filename)

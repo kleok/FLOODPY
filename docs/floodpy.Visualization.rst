@@ -4,6 +4,14 @@ floodpy.Visualization package
 Submodules
 ----------
 
+floodpy.Visualization.plot\_ERA5\_data module
+---------------------------------------------
+
+.. automodule:: floodpy.Visualization.plot_ERA5_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 floodpy.Visualization.plotting module
 -------------------------------------
 
