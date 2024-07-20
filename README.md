@@ -82,7 +82,10 @@ export PATH=${PATH}:${FLOODPY_HOME}/floodpy
 
 FLOODPY generates a map with flooded regions based on Sentinel-1 GRD products and meteorological data. 
 Sentinel-1 orbits are downloaded using the [sentineleof](https://github.com/scottstanie/sentineleof)
-You can run FLOODPY via jupyter notebook. See example [here](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_notebook.ipynb)
+You can run FLOODPY using the following jupyter notebooks as templates.
+
+- [Floodpy statistical approach](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_notebook.ipynb)
+- [Floodpy Deep learning approach](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_Vit.ipynb)
 
 ## 3. Documentation and citation
 Algorithms implemented in the software are described in detail at our publications. If FLOODPY was useful for you, we encourage you to cite the following work: 
@@ -104,6 +107,3 @@ https://www.iahreuropecongress.org/PDF/IAHR2022_ABSTRACT_BOOK.pdf
 
 ## 4. Contact us
 Feel free to open an issue, comment or pull request. We would like to listen to your thoughts and your recommendations. Any help is very welcome! :heart:
-
-FLOODPY Team: [Kleanthis Karamvasis](https://github.com/kleok), [Ioanna Zotou](https://www.researchgate.net/profile/Ioanna-Zotou), [Alekos Falagas](https://github.com/alekfal), [Olympia Gounari](https://github.com/Olyna), [Vasileios Tsironis](https://github.com/tsironisbi), [Markos Mylonas](https://github.com/mylonasma), [Pavlos Alexantonakis](https://www.linkedin.com/in/pavlos-alexantonakis)
-
