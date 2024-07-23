@@ -33,7 +33,7 @@ def save_DEM_xarray(DEM, S1_lon_vector, S1_lat_vector, geojson_bbox, ref_xarray,
     df.y.attrs['axis'] = 'Y'
 
     df.rio.write_crs("epsg:4326", inplace=True)
-
+    df = df.dropna("x", how="all").dropna("y", how="all")
     df_coreg = df.rio.clip(gpd.read_file(geojson_bbox)['geometry'])
 
     S1_coreg = df_coreg.rio.reproject_match(ref_xarray)
@@ -70,6 +70,7 @@ def save_LIA_xarray(LIA, S1_lon_vector, S1_lat_vector, geojson_bbox, ref_xarray,
     df.y.attrs['axis'] = 'Y'
 
     df.rio.write_crs("epsg:4326", inplace=True)
+    df = df.dropna("x", how="all").dropna("y", how="all")
 
     df_coreg = df.rio.clip(gpd.read_file(geojson_bbox)['geometry'])
 
@@ -119,7 +120,7 @@ def save_backscatter_xarray(VV_dB, VH_dB, VV_VH_dB, S1_lon_vector, S1_lat_vector
     df.y.attrs['axis'] = 'Y'
 
     df.rio.write_crs("epsg:4326", inplace=True)
-
+    df = df.dropna("x", how="all").dropna("y", how="all")
     df_coreg = df.rio.clip(gpd.read_file(geojson_bbox)['geometry'])
 
     S1_coreg = df_coreg.rio.reproject_match(ref_xarray)

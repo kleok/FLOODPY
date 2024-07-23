@@ -54,10 +54,10 @@ def Run_Preprocessing(Floodpy_app, overwrite):
     if Flood_num_GRD_tiles == 1:
         flood_hdf5_outfile=os.path.join(Floodpy_app.Preprocessing_dir,Floodpy_app.flood_datetime_str)
         flood_xarray_outfile = flood_hdf5_outfile + '.nc'
-
+        flood_img1 = os.path.join(Floodpy_app.S1_dir,S1_flood_rows.iloc[0].Name+'.zip')
+        
         if not os.path.exists(flood_xarray_outfile):
 
-            flood_img1 = os.path.join(Floodpy_app.S1_dir,S1_flood_rows.iloc[0].Name+'.zip')
             perform_single_1GRD_preprocessing(Floodpy_app.gpt,
                                                 flood_img1,
                                                 flood_hdf5_outfile,
