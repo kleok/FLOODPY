@@ -48,7 +48,7 @@ def query_Sentinel_1(Floodpy_app):
     # I keep the product that is related to the most recent publication date, or processing baseline number (e.g. N9999)
     query_df.sort_values(['beginningDateTime'], ascending=False, inplace=True)
     query_df.index = pd.to_datetime(query_df['beginningDateTime'])
-    query_df = query_df.drop_duplicates('beginningDateTime').sort_index()
+    query_df = query_df.drop_duplicates('beginningDateTime').sort_index().tz_localize(None)
 
     flood_candidate_dates = query_df['relativeOrbitNumber'][Floodpy_app.flood_datetime_start:Floodpy_app.flood_datetime_end].index.values
     return query_df, flood_candidate_dates
