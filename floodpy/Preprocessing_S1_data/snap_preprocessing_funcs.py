@@ -126,7 +126,7 @@ def perform_pair_preprocessing_2GRD_1GRD(gptcommand, primary1, primary2, seconda
     subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     return 0
     
-def perform_pair_preprocessing_2GRD_2GRD(gptcommand, primary1, primary2, secondary1, secondary2, outfile, Subset_AOI, xml_file, overwrite):
+def perform_pair_preprocessing_2GRD_2GRD(gptcommand, primary1, primary2, secondary1, secondary2, outfile, Subset_AOI, xml_file, overwrite, print_esa_snap_logs = False):
     
     """
     This function performs the preprocessing of the given pair from the
@@ -146,4 +146,25 @@ def perform_pair_preprocessing_2GRD_2GRD(gptcommand, primary1, primary2, seconda
             '-Pfileout='+outfile]
     
     subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+    if print_esa_snap_logs:
+        print (argvs)
+        # Append argument for logging from ESA SNAP
+        argvs.append('-J-Dsnap.log.level=FINE')
+
+        # Print the command for manual execution
+        print("Running command:")
+        print(" ".join(argvs))
+
+        # Run the command while printing ESA SNAP logs to stdout in real-time
+        with subprocess.Popen(argvs, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) as process:
+            for stdout_line in iter(process.stdout.readline, ""):
+                print(stdout_line, end="")
+            process.stdout.close()
+            return_code = process.wait()
+            if return_code:
+                raise subprocess.CalledProcessError(return_code, argvs)
+    else:
+        subprocess.check_call(argvs, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        
     return 0
