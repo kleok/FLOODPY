@@ -1,4 +1,4 @@
-def get_folium_categorical_template():
+def get_folium_categorical_template(categories):
     template = """
     {% macro html(this, kwargs) %}
 
@@ -36,20 +36,13 @@ def get_folium_categorical_template():
     <div class='legend-title'>ESA WorldCover 2021 Categories</div>
     <div class='legend-scale'>
     <ul class='legend-labels'>
+    """
 
-      <li><span style='background:rgb(0, 0, 0); opacity:1;'></span><b>No data</b></li>
-      <li><span style='background:rgb(0, 100, 0); opacity:1;'></span><b>Tree cover</b></li>
-      <li><span style='background:rgb(255, 187, 34); opacity:1;'></span><b>Shrubland</b></li>
-      <li><span style='background:rgb(255, 255, 76); opacity:1;'></span><b>Grassland</b></li>
-      <li><span style='background:rgb(240, 150, 255); opacity:1;'></span><b>Cropland</b></li>
-      <li><span style='background:rgb(250, 0, 0); opacity:1;'></span><b>Built-up</b></li>
-      <li><span style='background:rgb(180, 180, 180); opacity:1;'></span><b>Bare/sparse vegetation</b></li>
-      <li><span style='background:rgb(240, 240, 240); opacity:1;'></span><b>Snow and Ice</b></li>
-      <li><span style='background:rgb(0, 100, 200); opacity:1;'></span><b>Permanent water bodies</b></li>
-      <li><span style='background:rgb(0, 150, 160); opacity:1;'></span><b>Herbaceous wetland</b></li>
-      <li><span style='background:rgb(0, 207, 117); opacity:1;'></span><b>Mangroves</b></li>
-      <li><span style='background:rgb(250, 230, 160); opacity:1;'></span><b>Moss and lichen</b></li>
+    for category, color in categories.items():
+        template += f"<li><span style='background:rgb{color}; opacity:1;'></span><b>{category}</b></li>\n"
 
+
+    template += """
     </ul>
     </div>
     </div>
