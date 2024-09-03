@@ -19,11 +19,11 @@ Recommended setup: Python 3.9+, SNAP 9.0+
 
 ### 1.1 Install snap gpt including Sentinel-1 toolbox
 
-You can download SNAP manually from [here](https://step.esa.int/main/download/snap-download/) and install it using the following commands:
+Please download ESA-SNAP (All Toolboxes) from [here](https://step.esa.int/main/download/snap-download/) and install it using the following commands:
 
   ```bash
-  chmod +x install_snap.sh
-  ./install_snap.sh
+  chmod +x esa-snap_all_linux-10.0.0.sh
+  ./esa-snap_all_linux-10.0.0.sh
   ```
 
 ### 1.2 Account setup for downloading Sentinel-1 acquisitions
@@ -63,10 +63,10 @@ You can download FLOODPY toolbox using the following command:
 FLOODPY is written in Python3 and relies on several Python modules. We suggest to install them by using conda.
 
 - Using **conda**
-Create a new conda environement with required packages using the the file [FLOODPY_env.yml](https://github.com/kleok/FLOODPY/blob/main/FLOODPY_env.yml).
+Create a new conda environement with required packages using the the file [FLOODPY_gpu_env.yml](https://github.com/kleok/FLOODPY/blob/main/FLOODPY_gpu_env.yml).
 
 ```
-conda env create -f path_to_FLOODPY/FLOODPY_env.yml
+conda env create -f path_to_FLOODPY/FLOODPY_gpu_env.yml
 ```
 
 ### 1.6 Set environmental variables (Optional)
@@ -84,12 +84,14 @@ FLOODPY generates a map with flooded regions based on Sentinel-1 GRD products an
 Sentinel-1 orbits are downloaded using the [sentineleof](https://github.com/scottstanie/sentineleof)
 You can run FLOODPY using the following jupyter notebooks as templates.
 
-- [Floodpy statistical approach](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_notebook.ipynb)
-- [Floodpy Deep learning approach](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_Vit.ipynb)
+- [Floodpy statistical approach](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_stat.ipynb)
+- [Floodpy deep learning approach](https://nbviewer.org/github/kleok/FLOODPY/blob/main/Floodpyapp_Vit.ipynb)
 
 ## 3. Documentation and citation
 Algorithms implemented in the software are described in detail at our publications. If FLOODPY was useful for you, we encourage you to cite the following work: 
 - Karamvasis K, Karathanassi V. FLOMPY: An Open-Source Toolbox for Floodwater Mapping Using Sentinel-1 Intensity Time Series. Water. 2021; 13(21):2943. https://doi.org/10.3390/w13212943 
+
+- Kuro Siwo: 33 billion m2 under the water. A global multi-temporal satellite dataset for rapid flood mapping. https://paperswithcode.com/paper/kuro-siwo-12-1-billion-m-2-under-the-water-a
 
 You can also have a look at other works that are using FLOODPY:
 
