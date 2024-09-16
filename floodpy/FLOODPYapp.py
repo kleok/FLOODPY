@@ -7,7 +7,7 @@ import platform
 
 
 from floodpy.utils.read_AOI import Coords_to_geojson, Input_vector_to_geojson
-from floodpy.utils.geo_utils import create_polygon
+from floodpy.utils.geo_utils import create_polygon, convert_to_vector
 from floodpy.Download.Query_Sentinel_1_products import query_Sentinel_1
 from floodpy.Download.Sentinel_1_download import download_S1_data
 from floodpy.Download.Sentinel_1_orbits_download import download_S1_POEORB_orbits
@@ -15,7 +15,9 @@ from floodpy.Preprocessing_S1_data.DEM_funcs import calc_slope_mask
 
 # Visualization
 from floodpy.Visualization.plot_ERA5_data import plot_ERA5
+from floodpy.Visualization.interactive_plotting import plot_interactive_map
 
+# Processing
 from floodpy.Download.Download_ERA5_precipitation import Get_ERA5_data
 from floodpy.Download.Download_LandCover import worldcover
 from floodpy.Preprocessing_S1_data.Preprocessing_S1_data import Run_Preprocessing
@@ -188,7 +190,30 @@ class FloodwaterEstimation:
         self.Flood_map_dataset_filename = os.path.join(self.Results_dir, 'Flood_map_dataset_{}.nc'.format(self.flood_datetime_str))
         Calc_flood_map(self)
 
-    def calc_flooded_regions_ViT(self, ViT_model_filename):
-
+    def calc_flooded_regions_ViT(self, ViT_model_filename, device = 'cuda', generate_vector = True, overwrite = True):
+        assert device in ['cuda', 'cpu'], 'device parameter must be cuda or cpu'
+        
         self.Flood_map_dataset_filename = os.path.join(self.Results_dir, 'Flood_map_ViT_{}.nc'.format(self.flood_datetime_str))
-        predict_flooded_regions(self, ViT_model_filename)
+        self.Flood_map_vector_dataset_filename = os.path.join(self.Results_dir, 'Flood_map_ViT_{}.geojson'.format(self.flood_datetime_str))
+
+        if os.path.exists(self.Flood_map_dataset_filename):
+            if overwrite: 
+                os.remove(self.Flood_map_dataset_filename)
+                predict_flooded_regions(self, ViT_model_filename, device)
+        else:
+            predict_flooded_regions(self, ViT_model_filename, device)
+
+        if generate_vector:
+            if os.path.exists(self.Flood_map_vector_dataset_filename):
+                if overwrite: 
+                    os.remove(self.Flood_map_vector_dataset_filename)
+                    convert_to_vector(self)
+            else:
+                convert_to_vector(self)
+
+    def plot_flood_map(self):
+        self.interactive_map = plot_interactive_map(self)
+        return self.interactive_map
+
+            
+            
