@@ -29,12 +29,11 @@ def save_to_netcdf(S1_dataset, prediction_data, flooded_region_filename, flooded
     Flooded_xarray.rio.write_crs("epsg:4326", inplace=True)
     Flooded_xarray.to_netcdf(flooded_region_filename, format='NETCDF4')
 
-def predict_flooded_regions(Floodpy_app, ViT_model_filename ):
+def predict_flooded_regions(Floodpy_app, ViT_model_filename, device):
 
     # loading pretrained ViT model
     sys.path.insert(0, Floodpy_app.src)
     vit_model = torch.load(ViT_model_filename)
-    device = 'cuda'
     vit_model.to(device)
 
     batch_size = 224
@@ -117,6 +116,7 @@ def predict_flooded_regions(Floodpy_app, ViT_model_filename ):
                    prediction_data = prediction_data_median,
                    flooded_region_filename = Floodpy_app.Flood_map_dataset_filename,
                    flooded_regions_value = 2)
+
 
 
 
