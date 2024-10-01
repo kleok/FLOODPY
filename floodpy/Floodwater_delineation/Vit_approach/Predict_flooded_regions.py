@@ -3,6 +3,7 @@ import rioxarray
 import torch
 import numpy as np
 from torchvision import transforms
+import torch.nn.functional as F
 import xbatcher
 from tqdm import tqdm
 import sys
@@ -36,8 +37,10 @@ def predict_flooded_regions(Floodpy_app, ViT_model_filename, device):
     vit_model = torch.load(ViT_model_filename)
     vit_model.to(device)
 
-    batch_size = 224
-    starting_points = np.arange(0, batch_size, batch_size/4).astype(np.int32)
+    patch_size = 224
+    batch_size = 1
+    bands_out = 1
+    starting_points = np.arange(0, patch_size, patch_size/4).astype(np.int32)
     data_mean =  [0.0953, 0.0264]
     data_std = [0.0427, 0.0215]
     clamp_input = 0.15
@@ -45,79 +48,98 @@ def predict_flooded_regions(Floodpy_app, ViT_model_filename, device):
 
     # load Sentinel-1 data
     S1_dataset = xr.open_dataset(Floodpy_app.S1_stack_filename, decode_coords='all')
-    pre1_time, pre2_time, post_time = S1_dataset.time[-3:] # assumes last time is the recent (flooded) one
 
-    prediction_data_list = []
+    post = np.power(10, (np.stack([S1_dataset.isel(time=-1).VV_dB.values, S1_dataset.isel(time=-1).VH_dB.values],axis=0))/10)
+    pre1 = np.power(10, (np.stack([S1_dataset.isel(time=-2).VV_dB.values, S1_dataset.isel(time=-2).VH_dB.values],axis=0))/10)
+    pre2 = np.power(10, (np.stack([S1_dataset.isel(time=-3).VV_dB.values, S1_dataset.isel(time=-3).VH_dB.values],axis=0))/10)
+
+    post = torch.clamp(torch.from_numpy(post).float(), min=0.0, max=clamp_input)
+    post = torch.nan_to_num(post,clamp_input)
+    pre1 = torch.clamp(torch.from_numpy(pre1).float(), min=0.0, max=clamp_input)
+    pre1 = torch.nan_to_num(pre1,clamp_input)
+    pre2 = torch.clamp(torch.from_numpy(pre2).float(), min=0.0, max=clamp_input)
+    pre2 = torch.nan_to_num(pre2,clamp_input)
+
+    # Normalize input data
+    post_event_norm = Normalize(post)
+    pre_event_1_norm = Normalize(pre1)
+    pre_event_2_norm = Normalize(pre2)
+
+    # Concatenate input data as expected from the model (post,pre1,pre2)
+    input_data = torch.cat((post_event_norm, pre_event_1_norm, pre_event_2_norm), dim=0)
+
+    [bands, rows, cols] = input_data.shape
+    predictions_list = []
 
     for starting_point in starting_points:
         print('Predictions with starting point: {} pixel'.format(starting_point))
-        xr_dataset = S1_dataset.sel(x=slice(S1_dataset.x.isel(x=starting_point).data,S1_dataset.x.isel(x=-1).data),
-                                    y=slice(S1_dataset.y.isel(y=starting_point).data,S1_dataset.y.isel(y=-1).data))
+
+        # Calculate the original number of patches along the width and height 
+        num_patches_x = (cols - starting_point) // patch_size
+        num_patches_y = (rows - starting_point) // patch_size
+
+        ending_point_x =  num_patches_x*patch_size+starting_point
+        ending_point_y =  num_patches_y*patch_size+starting_point
+
+        # Select section from original image and add a batch dimension (1, B, H, W) since unfold expects a batched input
+        input_data_section  = torch.tensor(input_data[:,starting_point:ending_point_y, starting_point:ending_point_x]).unsqueeze(0)
         
-        predictions_batches_list = []
-        post_bgen = xbatcher.BatchGenerator(xr_dataset.sel(time = post_time), input_dims = {'x': batch_size, 'y': batch_size})
-        pre1_bgen = xbatcher.BatchGenerator(xr_dataset.sel(time = pre1_time), input_dims = {'x': batch_size, 'y': batch_size})
-        pre2_bgen = xbatcher.BatchGenerator(xr_dataset.sel(time = pre2_time), input_dims = {'x': batch_size, 'y': batch_size})
-        num_patches = len(post_bgen)
+        # Use unfold to extract patches
+        # It extracts patches as columns of shape (B * patch_size * patch_size, L),
+        # where L is the number of patches.
+        patches = F.unfold(input_data_section, kernel_size=patch_size, stride=patch_size)
 
-        for patch_i in tqdm(range(num_patches)):
+        # Reshape the patches to (num_patches, B, patch_size, patch_size)
+        # The number of patches (num_patches) is (H // patch_size) * (W // patch_size)
+        num_patches = patches.size(-1)
+        patches = patches.permute(0, 2, 1)  # (1, L, B * patch_size * patch_size)
+        patches = patches.reshape(1, num_patches, bands, patch_size, patch_size)
 
-            post_dB = np.stack([post_bgen[patch_i].VV_dB.values, post_bgen[patch_i].VH_dB.values],axis=0)
-            post = np.power(10, post_dB/10) # convert to linear
+        # Remove the batch dimension if not needed (optional)
+        patches = patches.squeeze(0)
 
-            pre1_dB = np.stack([pre1_bgen[patch_i].VV_dB.values, pre1_bgen[patch_i].VH_dB.values],axis=0)
-            pre1 = np.power(10, pre1_dB/10) # convert to linear
+        # Now, patches contains all the patches with shape (bands, patch_size, patch_size)
+        # print(f"Patches shape: {patches.shape}")
 
-            pre2_dB = np.stack([pre2_bgen[patch_i].VV_dB.values, pre2_bgen[patch_i].VH_dB.values],axis=0)
-            pre2 = np.power(10, pre2_dB/10) # convert to linear
-
-            post = torch.clamp(torch.from_numpy(post).float(), min=0.0, max=clamp_input)
-            post = torch.nan_to_num(post,clamp_input)
-            pre1 = torch.clamp(torch.from_numpy(pre1).float(), min=0.0, max=clamp_input)
-            pre1 = torch.nan_to_num(pre1,clamp_input)
-            pre2 = torch.clamp(torch.from_numpy(pre2).float(), min=0.0, max=clamp_input)
-            pre2 = torch.nan_to_num(pre2,clamp_input)
-
-            with torch.cuda.amp.autocast(enabled=False):
-                with torch.no_grad():
-                    post_event = Normalize(post).to(device).unsqueeze(0)
-                    pre_event_1 = Normalize(pre1).to(device).unsqueeze(0)
-                    pre_event_2 = Normalize(pre2).to(device).unsqueeze(0)
-
-                    pre_event_1 = pre_event_1.to(device)
-                    post_event = torch.cat((post_event, pre_event_1), dim=1)
-                    post_event = torch.cat((post_event, pre_event_2.to(device)), dim=1)
-                    output = vit_model(post_event)
+        num_patches = patches.shape[0] 
+        with torch.cuda.amp.autocast(enabled=False):
+            with torch.no_grad():
+                predictions_patches= torch.zeros((num_patches, bands_out, patch_size, patch_size))
+                for i in tqdm(range(0,num_patches, batch_size)):
+                    patches_torch=torch.tensor(patches[i:i+batch_size,:,:,:]).to(device)
+                            
+                    output = vit_model(patches_torch).detach().cpu()
 
                     predictions = output.argmax(1)
+                    predictions_patches[i:i+batch_size,:,:,:]=predictions
 
-            prediction_data = np.squeeze(predictions.to('cpu').numpy())
+        del predictions, patches_torch, patches, output   
 
-            prediction_patch_xarray = xr.Dataset({'flood_vit': (["y","x"], prediction_data)},
-                                                coords={
-                                                        "x": (["x"], post_bgen[patch_i].x.data),
-                                                        "y": (["y"], post_bgen[patch_i].y.data),
-                                                },
-                                                )
-            prediction_patch_xarray.rio.write_crs("epsg:4326", inplace=True)
-            predictions_batches_list.append(prediction_patch_xarray)
-        # merging all patches 
-        prediction_merged_batches = xr.combine_by_coords(predictions_batches_list)
-        # reindexing to have the same shape as the given dataset
-        prediction_merged_batches = prediction_merged_batches.reindex_like(S1_dataset, method=None)
-        # append to list
-        prediction_data_list.append(prediction_merged_batches.flood_vit.data)
+        # Reshape the patches array back to the shape (num_patches_y, num_patches_x, bands, patch_size, patch_size)
+        predictions_patches = predictions_patches.reshape(num_patches_y, num_patches_x, bands_out, patch_size, patch_size)
+
+        # Transpose the axes back to (bands, num_patches_y * patch_size, num_patches_x * patch_size)
+        reconstructed_image = predictions_patches.permute(2, 0, 3, 1, 4).reshape(bands_out, num_patches_y * patch_size, num_patches_x * patch_size)
+        
+        #print(f"Reconstructed image shape: {reconstructed_image.shape}")
+
+        reconstructed_image_full = torch.zeros((bands_out,rows,cols)) 
+        reconstructed_image_full[:,starting_point:ending_point_y, starting_point:ending_point_x] = reconstructed_image
+        predictions_list.append(reconstructed_image_full)
+        del reconstructed_image_full, reconstructed_image
 
     # stacking all prediction and calculate the most common prediction value
-    prediction_data_array = np.stack(prediction_data_list)
-    prediction_data_median = np.nanmedian(prediction_data_array, axis=0)
+    prediction_data_array = np.stack(predictions_list)
+    del predictions_list
+    prediction_data_median = np.nanmedian(prediction_data_array, axis=0).squeeze()
 
     save_to_netcdf(S1_dataset = S1_dataset,
-                   prediction_data = prediction_data_median,
-                   flooded_region_filename = Floodpy_app.Flood_map_dataset_filename,
-                   flooded_regions_value = 2)
-
-
+                    prediction_data = prediction_data_median,
+                    flooded_region_filename = Floodpy_app.Flood_map_dataset_filename,
+                    flooded_regions_value = 2)
+        
+                    
+        
 
 
 
