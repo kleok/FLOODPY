@@ -4,7 +4,6 @@ import torch
 import numpy as np
 from torchvision import transforms
 import torch.nn.functional as F
-import xbatcher
 from tqdm import tqdm
 import sys
 
