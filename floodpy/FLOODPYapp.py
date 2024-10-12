@@ -214,9 +214,5 @@ class FloodwaterEstimation:
             else:
                 convert_to_vector(self)
 
-    def plot_flood_map(self):
-        self.interactive_map = plot_interactive_map(self)
-        return self.interactive_map
-
             
             
