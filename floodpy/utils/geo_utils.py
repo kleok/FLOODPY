@@ -19,7 +19,7 @@ colorTones = {
 
 
 def create_polygon(coordinates):
-    return Polygon(coordinates['coordinates'][0])
+    return Polygon(np.array(coordinates['coordinates']).squeeze())
 
 
 def convert_to_vector(Floodpy_app):
