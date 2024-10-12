@@ -163,9 +163,9 @@ def Get_ERA5_data(ERA5_variables:list,
             df_dict={}
             for ERA5_variable in ERA5_variables:
                 
-                if ERA5_variable in ['longitude',  'latitude']:
+                if ERA5_variable in ['longitude',  'latitude', 'number']:
                     pass
-                elif ERA5_variable=='time':
+                elif ERA5_variable=='valid_time':
                     time_var=ERA5_data.variables[ERA5_variable]
                     t_cal = ERA5_data.variables[ERA5_variable].calendar
                     dtime = netCDF4.num2date(time_var[:],time_var.units, calendar = t_cal)

@@ -37,15 +37,15 @@ def Run_Preprocessing(Floodpy_app, overwrite):
                                                     'preprocessing_pair_primary_2GRD_secondary_2GRD.xml'),
                     }
 
-    # Find the S1 unique dates
-    S1_datetimes = Floodpy_app.query_S1_sel_df.sort_index().index.values
-    S1_dates = [pd.to_datetime(S1_datetime).date() for S1_datetime in S1_datetimes]
-    S1_unique_dates = np.unique(S1_dates)
 
+    S1_datetimes = Floodpy_app.query_S1_sel_df.sort_index().index.values
+    Pre_flood_indices = pd.to_datetime(S1_datetimes)<Floodpy_app.pre_flood_datetime_end
+    Pre_flood_datetimes = S1_datetimes[Pre_flood_indices]
+    
     # Find the dates for Flood and Pre-flood S1 images
     Flood_date = pd.to_datetime(Floodpy_app.flood_datetime).date()
-    assert Flood_date in S1_unique_dates
-    Pre_flood_dates = np.delete(S1_unique_dates, np.where(S1_unique_dates == Flood_date))
+    S1_dates = [pd.to_datetime(Pre_flood_datetime).date() for Pre_flood_datetime in Pre_flood_datetimes]
+    Pre_flood_dates = np.unique(S1_dates)
 
     S1_flood_rows = Floodpy_app.query_S1_sel_df.loc[pd.to_datetime(Flood_date): pd.to_datetime(Flood_date) + pd.Timedelta(hours=24)]
     AOI_polygon = gpd.read_file(Floodpy_app.geojson_bbox)['geometry'][0]

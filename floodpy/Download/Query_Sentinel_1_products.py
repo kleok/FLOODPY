@@ -1,6 +1,20 @@
 import requests
 import geopandas as gpd
 import pandas as pd
+from datetime import timedelta
+
+def filter_datetimes(datetime_list, seconds_thres = 60):
+    if not datetime_list:
+        return []
+
+    filtered_list = [datetime_list[0]]  # Always keep the first element
+
+    for i in range(1, len(datetime_list)):
+        time_diff = datetime_list[i] - filtered_list[-1]  # Difference with the last kept element
+        if time_diff >= timedelta(seconds=seconds_thres):
+            filtered_list.append(datetime_list[i])
+
+    return filtered_list
 
 def get_attribute_value(attribute_column, attr_name):
     for attr_dict in attribute_column:
@@ -50,5 +64,10 @@ def query_Sentinel_1(Floodpy_app):
     query_df.index = pd.to_datetime(query_df['beginningDateTime'])
     query_df = query_df.drop_duplicates('beginningDateTime').sort_index().tz_localize(None)
 
-    flood_candidate_dates = query_df['relativeOrbitNumber'][Floodpy_app.flood_datetime_start:Floodpy_app.flood_datetime_end].index.values
-    return query_df, flood_candidate_dates
+    flood_datetimes = query_df['relativeOrbitNumber'][Floodpy_app.flood_datetime_start:Floodpy_app.flood_datetime_end].index.values
+
+    sorted_flood_datetimes = sorted([pd.to_datetime(flood_datetime) for flood_datetime in flood_datetimes])
+
+    filtered_flood_datetimes = filter_datetimes(sorted_flood_datetimes)
+
+    return query_df, filtered_flood_datetimes

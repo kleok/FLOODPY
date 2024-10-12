@@ -1,12 +1,14 @@
 # <img src="https://github.com/kleok/FLOODPY/blob/main/figures/Floodpy_logo.png" width="58"> FLOODPY - FLOOD PYthon toolbox 
 [![GitHub license](https://img.shields.io/badge/License-GNU3-green.svg)](https://github.com/kleok/FLOODPY)
-[![Release](https://img.shields.io/badge/Release-0.7.0-brightgreen)](https://github.com/kleok/FLOODPY)
+[![Release](https://img.shields.io/badge/Release-Floodpy_Oct_2024-brightgreen)](https://github.com/kleok/FLOODPY)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kleok/FLOODPY/issues)
 [![Documentation](https://readthedocs.org/projects/floodpy/badge/?version=latest)](https://floodpy.readthedocs.io/en/latest/)
 
 ## Introduction
 
-The FLOod Mapping PYthon toolbox is a free and open-source python toolbox for mapping of floodwater. It exploits the dense Sentinel-1 GRD intensity time series and is based on four processing steps. In the first step, a selection of Sentinel-1 images related to pre-flood (baseline) state and flood state is performed. In the second step, the preprocessing of the selected images is performed in order to create a co-registered stack with all the pre-flood and flood images. In the third step, a statistical temporal analysis is performed and a t-score map that represents the changes due to flood event is calculated. Finally, in the fourth step, a multi-scale iterative thresholding algorithm based on t-score map is performed to extract the final flood map. We believe that the end-user community can benefit by exploiting the FLOODPY's floodwater maps.
+The Flood mapping python toolbox (Floodpy) is a free and open-source python toolbox for mapping the non-urban flooded regions. It exploits the dense Sentinel-1 GRD intensity time series using a statistical or a ViT (Visual Transfomer) approach. Before running Floodpy make use you know the following information of the flood event of your interest
+ - Date and time of the flood event
+ - Spatial information (e.g. min,max latitude and min,max longitude) of the flood event
 
 This is research code provided to you "as is" with NO WARRANTIES OF CORRECTNESS. Use at your own risk.
 
@@ -36,21 +38,14 @@ traffic.
 
 ### 1.3 Account setup for downloading global atmospheric model data
 
-Currently, FloodPy is based on ERA-5 data. ERA-5 data set is redistributed over the Copernicus Climate Data Store (CDS).
-You have to create a new account [here](https://cds.climate.copernicus.eu/user/register?destination=%2F%23!%2Fhome) if you don't own a user account yet. 
-After the creation of your profile, you will find your user id (UID) and your personal API Key on your User profile page. 
-
-- Option 1: create manually a ```.cdsapirc``` file  under your ```HOME``` directory with the following information:
+FloodPy can download meteorological data from based on ERA-5 data. 
+You have to create a new account [here](https://cds.climate.copernicus.eu/) if you don't own a user account yet. 
+After the creation of your profile, you will find your Personal Access Token on your User profile page. 
+Create manually a ```.cdsapirc``` file  under your ```HOME``` directory with the following information:
 
 ```
-url: https://cds.climate.copernicus.eu/api/v2
-key: UID:personal API Key
-```
-- Option 2: Run [aux/install_CDS_key.sh](https://github.com/kleok/FLOODPY/blob/main/aux/install_CDS_key.sh) script as follows:
-
-```bash
-chmod +x install_CDS_key.sh
-./install_CDS_key.sh
+url: https://cds.climate.copernicus.eu/api
+key: Your Personal Access Token
 ```
 
 ### 1.4 Download FLOODPY
