@@ -76,7 +76,7 @@
   <node id="Calibration">
     <operator>Calibration</operator>
     <sources>
-      <sourceProduct refid="Subset(2)"/>
+      <sourceProduct refid="Remove-GRD-Border-Noise"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
@@ -115,7 +115,7 @@
   <node id="Calibration(2)">
     <operator>Calibration</operator>
     <sources>
-      <sourceProduct refid="Remove-GRD-Border-Noise(2)"/>
+      <sourceProduct refid="Subset(2)"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
