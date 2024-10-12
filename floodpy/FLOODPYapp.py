@@ -42,6 +42,7 @@ class FloodwaterEstimation:
 
         # Project Definition
         self.projectfolder  = params_dict['projectfolder']
+        self.flood_event    = params_dict['flood_event']
         self.src            = params_dict['src_dir']
         self.gpt            = params_dict['GPTBIN_PATH']
         self.snap_orbit_dir = params_dict['snap_orbit_dir']
@@ -137,11 +138,11 @@ class FloodwaterEstimation:
         self.era5_fig = plot_ERA5(self)
 
     def query_S1_data(self):
-        self.query_S1_df, self.flood_candidate_dates = query_Sentinel_1(self)
+        self.query_S1_df, self.flood_datetimes = query_Sentinel_1(self)
 
     def sel_S1_data(self, sel_flood_date):
-        if pd.to_datetime(sel_flood_date) not in self.flood_candidate_dates:
-            print('Please select one of the available dates for flood mapping: {}'.format(self.flood_candidate_dates))
+        if pd.to_datetime(sel_flood_date) not in self.flood_datetimes:
+            print('Please select one of the available dates for flood mapping: {}'.format(self.flood_datetimes))
 
         self.flood_datetime = sel_flood_date
         self.flood_datetime_str = pd.to_datetime(self.flood_datetime).strftime('%Y%m%dT%H%M%S')
@@ -193,8 +194,10 @@ class FloodwaterEstimation:
     def calc_flooded_regions_ViT(self, ViT_model_filename, device = 'cuda', generate_vector = True, overwrite = True):
         assert device in ['cuda', 'cpu'], 'device parameter must be cuda or cpu'
         
-        self.Flood_map_dataset_filename = os.path.join(self.Results_dir, 'Flood_map_ViT_{}.nc'.format(self.flood_datetime_str))
-        self.Flood_map_vector_dataset_filename = os.path.join(self.Results_dir, 'Flood_map_ViT_{}.geojson'.format(self.flood_datetime_str))
+        self.Flood_map_dataset_filename = os.path.join(self.Results_dir, 'Flooded_regions_{}_{}(UTC).nc'.format(self.flood_event,
+                                                                                                            self.flood_datetime_str))
+        self.Flood_map_vector_dataset_filename = os.path.join(self.Results_dir, 'Flooded_regions_{}_{}(UTC).geojson'.format(self.flood_event,
+                                                                                                                       self.flood_datetime_str))
 
         if os.path.exists(self.Flood_map_dataset_filename):
             if overwrite: 
