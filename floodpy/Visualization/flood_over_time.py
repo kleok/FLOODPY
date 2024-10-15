@@ -5,16 +5,6 @@ import matplotlib.pyplot as plt
 
 def plot_flooded_area_over_time(Floodpy_app, Floodpy_app_objs):
 
-    colorTones = {
-    6: '#CC3A5D', # dark pink
-    5: '#555555',   # dark grey 
-    4: '#A17C44',  # dark brown
-    3: '#8751A1', # dark purple
-    2: '#C1403D', # dark red
-    1: '#2E5A87',  # dark blue
-    0: '#57A35D', # dark green
-    }
-
     Flooded_regions_areas_km2 = {}
     for flood_date in Floodpy_app_objs.keys():
         # calculate the area of flooded regions
@@ -38,9 +28,9 @@ def plot_flooded_area_over_time(Floodpy_app, Floodpy_app_objs):
 
     # Adjust the plot
     plt.ylabel('Flooded area (km²)', fontsize=16)
-    plt.title('Flooded Area(km²) Over Time', fontsize=16)
     plt.xticks(df['Datetime'].astype(str), df['Datetime'].dt.strftime('%d-%b-%Y'), rotation=30, ha='right', fontsize=16)  # Set custom date format
     plt.yticks(fontsize=16)
+    plt.grid()
     plt.tight_layout()  # Adjust layout for better fit
 
     # Display the plot
